@@ -1,0 +1,79 @@
+## ===== .NET Core =====
+# 빌드 결과물
+bin/
+obj/
+
+# 유저별 설정
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio 캐시
+.vs/
+
+# Rider / JetBrains
+.idea/
+*.iml
+
+# 로컬 환경 변수 파일
+*.env
+*.env.*
+appsettings.Development.json
+appsettings.Local.json
+
+## ===== Unity =====
+# Unity 생성 파일
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+UserSettings/
+MemoryCaptures/
+*.pidb
+*.booproj
+*.svd
+
+# Unity 빌드 관련
+*.apk
+*.unitypackage
+
+# Crash / Error 보고서
+sysinfo.txt
+
+# Asset Store Tools
+AssetStoreTools*
+
+# Rider + Unity 연동
+.idea/*
+*.csproj
+*.unityproj
+*.sln
+*.dotSettings
+*.dotSettings.user
+
+## ===== OS별 =====
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+## ===== 기타 =====
+# JetBrains Rider 캐시
+.idea/
+*.ipr
+*.iws
+
+# Visual Studio Code
+.vscode/
+
+# Log
+*.log
