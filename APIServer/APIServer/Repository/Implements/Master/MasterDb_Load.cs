@@ -3,10 +3,11 @@ using APIServer.Config;
 using APIServer.Models.Entity.Data;
 using Microsoft.Extensions.Options;
 using SqlKata.Execution;
+using static APIServer.LoggerManager;
 
 namespace APIServer.Repository.Implements;
 
-partial class MasterDb(IOptions<DbConfig> dbConfig)
+partial class MasterDb(IOptions<DbConfig> dbConfig, ILogger<MasterDb> logger)
     : MySQLBase(dbConfig.Value.MasterDb), IMasterDb
 {
     // Attendance
@@ -35,7 +36,8 @@ partial class MasterDb(IOptions<DbConfig> dbConfig)
     private ImmutableDictionary<long, StageMonsterInfo> _stageMonsterInfos = ImmutableDictionary<long, StageMonsterInfo>.Empty;
 
     private bool isAlreadyLoad = false;
-
+    private readonly ILogger<MasterDb> _logger = logger;
+    
     public async Task<bool> Load()
     {
         if (isAlreadyLoad) return true;
@@ -47,8 +49,11 @@ partial class MasterDb(IOptions<DbConfig> dbConfig)
             await LoadQuest() == false || 
             await LoadStage() == false)
         {
+            Thread.Sleep(1000);
             return false;
         }
+        
+        LogInfo(_logger, EventType.LoadMasterDb, "Master Data Load Success");
         
         isAlreadyLoad = true;
         return true;
@@ -58,7 +63,7 @@ partial class MasterDb(IOptions<DbConfig> dbConfig)
     {
         try
         {
-            var months = await GetAllDataFromTableAsync<AttendanceRewardMonth>("attendance_reward_month");
+            var months = await GetAllDataFromTableAsync<AttendanceRewardMonth>("attendance_reward_mont");
             var weeks  = await GetAllDataFromTableAsync<AttendanceRewardWeek>("attendance_reward_week");
 
             _attendanceRewardsMonth = months
@@ -71,6 +76,7 @@ partial class MasterDb(IOptions<DbConfig> dbConfig)
         }
         catch (Exception e)
         {
+            LogError(_logger, ErrorCode.DataLoadFAiled, EventType.LoadAttendance, e.ToString());
             return false;
         }
         
@@ -94,6 +100,7 @@ partial class MasterDb(IOptions<DbConfig> dbConfig)
         }
         catch (Exception e)
         {
+            LogError(_logger, ErrorCode.DataLoadFAiled, EventType.LoadCharacter, e.ToString());
             return false;
         }
         
@@ -117,6 +124,7 @@ partial class MasterDb(IOptions<DbConfig> dbConfig)
         }
         catch (Exception e)
         {
+            LogError(_logger, ErrorCode.DataLoadFAiled, EventType.LoadItem, e.ToString());
             return false;       
         }
         
@@ -138,8 +146,9 @@ partial class MasterDb(IOptions<DbConfig> dbConfig)
                 .GroupBy(r => (r.runeCode, r.level))
                 .ToImmutableDictionary(g => (g.Key.runeCode, g.Key.level), g => g.First());      
         }
-        catch
+        catch(Exception e)
         {
+            LogError(_logger, ErrorCode.DataLoadFAiled, EventType.LoadRune, e.ToString());
             return false;       
         }
         
@@ -157,6 +166,7 @@ partial class MasterDb(IOptions<DbConfig> dbConfig)
         }
         catch (Exception e)
         {
+            LogError(_logger, ErrorCode.DataLoadFAiled, EventType.LoadQuest, e.ToString());
             return false;
         }
 
@@ -165,26 +175,34 @@ partial class MasterDb(IOptions<DbConfig> dbConfig)
     
     private async Task<bool> LoadStage()
     {
-        var stageRewardsGold = await GetAllDataFromTableAsync<StageRewardGold>("stage_reward_gold");
-        var stageRewardsItem = await GetAllDataFromTableAsync<StageRewardItem>("stage_reward_item");
-        var stageRewardsRune = await GetAllDataFromTableAsync<StageRewardRune>("stage_reward_rune");
-        var stageMonsterInfos = await GetAllDataFromTableAsync<StageMonsterInfo>("stage_monster_info");
-        
-        _stageRewardsGold = stageRewardsGold
-            .GroupBy(g => g.stageCode)
-            .ToImmutableDictionary(g => g.Key, g => g.First());
-        
-        _stageRewardsItem = stageRewardsItem
-            .GroupBy(i => i.stageCode)
-            .ToImmutableDictionary(g => g.Key, g => g.First());
-        
-        _stageRewardsRune = stageRewardsRune
-            .GroupBy(r => r.stageCode)
-            .ToImmutableDictionary(g => g.Key, g => g.First());
-        
-        _stageMonsterInfos = stageMonsterInfos
-            .GroupBy(m => m.stageCode)
-            .ToImmutableDictionary(g => g.Key, g => g.First());
+        try
+        {
+            var stageRewardsGold = await GetAllDataFromTableAsync<StageRewardGold>("stage_reward_gold");
+            var stageRewardsItem = await GetAllDataFromTableAsync<StageRewardItem>("stage_reward_item");
+            var stageRewardsRune = await GetAllDataFromTableAsync<StageRewardRune>("stage_reward_rune");
+            var stageMonsterInfos = await GetAllDataFromTableAsync<StageMonsterInfo>("stage_monster_info");
+
+            _stageRewardsGold = stageRewardsGold
+                .GroupBy(g => g.stageCode)
+                .ToImmutableDictionary(g => g.Key, g => g.First());
+
+            _stageRewardsItem = stageRewardsItem
+                .GroupBy(i => i.stageCode)
+                .ToImmutableDictionary(g => g.Key, g => g.First());
+
+            _stageRewardsRune = stageRewardsRune
+                .GroupBy(r => r.stageCode)
+                .ToImmutableDictionary(g => g.Key, g => g.First());
+
+            _stageMonsterInfos = stageMonsterInfos
+                .GroupBy(m => m.stageCode)
+                .ToImmutableDictionary(g => g.Key, g => g.First());
+        }
+        catch (Exception e)
+        {
+            LogError(_logger, ErrorCode.DataLoadFAiled, EventType.LoadStage, e.ToString());
+            return false;
+        }
         
         return true;
     }
