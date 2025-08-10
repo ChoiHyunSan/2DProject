@@ -142,3 +142,14 @@ CREATE TABLE IF NOT EXISTS `stage_reward_gold` (
     `stage_code` BIGINT NOT NULL PRIMARY KEY    COMMENT '스테이지 식별 코드',
     `gold`       INT    NOT NULL                COMMENT '골드 획득량'
 );
+
+------------------------------------------------------------
+-- 스테이지 별 몬스터 출현 정보
+------------------------------------------------------------
+DROP TABLE IF EXISTS `stage_monster_info`;
+CREATE TABLE IF NOT EXISTS `stage_monster_info`(
+    `stage_code`    BIGINT  NOT NULL    COMMNET `스테이지 식별 코드`,
+    `monster_code`  BIGINT  NOT NULL    COMMENT `몬스터 식별 코드`,
+    `monster_count` INT     NOT NULL    COMMENT `몬스터 출현 마릿수`,
+    PRIMARY KEY (`stage_code`, `monster_code`)
+)
