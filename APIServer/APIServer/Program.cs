@@ -1,10 +1,25 @@
+using APIServer.Config;
+using APIServer.Repository;
+using APIServer.Repository.Implements;
+using APIServer.Service;
+using APIServer.Service.Implements;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container
+// Configuration
+IConfiguration configuration = builder.Configuration;
+builder.Services.Configure<DbConfig>(configuration.GetSection(nameof(DbConfig)));
 
-builder.Services.AddControllers();
 
 // Register services
+builder.Services.AddScoped<ITestService, TestService>();
+
+// Register Repositories
+builder.Services.AddScoped<IAccountDb, AccountDb>();
+builder.Services.AddScoped<IGameDb, GameDb>();
+builder.Services.AddScoped<IMasterDb, MasterDb>();
+
+builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -21,5 +36,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+
+Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
 app.Run();
