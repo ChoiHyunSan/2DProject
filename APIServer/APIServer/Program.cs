@@ -10,14 +10,13 @@ var builder = WebApplication.CreateBuilder(args);
 IConfiguration configuration = builder.Configuration;
 builder.Services.Configure<DbConfig>(configuration.GetSection(nameof(DbConfig)));
 
-
 // Register services
 builder.Services.AddScoped<ITestService, TestService>();
 
 // Register Repositories
 builder.Services.AddScoped<IAccountDb, AccountDb>();
 builder.Services.AddScoped<IGameDb, GameDb>();
-builder.Services.AddScoped<IMasterDb, MasterDb>();
+builder.Services.AddSingleton<IMasterDb, MasterDb>();
 
 builder.Services.AddControllers();
 
@@ -37,6 +36,15 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
+// Set Dapper
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+
+// Load Master Data
+var masterDb = app.Services.GetRequiredService<IMasterDb>();
+if (await masterDb.Load() == false)
+{   
+    // TODO: 로그 남기고 프로그램 종료
+    return;
+}
 
 app.Run();

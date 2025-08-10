@@ -22,7 +22,7 @@ public class CharacterOriginData
 /// 캐릭터 레벨 별 강화 가격
 /// 테이블 : character_enhance_data
 /// </summary>
-public class CharacterEnhancePriceData
+public class CharacterEnhanceData
 {
     [Column("character_code")]
     public long characterCode { get; set; }                     // 캐릭터 식별 코드

@@ -28,7 +28,7 @@ public class RuneEnhanceData
     public long runeCode { get; set; }                          // 룬 식별 코드
     
     [Column("level")]
-    public long level { get; set; }                             // 룬 레벨
+    public int level { get; set; }                             // 룬 레벨
     
     [Column("attack_damage")]
     public int attackDamage { get; set; }                       // 추가 공격력

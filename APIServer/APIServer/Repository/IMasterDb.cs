@@ -2,5 +2,5 @@
 
 public interface IMasterDb
 {
-    
+    public Task<bool> Load();
 }
