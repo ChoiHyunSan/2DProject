@@ -1,30 +1,30 @@
-﻿DROP DATABASE IF EXISTS `GameDB`;
-CREATE DATABASE IF NOT EXISTS `GameDB`;
-USE `GameDB`;
+﻿DROP DATABASE IF EXISTS `GameDb`;
+CREATE DATABASE IF NOT EXISTS `GameDb`;
+USE `GameDb`;
 
-------------------------------------------------------------
--- 유저 인벤토리 캐릭터가 장착한 아이템 정보 테이블
-------------------------------------------------------------
+-- ----------------------------------------------------------
+--  유저 인벤토리 캐릭터가 장착한 아이템 정보 테이블
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `character_equipment_item`;
 CREATE TABLE IF NOT EXISTS `character_equipment_item` (
     `character_id` BIGINT NOT NULL COMMENT '캐릭터 ID',
     `item_id`      BIGINT NOT NULL COMMENT '아이템 ID',
-    PRIMARY KEY (`characterId`, `itemId`)
+    PRIMARY KEY (`character_id`, `item_id`)
 );
 
-------------------------------------------------------------
--- 유저 인벤토리 캐릭터가 장착한 룬 정보 테이블
-------------------------------------------------------------
+-- ----------------------------------------------------------
+--  유저 인벤토리 캐릭터가 장착한 룬 정보 테이블
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `character_equipment_rune`;
 CREATE TABLE IF NOT EXISTS `character_equipment_rune` (
     `character_id` BIGINT NOT NULL COMMENT '캐릭터 ID',
     `rune_id`      BIGINT NOT NULL COMMENT '룬 ID',
-    PRIMARY KEY (`characterId`, `runeId`)
+    PRIMARY KEY (`character_id`, `rune_id`)
 );
 
-------------------------------------------------------------
--- 유저 월간 출석 정보 테이블
-------------------------------------------------------------
+-- ----------------------------------------------------------
+--  유저 월간 출석 정보 테이블
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `user_attendance_month`;
 CREATE TABLE IF NOT EXISTS `user_attendance_month` (
     `id`                        BIGINT      AUTO_INCREMENT PRIMARY KEY      COMMENT '고유 ID',
@@ -34,9 +34,9 @@ CREATE TABLE IF NOT EXISTS `user_attendance_month` (
     `last_update_date`          DATETIME    NOT NULL                        COMMENT '마지막 업데이트 날짜'
 );
 
-------------------------------------------------------------
--- 유저 주간 출석 정보 테이블
-------------------------------------------------------------
+-- ----------------------------------------------------------
+--  유저 주간 출석 정보 테이블
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `user_attendance_week`;
 CREATE TABLE IF NOT EXISTS `user_attendance_week` (
     `id`                        BIGINT      AUTO_INCREMENT PRIMARY KEY  COMMENT '고유 ID',
@@ -46,9 +46,9 @@ CREATE TABLE IF NOT EXISTS `user_attendance_week` (
     `last_update_date`          DATETIME    NOT NULL                    COMMENT '마지막 업데이트 날짜'
 );
 
-------------------------------------------------------------
--- 유저 스테이지 클리어 정보 테이블
-------------------------------------------------------------
+-- ----------------------------------------------------------
+--  유저 스테이지 클리어 정보 테이블
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `user_clear_stage`;
 CREATE TABLE IF NOT EXISTS `user_clear_stage` (
     `id`                BIGINT         AUTO_INCREMENT PRIMARY KEY      COMMENT '고유 ID',
@@ -59,9 +59,9 @@ CREATE TABLE IF NOT EXISTS `user_clear_stage` (
     `last_clear_date`   DATETIME       NOT NULL                        COMMENT '가장 최근 클리어 날짜'
 );
 
-------------------------------------------------------------
--- 유저 게임 데이터 테이블
-------------------------------------------------------------
+-- ----------------------------------------------------------
+--  유저 게임 데이터 테이블
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `user_game_data`;
 CREATE TABLE IF NOT EXISTS `user_game_data` (
     `user_id`                       BIGINT      AUTO_INCREMENT PRIMARY KEY  COMMENT '유저 ID',
@@ -73,9 +73,9 @@ CREATE TABLE IF NOT EXISTS `user_game_data` (
     `total_clear_count`             INT         NOT NULL                    COMMENT '총 스테이지 클리어 횟수'
 );
 
-------------------------------------------------------------
--- 유저 인벤토리 아이템 데이터 테이블
-------------------------------------------------------------
+-- ----------------------------------------------------------
+--  유저 인벤토리 아이템 데이터 테이블
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `user_inventory_item`;
 CREATE TABLE IF NOT EXISTS `user_inventory_item` (
     `item_id`           BIGINT         AUTO_INCREMENT PRIMARY KEY          COMMENT '아이템 ID',
@@ -85,9 +85,9 @@ CREATE TABLE IF NOT EXISTS `user_inventory_item` (
     `level`             INT            NOT NULL                            COMMENT '아이템 레벨'
 );
 
-------------------------------------------------------------
--- 유저 인벤토리 룬 데이터 테이블
-------------------------------------------------------------
+-- ----------------------------------------------------------
+--  유저 인벤토리 룬 데이터 테이블
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `user_inventory_rune`;
 CREATE TABLE IF NOT EXISTS `user_inventory_rune` (
     `rune_id`           BIGINT         AUTO_INCREMENT PRIMARY KEY          COMMENT '룬 ID',
@@ -96,9 +96,9 @@ CREATE TABLE IF NOT EXISTS `user_inventory_rune` (
     `count`             INT            NOT NULL                            COMMENT '룬 보유 개수'
 );
 
-------------------------------------------------------------
--- 유저 인벤토리 캐릭터 데이터 테이블
-------------------------------------------------------------
+-- ----------------------------------------------------------
+--  유저 인벤토리 캐릭터 데이터 테이블
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `user_inventory_character`;
 CREATE TABLE IF NOT EXISTS `user_inventory_character` (
     `character_id`              BIGINT         AUTO_INCREMENT  PRIMARY KEY     COMMENT '캐릭터 ID',
@@ -107,9 +107,9 @@ CREATE TABLE IF NOT EXISTS `user_inventory_character` (
     `level`                     INT            NOT NULL                        COMMENT '캐릭터 레벨'
 );
 
-------------------------------------------------------------
--- 유저 퀘스트 진행 데이터 테이블
-------------------------------------------------------------
+-- ----------------------------------------------------------
+--  유저 퀘스트 진행 데이터 테이블
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `user_quest_inprogress`;
 CREATE TABLE IF NOT EXISTS `user_quest_inprogress` (
     `quest_inprogress_id`           BIGINT         AUTO_INCREMENT      PRIMARY KEY     COMMENT '고유 ID',
@@ -119,9 +119,9 @@ CREATE TABLE IF NOT EXISTS `user_quest_inprogress` (
     `expire_date`                   DATETIME       NOT NULL                            COMMENT '퀘스트 만료 시간'
 );
 
-------------------------------------------------------------
--- 유저 퀘스트 완료 데이터 테이블
-------------------------------------------------------------
+-- ----------------------------------------------------------
+--  유저 퀘스트 완료 데이터 테이블
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `user_quest_complete`;
 CREATE TABLE IF NOT EXISTS `user_quest_complete` (
     `quest_complete_ id`            BIGINT      AUTO_INCREMENT      PRIMARY KEY     COMMENT '고유 ID',

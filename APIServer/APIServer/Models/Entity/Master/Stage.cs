@@ -49,3 +49,14 @@ public class StageRewardGold
     [Column("gold")]
     public int gold { get; set; }           // 골드 획득량
 }
+
+/// <summary>
+/// 스테이지 별 몬스터 출현 정보
+/// 테이블 : stage_monster_info
+/// </summary>
+public class StageMonsterInfo
+{
+    public long stageCode { get; set; }      // 식별 코드
+    public long monsterCode { get; set; }    // 몬스터 식별 코드
+    public int monsterCount { get; set; }    // 몬스터 등장 마릿수
+}

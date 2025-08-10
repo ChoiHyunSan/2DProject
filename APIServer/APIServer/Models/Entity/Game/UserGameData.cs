@@ -8,6 +8,9 @@ namespace APIServer.Models.Entity;
 /// </summary>
 public class UserGameData
 {
+    [Column("user_id")]
+    public long userId { get; set; }                    // 유저 ID
+    
     [Column("gold")]
     public int gold { get; set; }                       // 골드
     
@@ -25,4 +28,9 @@ public class UserGameData
     
     [Column("total_clear_count")]
     public int totalClearCount { get; set; }            // 총 스테이지 클리어 횟수
+    
+    public override string ToString()
+    {
+        return $"[User ID: {userId}, Gold: {gold}, Gem: {gem}, Exp: {exp}, Level: {level}, Total Monster Kill Count: {totalMonsterKillCount}, Total Clear Count: {totalClearCount}]";
+    }
 }

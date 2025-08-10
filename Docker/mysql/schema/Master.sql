@@ -1,10 +1,10 @@
-﻿DROP DATABASE IF EXISTS `MasterDB`;
-CREATE DATABASE IF NOT EXISTS `MasterDB`;
-USE `MasterDB`;
+﻿DROP DATABASE IF EXISTS `MasterDb`;
+CREATE DATABASE IF NOT EXISTS `MasterDb`;
+USE `MasterDb`;
 
-------------------------------------------------------------
--- 월간 출석 보상 데이터
-------------------------------------------------------------
+-- ----------------------------------------------------------
+--  월간 출석 보상 데이터
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `attendance_reward_month`;
 CREATE TABLE IF NOT EXISTS `attendance_reward_month` (
     `day`        INT         NOT NULL        PRIMARY KEY        COMMENT '출석 일자',
@@ -12,9 +12,16 @@ CREATE TABLE IF NOT EXISTS `attendance_reward_month` (
     `count`      INT         NOT NULL                           COMMENT '아이템 보상 개수'
 );
 
-------------------------------------------------------------
--- 주간 출석 보상 데이터
-------------------------------------------------------------
+# 데이터 Impoort
+LOAD DATA INFILE "/var/lib/mysql-files/master_csv_data/attendance_reward_month.csv"
+INTO TABLE `MasterDb`.`attendance_reward_month`
+FIELDS TERMINATED BY ","
+LINES TERMINATED BY "\n"
+IGNORE 1 ROWS;	
+
+-- ----------------------------------------------------------
+--  주간 출석 보상 데이터
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `attendance_reward_week`;
 CREATE TABLE IF NOT EXISTS `attendance_reward_week` (
     `day`        INT         NOT NULL        PRIMARY KEY        COMMENT '출석 일자',
@@ -22,9 +29,16 @@ CREATE TABLE IF NOT EXISTS `attendance_reward_week` (
     `count`      INT         NOT NULL                           COMMENT '아이템 보상 개수'
 );
 
-------------------------------------------------------------
--- 캐릭터 원본 데이터
-------------------------------------------------------------
+# 데이터 Impoort
+LOAD DATA INFILE "/var/lib/mysql-files/master_csv_data/attendance_reward_week.csv"
+INTO TABLE `MasterDb`.`attendance_reward_week`
+FIELDS TERMINATED BY ","
+LINES TERMINATED BY "\n"
+IGNORE 1 ROWS;	
+
+-- ----------------------------------------------------------
+--  캐릭터 원본 데이터
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `character_origin_data`;
 CREATE TABLE IF NOT EXISTS `character_origin_data` (
     `character_code`   BIGINT        NOT NULL       PRIMARY KEY     COMMENT '캐릭터 식별 코드',
@@ -32,9 +46,16 @@ CREATE TABLE IF NOT EXISTS `character_origin_data` (
     `description`      VARCHAR(200)  NOT NULL                       COMMENT '캐릭터 설명'
 );
 
-------------------------------------------------------------
--- 캐릭터 레벨별 강화 가격
-------------------------------------------------------------
+# 데이터 Impoort
+LOAD DATA INFILE "/var/lib/mysql-files/master_csv_data/character_origin_data.csv"
+INTO TABLE `MasterDb`.`character_origin_data`
+FIELDS TERMINATED BY ","
+LINES TERMINATED BY "\n"
+IGNORE 1 ROWS;	
+
+-- ----------------------------------------------------------
+--  캐릭터 레벨별 강화 가격
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `character_enhance_data`;
 CREATE TABLE IF NOT EXISTS `character_enhance_data` (
     `character_code`   BIGINT       NOT NULL                   COMMENT '캐릭터 식별 코드',
@@ -47,9 +68,16 @@ CREATE TABLE IF NOT EXISTS `character_enhance_data` (
     PRIMARY KEY (`character_code`, `level`)
 );
 
-------------------------------------------------------------
--- 아이템 원본 데이터
-------------------------------------------------------------
+# 데이터 Impoort
+LOAD DATA INFILE "/var/lib/mysql-files/master_csv_data/character_enhance_data.csv"
+INTO TABLE `MasterDb`.`character_enhance_data`
+FIELDS TERMINATED BY ","
+LINES TERMINATED BY "\n"
+IGNORE 1 ROWS;	
+
+-- ----------------------------------------------------------
+--  아이템 원본 데이터
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `item_origin_data`;
 CREATE TABLE IF NOT EXISTS `item_origin_data` (
     `item_code`   BIGINT       NOT NULL      PRIMARY KEY      COMMENT '아이템 식별 코드',
@@ -57,9 +85,16 @@ CREATE TABLE IF NOT EXISTS `item_origin_data` (
     `description` TEXT         NOT NULL                       COMMENT '아이템 설명'
 );
 
-------------------------------------------------------------
--- 아이템 레벨별 강화 정보
-------------------------------------------------------------
+# 데이터 Impoort
+LOAD DATA INFILE "/var/lib/mysql-files/master_csv_data/item_origin_data.csv"
+INTO TABLE `MasterDb`.`item_origin_data`
+FIELDS TERMINATED BY ","
+LINES TERMINATED BY "\n"
+IGNORE 1 ROWS;	
+
+-- ----------------------------------------------------------
+--  아이템 레벨별 강화 정보
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `item_enhance_data`;
 CREATE TABLE IF NOT EXISTS `item_enhance_data` (
     `item_code`        BIGINT       NOT NULL                   COMMENT '아이템 식별 코드',
@@ -73,9 +108,16 @@ CREATE TABLE IF NOT EXISTS `item_enhance_data` (
     PRIMARY KEY (`item_code`, `level`)
 );
 
-------------------------------------------------------------
--- 퀘스트 정보 데이터
-------------------------------------------------------------
+# 데이터 Impoort
+LOAD DATA INFILE "/var/lib/mysql-files/master_csv_data/item_enhance_data.csv"
+INTO TABLE `MasterDb`.`item_enhance_data`
+FIELDS TERMINATED BY ","
+LINES TERMINATED BY "\n"
+IGNORE 1 ROWS;	
+
+-- ----------------------------------------------------------
+--  퀘스트 정보 데이터
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `quest_info_data`;
 CREATE TABLE IF NOT EXISTS `quest_info_data` (
     `quest_code`  BIGINT       PRIMARY KEY                  COMMENT '퀘스트 식별 코드',
@@ -86,9 +128,16 @@ CREATE TABLE IF NOT EXISTS `quest_info_data` (
     `reward_exp`  INT          NOT NULL                     COMMENT '보상 경험치 획득량'
 );
 
-------------------------------------------------------------
--- 룬 원본 데이터
-------------------------------------------------------------
+# 데이터 Impoort
+LOAD DATA INFILE "/var/lib/mysql-files/master_csv_data/quest_info_data.csv"
+INTO TABLE `MasterDb`.`quest_info_data`
+FIELDS TERMINATED BY ","
+LINES TERMINATED BY "\n"
+IGNORE 1 ROWS;	
+
+-- ----------------------------------------------------------
+--  룬 원본 데이터
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `rune_origin_data`;
 CREATE TABLE IF NOT EXISTS `rune_origin_data` (
     `rune_code`   BIGINT       NOT NULL   PRIMARY KEY       COMMENT '룬 식별 코드',
@@ -96,9 +145,16 @@ CREATE TABLE IF NOT EXISTS `rune_origin_data` (
     `description` VARCHAR(200) NOT NULL                     COMMENT '룬 설명'
 );
 
-------------------------------------------------------------
--- 룬 레벨별 강화 정보
-------------------------------------------------------------
+# 데이터 Impoort
+LOAD DATA INFILE "/var/lib/mysql-files/master_csv_data/rune_origin_data.csv"
+INTO TABLE `MasterDb`.`rune_origin_data`
+FIELDS TERMINATED BY ","
+LINES TERMINATED BY "\n"
+IGNORE 1 ROWS;	
+
+-- ----------------------------------------------------------
+--  룬 레벨별 강화 정보
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `rune_enhance_data`;
 CREATE TABLE IF NOT EXISTS `rune_enhance_data` (
     `rune_code`        BIGINT       NOT NULL                   COMMENT '룬 식별 코드',
@@ -111,9 +167,16 @@ CREATE TABLE IF NOT EXISTS `rune_enhance_data` (
     PRIMARY KEY (`rune_code`, `level`)
 );
 
-------------------------------------------------------------
--- 스테이지 별 보상 아이템 데이터
-------------------------------------------------------------
+# 데이터 Impoort
+LOAD DATA INFILE "/var/lib/mysql-files/master_csv_data/rune_enhance_data.csv"
+INTO TABLE `MasterDb`.`rune_enhance_data`
+FIELDS TERMINATED BY ","
+LINES TERMINATED BY "\n"
+IGNORE 1 ROWS;	
+
+-- ----------------------------------------------------------
+--  스테이지 별 보상 아이템 데이터
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `stage_reward_item`;
 CREATE TABLE IF NOT EXISTS `stage_reward_item` (
     `stage_code` BIGINT NOT NULL COMMENT '스테이지 식별 코드',
@@ -123,9 +186,16 @@ CREATE TABLE IF NOT EXISTS `stage_reward_item` (
     PRIMARY KEY (`stage_code`, `item_code`, `level`)
 );
 
-------------------------------------------------------------
--- 스테이지 별 보상 룬 데이터
-------------------------------------------------------------
+# 데이터 Impoort
+LOAD DATA INFILE "/var/lib/mysql-files/master_csv_data/stage_reward_item.csv"
+INTO TABLE `MasterDb`.`stage_reward_item`
+FIELDS TERMINATED BY ","
+LINES TERMINATED BY "\n"
+IGNORE 1 ROWS;	
+
+-- ----------------------------------------------------------
+--  스테이지 별 보상 룬 데이터
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `stage_reward_rune`;
 CREATE TABLE IF NOT EXISTS `stage_reward_rune` (
     `stage_code` BIGINT NOT NULL COMMENT '스테이지 식별 코드',
@@ -134,22 +204,43 @@ CREATE TABLE IF NOT EXISTS `stage_reward_rune` (
     PRIMARY KEY (`stage_code`, `rune_code`)
 );
 
-------------------------------------------------------------
--- 스테이지 별 보상 골드 데이터
-------------------------------------------------------------
+# 데이터 Impoort
+LOAD DATA INFILE "/var/lib/mysql-files/master_csv_data/stage_reward_rune.csv"
+INTO TABLE `MasterDb`.`stage_reward_rune`
+FIELDS TERMINATED BY ","
+LINES TERMINATED BY "\n"
+IGNORE 1 ROWS;	
+
+-- ----------------------------------------------------------
+--  스테이지 별 보상 골드 데이터
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `stage_reward_gold`;
 CREATE TABLE IF NOT EXISTS `stage_reward_gold` (
     `stage_code` BIGINT NOT NULL PRIMARY KEY    COMMENT '스테이지 식별 코드',
     `gold`       INT    NOT NULL                COMMENT '골드 획득량'
 );
 
-------------------------------------------------------------
--- 스테이지 별 몬스터 출현 정보
-------------------------------------------------------------
+# 데이터 Impoort
+LOAD DATA INFILE "/var/lib/mysql-files/master_csv_data/stage_reward_gold.csv"
+INTO TABLE `MasterDb`.`stage_reward_gold`
+FIELDS TERMINATED BY ","
+LINES TERMINATED BY "\n"
+IGNORE 1 ROWS;	
+
+-- ----------------------------------------------------------
+--  스테이지 별 몬스터 출현 정보
+-- ----------------------------------------------------------
 DROP TABLE IF EXISTS `stage_monster_info`;
 CREATE TABLE IF NOT EXISTS `stage_monster_info`(
-    `stage_code`    BIGINT  NOT NULL    COMMNET `스테이지 식별 코드`,
-    `monster_code`  BIGINT  NOT NULL    COMMENT `몬스터 식별 코드`,
-    `monster_count` INT     NOT NULL    COMMENT `몬스터 출현 마릿수`,
+    `stage_code`    BIGINT  NOT NULL    COMMENT '스테이지 식별 코드',
+    `monster_code`  BIGINT  NOT NULL    COMMENT '몬스터 식별 코드',
+    `monster_count` INT     NOT NULL    COMMENT '몬스터 출현 마릿수',
     PRIMARY KEY (`stage_code`, `monster_code`)
-)
+);
+
+# 데이터 Impoort
+LOAD DATA INFILE "/var/lib/mysql-files/master_csv_data/stage_monster_info.csv"
+INTO TABLE `MasterDb`.`stage_monster_info`
+FIELDS TERMINATED BY ","
+LINES TERMINATED BY "\n"
+IGNORE 1 ROWS;	

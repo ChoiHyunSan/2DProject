@@ -1,0 +1,27 @@
+version: "3.9"
+services:
+    api-mysql:
+        image: mysql:8.4
+        container_name: api-mysql
+        command:
+            - --character-set-server=utf8mb4
+            - --collation-server=utf8mb4_0900_ai_ci    
+            - --secure-file-priv=/var/lib/mysql-files                   # 파일 허용 경로 설정                 
+        environment:
+            MYSQL_ROOT_PASSWORD: "123qwe"                               # DB 비밀번호 설정
+        ports:
+            - "3307:3306"                                               # 호스트 3307 -> 도커 3306로 연결
+        volumes:
+            - mysql-data:/var/lib/mysql                                 # 볼륨 데이터 설정
+            - ./mysql/schema:/docker-entrypoint-initdb.d                # 초기 스크립트 설정
+            - ./mysql/files:/var/lib/mysql-files                        # Master DB CSV 폴더 경로
+        networks:
+            - api-network                                               # 도커 네트워크 설정
+
+
+volumes:
+    mysql-data:        
+
+networks:
+    api-network:
+        driver: bridge
