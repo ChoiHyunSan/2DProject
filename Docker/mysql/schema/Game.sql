@@ -80,8 +80,7 @@ DROP TABLE IF EXISTS `user_inventory_item`;
 CREATE TABLE IF NOT EXISTS `user_inventory_item` (
     `item_id`           BIGINT         AUTO_INCREMENT PRIMARY KEY          COMMENT '아이템 ID',
     `user_id`           BIGINT         NOT NULL                            COMMENT '유저 ID',
-    `itemCode`          BIGINT         NOT NULL                            COMMENT '아이템 코드',
-    `count`             INT            NOT NULL                            COMMENT '아이템 보유 개수',
+    `item_code`         BIGINT         NOT NULL                            COMMENT '아이템 코드',
     `level`             INT            NOT NULL                            COMMENT '아이템 레벨'
 );
 
@@ -91,9 +90,9 @@ CREATE TABLE IF NOT EXISTS `user_inventory_item` (
 DROP TABLE IF EXISTS `user_inventory_rune`;
 CREATE TABLE IF NOT EXISTS `user_inventory_rune` (
     `rune_id`           BIGINT         AUTO_INCREMENT PRIMARY KEY          COMMENT '룬 ID',
-    `userId`            BIGINT         NOT NULL                            COMMENT '유저 ID',
+    `user_id`           BIGINT         NOT NULL                            COMMENT '유저 ID',
     `rune_code`         BIGINT         NOT NULL                            COMMENT '룬 코드',
-    `count`             INT            NOT NULL                            COMMENT '룬 보유 개수'
+    `level`             INT            NOT NULL                            COMMENT '룬 레벨'
 );
 
 -- ----------------------------------------------------------

@@ -1,6 +1,7 @@
 using APIServer.Config;
 using APIServer.Repository;
 using APIServer.Repository.Implements;
+using APIServer.Repository.Implements.Memory;
 using APIServer.Service;
 using APIServer.Service.Implements;
 using ZLogger;
@@ -15,11 +16,13 @@ builder.Services.Configure<DbConfig>(configuration.GetSection(nameof(DbConfig)))
 
 // Register services
 builder.Services.AddScoped<ITestService, TestService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
 
 // Register Repositories
 builder.Services.AddScoped<IAccountDb, AccountDb>();
 builder.Services.AddScoped<IGameDb, GameDb>();
 builder.Services.AddSingleton<IMasterDb, MasterDb>();
+builder.Services.AddSingleton<IMemoryDb, MemoryDb>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

@@ -14,9 +14,6 @@ public class UserInventoryItem
     [Column("item_code")]
     public long itemCode { get; set; }              // 아이템 식별 코드
     
-    [Column("count")]
-    public int count { get; set; }                  // 아이템 보유 개수
-    
     [Column("level")]
     public int level { get; set; }                  // 아이템 레벨
 }
@@ -33,8 +30,8 @@ public class UserInventoryRune
     [Column("rune_code")]
     public long runeCode { get; set; }              // 룬 식별 코드
     
-    [Column("count")]
-    public int count { get; set; }                  // 룬 보유 개수
+    [Column("level")]
+    public int level { get; set; }                  // 룬 레벨
 }
 
 /// <summary>

@@ -3,6 +3,8 @@ using APIServer.Config;
 using APIServer.Models.Entity.Data;
 using Microsoft.Extensions.Options;
 using SqlKata.Execution;
+using static APIServer.ErrorCode;
+using static APIServer.EventType;
 using static APIServer.LoggerManager;
 
 namespace APIServer.Repository.Implements;
@@ -42,28 +44,28 @@ partial class MasterDb(IOptions<DbConfig> dbConfig, ILogger<MasterDb> logger)
     {
         if (isAlreadyLoad) return true;
 
-        if (await LoadAttendance() == false ||
-            await LoadCharacter() == false ||
-            await LoadItem() == false ||
-            await LoadRune() == false ||
-            await LoadQuest() == false || 
-            await LoadStage() == false)
+        if (await LoadAttendanceAsync() == false ||
+            await LoadCharacterAsync() == false ||
+            await LoadItemAsync() == false ||
+            await LoadRuneAsync() == false ||
+            await LoadQuestAsync() == false || 
+            await LoadStageAsync() == false)
         {
             Thread.Sleep(1000);
             return false;
         }
         
-        LogInfo(_logger, EventType.LoadMasterDb, "Master Data Load Success");
+        LogInfo(_logger, LoadMasterDb, "Master Data Load Success");
         
         isAlreadyLoad = true;
         return true;
     }
     
-    private async Task<bool> LoadAttendance()
+    private async Task<bool> LoadAttendanceAsync()
     {
         try
         {
-            var months = await GetAllDataFromTableAsync<AttendanceRewardMonth>("attendance_reward_mont");
+            var months = await GetAllDataFromTableAsync<AttendanceRewardMonth>("attendance_reward_month");
             var weeks  = await GetAllDataFromTableAsync<AttendanceRewardWeek>("attendance_reward_week");
 
             _attendanceRewardsMonth = months
@@ -76,14 +78,14 @@ partial class MasterDb(IOptions<DbConfig> dbConfig, ILogger<MasterDb> logger)
         }
         catch (Exception e)
         {
-            LogError(_logger, ErrorCode.DataLoadFAiled, EventType.LoadAttendance, e.ToString());
+            LogError(_logger, FailedDataLoad, LoadAttendance, e.ToString());
             return false;
         }
         
         return true;
     }
 
-    private async Task<bool> LoadCharacter()
+    private async Task<bool> LoadCharacterAsync()
     {
         try
         {
@@ -100,14 +102,14 @@ partial class MasterDb(IOptions<DbConfig> dbConfig, ILogger<MasterDb> logger)
         }
         catch (Exception e)
         {
-            LogError(_logger, ErrorCode.DataLoadFAiled, EventType.LoadCharacter, e.ToString());
+            LogError(_logger, FailedDataLoad, LoadCharacter, e.ToString());
             return false;
         }
         
         return true;
     }
 
-    private async Task<bool> LoadItem()
+    private async Task<bool> LoadItemAsync()
     {
         try
         {
@@ -124,14 +126,14 @@ partial class MasterDb(IOptions<DbConfig> dbConfig, ILogger<MasterDb> logger)
         }
         catch (Exception e)
         {
-            LogError(_logger, ErrorCode.DataLoadFAiled, EventType.LoadItem, e.ToString());
+            LogError(_logger, FailedDataLoad, LoadItem, e.ToString());
             return false;       
         }
         
         return true;
     }
     
-    private async Task<bool> LoadRune()
+    private async Task<bool> LoadRuneAsync()
     {
         try
         {
@@ -148,14 +150,14 @@ partial class MasterDb(IOptions<DbConfig> dbConfig, ILogger<MasterDb> logger)
         }
         catch(Exception e)
         {
-            LogError(_logger, ErrorCode.DataLoadFAiled, EventType.LoadRune, e.ToString());
+            LogError(_logger, FailedDataLoad, LoadRune, e.ToString());
             return false;       
         }
         
         return true;
     }
     
-    private async Task<bool> LoadQuest()
+    private async Task<bool> LoadQuestAsync()
     {
         try
         {
@@ -166,14 +168,14 @@ partial class MasterDb(IOptions<DbConfig> dbConfig, ILogger<MasterDb> logger)
         }
         catch (Exception e)
         {
-            LogError(_logger, ErrorCode.DataLoadFAiled, EventType.LoadQuest, e.ToString());
+            LogError(_logger, FailedDataLoad, LoadQuest, e.ToString());
             return false;
         }
 
         return true;
     }
     
-    private async Task<bool> LoadStage()
+    private async Task<bool> LoadStageAsync()
     {
         try
         {
@@ -200,7 +202,7 @@ partial class MasterDb(IOptions<DbConfig> dbConfig, ILogger<MasterDb> logger)
         }
         catch (Exception e)
         {
-            LogError(_logger, ErrorCode.DataLoadFAiled, EventType.LoadStage, e.ToString());
+            LogError(_logger, FailedDataLoad, LoadStage, e.ToString());
             return false;
         }
         
