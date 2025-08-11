@@ -17,10 +17,24 @@ services:
             - ./mysql/files:/var/lib/mysql-files                        # Master DB CSV 폴더 경로
         networks:
             - api-network                                               # 도커 네트워크 설정
+    
+    api-redis:
+        image: redis:7.2-alpine
+        container_name: api-redis
+        command: 
+            ["redis-server", "--appendonly", "yes"]                     # AOF 영속화
+        ports:
+            - "6379:6379"
+        volumes:
+            - redis-data:/data
+        networks:
+            - api-network
+
 
 
 volumes:
     mysql-data:        
+    redis-data:
 
 networks:
     api-network:
