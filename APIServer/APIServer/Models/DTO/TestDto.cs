@@ -2,7 +2,7 @@
 
 namespace APIServer.Models.DTO;
 
-public class TestRequest
+public class TestRequest : RequestBase
 {
     [Required]
     public string name { get; set; }

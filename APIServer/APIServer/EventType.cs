@@ -31,6 +31,7 @@ public enum EventType
     
     // MemoryDb 4000 ~ 4999
     RegisterSession = 4000,
+    GetSession = 4001,
     
     // Controller 5000 ~ 5999
     CreateAccount = 5000,

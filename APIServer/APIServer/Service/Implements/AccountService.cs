@@ -17,7 +17,8 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
     
     public async Task<ErrorCode> RegisterAccountAsync(string email, string password)
     {
-        if (await _accountDb.CheckExistAccountByEmailAsync(email))
+        var (_, isExists) = await _accountDb.CheckExistAccountByEmailAsync(email);
+        if (isExists == false)
         {
             return DuplicatedEmail;
         }
@@ -29,7 +30,7 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
             return FailedCreateUserData;       
         }
         
-        if (await _accountDb.CreateAccountUserDataAsync(userId, email, password) == false)
+        if (await _accountDb.CreateAccountUserDataAsync(userId, email, password) != None)
         {
             await RollbackCreateDefaultUserGameDataAsync(userId);
             return FailedCreateAccount;      
@@ -40,20 +41,25 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
     
     public async Task<(GameData?, string, ErrorCode)> LoginAsync(string email, string password)
     {
-        var account = await _accountDb.GetUserAccountByEmail(email);
+        var (getUserAccountResult, account) = await _accountDb.GetUserAccountByEmail(email);
+        if (getUserAccountResult != None)
+        {
+            return (null, "", getUserAccountResult);       
+        }
+        
         if (SecurityUtils.VerifyPassword(account.password, account.saltValue, password) == false)
         {
             return (null, "", FailedPasswordVerify);
         }
         
         var authToken = SecurityUtils.GenerateAuthToken();
-        var (result, gameData) = await _gameDb.GetAllGameDataByUserIdAsync(account.userId);
-        if (result == false)
+        var (getAllGameDataResult, gameData) = await _gameDb.GetAllGameDataByUserIdAsync(account.userId);
+        if (getAllGameDataResult != None)
         {
             return (null, "", FailedLoadUserData);
         }
         
-        if (await _memoryDb.RegisterSessionAsync(CreateNewSession(account, authToken)) == false)
+        if (await _memoryDb.RegisterSessionAsync(CreateNewSession(account, authToken)) != None)
         {
             return (null, "", FailedRegisterSession);
         }
@@ -78,13 +84,13 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
     {
         LogInfo(_logger, CreateDefaultData, "Create Default User Data");
         
-        var userId = await _gameDb.CreateUserGameDataAndReturnUserIdAsync();
-        if (userId == 0 ||
-            await CreateDefaultCharacterAsync(userId) == false ||
-            await CreateDefaultItemAsync(userId) == false ||
-            await CreateDefaultRuneAsync(userId) == false ||
-            await CreateDefaultAttendanceAsync(userId) == false ||
-            await CreateDefaultQuestAsync(userId) == false
+        var (result, userId) = await _gameDb.CreateUserGameDataAndReturnUserIdAsync();
+        if (result != None || userId == 0 ||
+            await CreateDefaultCharacterAsync(userId) != None ||
+            await CreateDefaultItemAsync(userId) != None ||
+            await CreateDefaultRuneAsync(userId) != None ||
+            await CreateDefaultAttendanceAsync(userId) != None ||
+            await CreateDefaultQuestAsync(userId) != None
             )
         {
             LogError(_logger, FailedInsertData, CreateDefaultData, "Failed Create Default User Data");
@@ -96,24 +102,30 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
         return (true, userId);
     }
 
-    private async Task<bool> CreateDefaultQuestAsync(long userId)
+    private async Task<ErrorCode> CreateDefaultQuestAsync(long userId)
     {
         return await _gameDb.InsertQuestAsync(userId, 60000, DateTime.Now.AddYears(1));
     }
 
-    private async Task<bool> CreateDefaultAttendanceAsync(long userId)
+    private async Task<ErrorCode> CreateDefaultAttendanceAsync(long userId)
     {
-        return await _gameDb.InsertAttendanceMonthAsync(userId) && await _gameDb.InsertAttendanceWeekAsync(userId);
+        var result = await _gameDb.InsertAttendanceMonthAsync(userId);
+        if (result != None)
+        {
+            return result;      
+        }
+        
+        return await _gameDb.InsertAttendanceWeekAsync(userId);
     }
 
-    private async Task<bool> CreateDefaultCharacterAsync(long userId)
+    private async Task<ErrorCode> CreateDefaultCharacterAsync(long userId)
     {
         var defaultCharacters = new[]
         {
             new UserInventoryCharacter { characterCode = 30001, level = 1 }
         };
 
-        var result = true;
+        var result = None;
         foreach (var character in defaultCharacters)
         {
             result = await _gameDb.InsertCharacterAsync(userId, character);
@@ -122,7 +134,7 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
         return result;
     }
     
-    private async Task<bool> CreateDefaultRuneAsync(long userId)
+    private async Task<ErrorCode> CreateDefaultRuneAsync(long userId)
     {
         var defaultRunes = new[]
         {
@@ -130,7 +142,7 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
             new UserInventoryRune { runeCode = 20001, level = 1},
         };
         
-        var result = true;
+        var result = None;
         foreach (var rune in defaultRunes)
         {
             result = await _gameDb.InsertRuneAsync(userId, rune);
@@ -138,7 +150,7 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
         return result;
     }
 
-    private async Task<bool> CreateDefaultItemAsync(long userId)
+    private async Task<ErrorCode> CreateDefaultItemAsync(long userId)
     {
         var defaultItems = new[]
         {
@@ -146,7 +158,7 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
             new UserInventoryItem { itemCode = 10002, level = 1},
         };
 
-        var result = true;
+        var result = None;
         foreach (var item in defaultItems)
         {
             result = await _gameDb.InsertItemAsync(userId, item);
@@ -161,7 +173,7 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
         LogInfo(_logger, RollBackDefaultData, "Start RollBack Default User Data");
         
         var result = await _gameDb.DeleteGameDataByUserIdAsync(userId);
-        if (result == false)
+        if (result != None)
         {
             LogError(_logger, FailedRollbackDefaultData, RollBackDefaultData, "Failed RollBack Default User Data", new { userId });
             return;

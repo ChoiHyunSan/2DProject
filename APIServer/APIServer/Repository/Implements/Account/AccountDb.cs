@@ -13,7 +13,7 @@ public class AccountDb(ILogger<AccountDb> logger, IOptions<DbConfig> dbConfig)
 {
     private readonly ILogger<AccountDb> _logger = logger;
     
-    public async Task<bool> CheckExistAccountByEmailAsync(string email)
+    public async Task<(ErrorCode, bool)> CheckExistAccountByEmailAsync(string email)
     {
         try
         {
@@ -23,7 +23,7 @@ public class AccountDb(ILogger<AccountDb> logger, IOptions<DbConfig> dbConfig)
                 .SelectRaw("EXISTS(SELECT 1 FROM user_account WHERE email = ?)", email)
                 .FirstOrDefaultAsync<bool>();
 
-            return result;
+            return (None, result);
         }
         catch (Exception e)
         {
@@ -33,16 +33,16 @@ public class AccountDb(ILogger<AccountDb> logger, IOptions<DbConfig> dbConfig)
                 e.Message,
                 e.StackTrace
             });
-            return false;
+            return (FailedDataLoad, false);
         }
     }
 
-    public async Task<bool> CreateAccountUserDataAsync(long userId, string email, string password)
+    public async Task<ErrorCode> CreateAccountUserDataAsync(long userId, string email, string password)
     {
         try
         {
             var saltValue = SecurityUtils.GenerateSalt();
-            var (result, hashPassword) = SecurityUtils.HashPassword(password, saltValue);
+            var (_, hashPassword) = SecurityUtils.HashPassword(password, saltValue);
             
             _ = await _queryFactory.Query("user_account").InsertAsync( new 
             {
@@ -63,13 +63,13 @@ public class AccountDb(ILogger<AccountDb> logger, IOptions<DbConfig> dbConfig)
                 e.Message,
                 e.StackTrace
             });
-            return false;
+            return FailedCreateAccountUserData;
         }
 
-        return true;
+        return None;
     }
 
-    public async Task<UserAccount> GetUserAccountByEmail(string email)
+    public async Task<(ErrorCode, UserAccount)> GetUserAccountByEmail(string email)
     {
         try
         {
@@ -78,16 +78,16 @@ public class AccountDb(ILogger<AccountDb> logger, IOptions<DbConfig> dbConfig)
                 .FirstAsync<UserAccount>();
             
             LogInfo(_logger, GetAccountUserData, "Get Account By Email", new { email });
-            return userAccount;
+            return (None, userAccount);
         }catch(Exception e)
         {
-            LogError(_logger, FailedDataLoad, GetAccountUserData, "GetUserAccountByEmail Failed", new
+            LogError(_logger, FailedGetAccountUserData, GetAccountUserData, "GetUserAccountByEmail Failed", new
             {
                 email,
                 e.Message,
                 e.StackTrace
             });
-            return null;
+            return (FailedGetAccountUserData, new UserAccount());
         }
     }
 }

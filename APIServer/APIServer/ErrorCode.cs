@@ -4,8 +4,11 @@ public enum ErrorCode
 {
     None = 0,
     
-    // Db
+    // Db 
     FailedDataLoad = 100,
+    
+    // Middleware 500 ~ 999
+    BadRequest = 500,
     
     // MasterDb 1000 ~ 1999
     
@@ -13,13 +16,16 @@ public enum ErrorCode
     // GameDb 2000 ~ 2999
     FailedInsertData = 2000,
     FailedRollbackDefaultData = 2001,
+    FailedLoadAllGameData = 2002,
     
     // AccountDb 3000 ~ 3999
     FailedCreateAccountUserData = 3000, 
-    
+    FailedGetAccountUserData = 3001,
     
     // MemoryDb 4000 ~ 4999
     FailedRegisterSession = 4000,
+    FailedGetSession = 4001,
+    SessionNotFound = 4002,
     
     // Controller 5000 ~ 5999
     DuplicatedEmail = 4000,

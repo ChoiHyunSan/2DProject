@@ -2,7 +2,7 @@
 
 namespace APIServer.Models.DTO;
 
-public record RegisterAccountRequest
+public class RegisterAccountRequest
 {
     [Required(ErrorMessage = "email is required")]
     [EmailAddress(ErrorMessage = "email is invalid")]

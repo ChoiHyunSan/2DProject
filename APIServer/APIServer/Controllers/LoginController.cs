@@ -29,6 +29,13 @@ public class LoginController(ILogger<LoginController> logger, IAccountService ac
         var (gameData, authToken, errorCode) = await _accountService.LoginAsync(request.email, request.password);
         
         LogInfo(_logger, Login, "Response Login", new { request.email, responseCode = errorCode });
+        
+        // TODO : 
+        if (errorCode != ErrorCode.None)
+        {
+            HttpContext.Response.StatusCode = 401;
+        }
+        
         return new LoginResponse
         {
             authToken = authToken,

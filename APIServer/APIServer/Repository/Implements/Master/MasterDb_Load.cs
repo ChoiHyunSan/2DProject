@@ -1,7 +1,5 @@
 ﻿using System.Collections.Immutable;
-using APIServer.Config;
 using APIServer.Models.Entity.Data;
-using Microsoft.Extensions.Options;
 using SqlKata.Execution;
 using static APIServer.ErrorCode;
 using static APIServer.EventType;
@@ -9,40 +7,11 @@ using static APIServer.LoggerManager;
 
 namespace APIServer.Repository.Implements;
 
-partial class MasterDb(IOptions<DbConfig> dbConfig, ILogger<MasterDb> logger)
-    : MySQLBase(dbConfig.Value.MasterDb), IMasterDb
+partial class MasterDb
 {
-    // Attendance
-    private ImmutableDictionary<int, AttendanceRewardMonth> _attendanceRewardsMonth = ImmutableDictionary<int, AttendanceRewardMonth>.Empty;
-    private ImmutableDictionary<int, AttendanceRewardWeek> _attendanceRewardsWeek = ImmutableDictionary<int, AttendanceRewardWeek>.Empty;
-    
-    // Character
-    private ImmutableDictionary<long, CharacterOriginData> _characterOriginDatas = ImmutableDictionary<long, CharacterOriginData>.Empty;
-    private ImmutableDictionary<(long, int), CharacterEnhanceData> _characterEnhancePriceDatas = ImmutableDictionary<(long, int), CharacterEnhanceData>.Empty;
-    
-    // Item
-    private ImmutableDictionary<long, ItemOriginData> _itemOriginDatas = ImmutableDictionary<long, ItemOriginData>.Empty;
-    private ImmutableDictionary<(long, int), ItemEnhanceData> _itemEnhanceDatas = ImmutableDictionary<(long, int), ItemEnhanceData>.Empty;
-    
-    // Rune
-    private ImmutableDictionary<long, RuneOriginData> _runeOriginDatas = ImmutableDictionary<long, RuneOriginData>.Empty;
-    private ImmutableDictionary<(long, int), RuneEnhanceData> _runeEnhanceDatas = ImmutableDictionary<(long, int), RuneEnhanceData>.Empty;
-    
-    // Quest
-    private ImmutableDictionary<long, QuestInfoData> _questInfoDatas = ImmutableDictionary<long, QuestInfoData>.Empty;
-
-    // Stage
-    private ImmutableDictionary<long, StageRewardGold> _stageRewardsGold = ImmutableDictionary<long, StageRewardGold>.Empty;
-    private ImmutableDictionary<long, StageRewardItem> _stageRewardsItem = ImmutableDictionary<long, StageRewardItem>.Empty;
-    private ImmutableDictionary<long, StageRewardRune> _stageRewardsRune = ImmutableDictionary<long, StageRewardRune>.Empty;
-    private ImmutableDictionary<long, StageMonsterInfo> _stageMonsterInfos = ImmutableDictionary<long, StageMonsterInfo>.Empty;
-
-    private bool isAlreadyLoad = false;
-    private readonly ILogger<MasterDb> _logger = logger;
-    
-    public async Task<bool> Load()
+    public async Task<ErrorCode> Load()
     {
-        if (isAlreadyLoad) return true;
+        if (isAlreadyLoad) return None;
 
         if (await LoadAttendanceAsync() == false ||
             await LoadCharacterAsync() == false ||
@@ -52,13 +21,13 @@ partial class MasterDb(IOptions<DbConfig> dbConfig, ILogger<MasterDb> logger)
             await LoadStageAsync() == false)
         {
             Thread.Sleep(1000);
-            return false;
+            return FailedDataLoad;
         }
         
         LogInfo(_logger, LoadMasterDb, "Master Data Load Success");
         
         isAlreadyLoad = true;
-        return true;
+        return None;
     }
     
     private async Task<bool> LoadAttendanceAsync()
