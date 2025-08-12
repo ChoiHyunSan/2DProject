@@ -1,4 +1,6 @@
+using APIServer;
 using APIServer.Config;
+using APIServer.Middleware;
 using APIServer.Repository;
 using APIServer.Repository.Implements;
 using APIServer.Repository.Implements.Memory;
@@ -40,6 +42,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseMiddleware<SessionCheckMiddleware>();
+app.UseRouting();
+
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
@@ -49,7 +54,7 @@ Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
 // Load Master Data
 var masterDb = app.Services.GetRequiredService<IMasterDb>();
-if (await masterDb.Load() == false)
+if (await masterDb.Load() == ErrorCode.None)
 {   
     return;
 }
