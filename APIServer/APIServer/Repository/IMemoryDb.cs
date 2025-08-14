@@ -1,4 +1,6 @@
-﻿using APIServer.Models.Entity;
+﻿using System.ComponentModel.DataAnnotations;
+using APIServer.Models.DTO;
+using APIServer.Models.Entity;
 
 namespace APIServer.Repository;
 
@@ -19,6 +21,24 @@ public interface IMemoryDb
     /// </summary>
     Task<(ErrorCode, UserSession)> GetSessionByEmail(string email);
 
+    /// <summary>
+    /// 세션 Lock 메서드
+    ///
+    /// 반환 값 : 에러 코드
+    /// </summary>
     Task<ErrorCode> TrySessionRequestLock(string email, TimeSpan? ttl = null);
+    
+    /// <summary>
+    /// 세션 UnLock 메서드
+    ///
+    /// 반환 값 : 에러 코드
+    /// </summary>
     Task<ErrorCode> TrySessionRequestUnLock(string email);
+
+    /// <summary>
+    /// 게임 데이터 캐싱 메서드
+    ///
+    /// 반환 값 : 에러 코드
+    /// </summary>
+    Task<ErrorCode> CacheGameData(string email, GameData gameData);
 }

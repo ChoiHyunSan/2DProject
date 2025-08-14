@@ -34,6 +34,7 @@ public enum EventType
     GetSession = 4001,
     SessionLock = 4002,
     SessionUnLock = 4003,
+    CacheGameData = 4004,
     
     // Controller 5000 ~ 5999
     CreateAccount = 5000,

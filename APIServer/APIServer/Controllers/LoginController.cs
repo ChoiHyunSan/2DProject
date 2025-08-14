@@ -30,12 +30,6 @@ public class LoginController(ILogger<LoginController> logger, IAccountService ac
         
         LogInfo(_logger, Login, "Response Login", new { request.email, responseCode = errorCode });
         
-        // TODO : 
-        if (errorCode != ErrorCode.None)
-        {
-            HttpContext.Response.StatusCode = 401;
-        }
-        
         return new LoginResponse
         {
             authToken = authToken,

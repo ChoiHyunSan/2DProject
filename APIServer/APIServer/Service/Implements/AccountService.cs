@@ -63,6 +63,11 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
         {
             return (null, "", FailedRegisterSession);
         }
+
+        if (await _memoryDb.CacheGameData(email, gameData) != None)
+        {
+            return (null, "", FailedCacheGameData);
+        }
         
         return (gameData, authToken, None);
     }

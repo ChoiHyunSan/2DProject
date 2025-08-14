@@ -12,4 +12,9 @@ partial class MemoryDb
     {
         return $"SESSION_LOCK_{email}";
     }
+    
+    private static string CreateGameDataKey(string email)
+    {
+        return $"GAME_DATA_{email}";
+    }
 }

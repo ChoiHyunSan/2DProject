@@ -36,6 +36,7 @@ public enum ErrorCode
     FailedSessionUnLock = 4004_500,
     AlreadySessionLock = 4005_409,
     SessionLockNotFound = 4006_404,
+    FailedCacheGameData = 4007_500,
     
     // Controller 5000 ~ 5999
     DuplicatedEmail = 4000_400,

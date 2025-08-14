@@ -1,0 +1,32 @@
+﻿using APIServer.Models.DTO;
+using CloudStructures.Structures;
+using static APIServer.ErrorCode;
+
+namespace APIServer.Repository.Implements.Memory;
+
+partial class MemoryDb
+{
+    public async Task<ErrorCode> CacheGameData(string email, GameData gameData)
+    {
+        var key = CreateGameDataKey(email);
+        try
+        {
+            var handler = new RedisString<GameData>(_conn, key, null);
+            _ = await handler.SetAsync(gameData, TimeSpan.FromMinutes(60));
+            
+            LoggerManager.LogInfo(_logger, EventType.CacheGameData, "Cache Game Data", new { key });
+            return None;
+        }
+        catch (Exception ex)
+        {
+            LoggerManager.LogError(_logger, FailedCacheGameData, EventType.CacheGameData, "Cache Game Data Failed", new
+            {
+                email,
+                ex.Message,
+                ex.StackTrace
+            });
+
+            return FailedCacheGameData;
+        }
+    }
+}
