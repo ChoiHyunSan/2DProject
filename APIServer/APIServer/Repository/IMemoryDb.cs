@@ -18,4 +18,7 @@ public interface IMemoryDb
     /// 반환 값 : (에러 코드, UserSession 객체) (성공 : ErrorCode.None)
     /// </summary>
     Task<(ErrorCode, UserSession)> GetSessionByEmail(string email);
+
+    Task<ErrorCode> TrySessionRequestLock(string email, TimeSpan? ttl = null);
+    Task<ErrorCode> TrySessionRequestUnLock(string email);
 }

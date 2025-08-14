@@ -7,4 +7,9 @@ partial class MemoryDb
     {
         return $"SESSION_{email}";
     }
+    
+    private static string CreateSessionLockKey(string email)
+    {
+        return $"SESSION_LOCK_{email}";
+    }
 }

@@ -13,7 +13,8 @@ public enum ErrorCode
     FailedDataLoad = 100_500,
     
     // Middleware 500 ~ 999
-    BadRequest = 500,
+    FailedParseAuthorizeInfo = 500_400,
+    FailedAuthorizeTokenVerify = 501_401,
     
     // MasterDb 1000 ~ 1999
     
@@ -31,6 +32,10 @@ public enum ErrorCode
     FailedRegisterSession = 4000_500,
     FailedGetSession = 4001_500,
     SessionNotFound = 4002_404,
+    FailedSessionLock = 4003_500,
+    FailedSessionUnLock = 4004_500,
+    AlreadySessionLock = 4005_409,
+    SessionLockNotFound = 4006_404,
     
     // Controller 5000 ~ 5999
     DuplicatedEmail = 4000_400,

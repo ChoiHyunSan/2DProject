@@ -42,8 +42,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseMiddleware<SessionCheckMiddleware>();
 app.UseMiddleware<ResponseStatusCodeMiddleware>();
+app.UseMiddleware<SessionCheckMiddleware>();
+app.UseMiddleware<RequestLockMiddleware>();
+
 app.UseRouting();
 
 app.UseHttpsRedirection();

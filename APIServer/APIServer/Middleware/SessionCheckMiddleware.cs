@@ -1,6 +1,8 @@
 ﻿using System.Text;
 using System.Text.Json;
 using APIServer.Repository;
+using static APIServer.ErrorCode;
+using static APIServer.JsonBodyParser;
 
 namespace APIServer.Middleware;
 
@@ -31,38 +33,36 @@ public class SessionCheckMiddleware(ILogger<SessionCheckMiddleware> _logger, IMe
         {
             if (context.Request.Path.StartsWithSegments(path, StringComparison.OrdinalIgnoreCase))
             {
+                context.Items["NeedToLock"] = false;
+                
                 await _next(context);
                 return;
             }
         }        
         
-        var email = await JsonBodyParser.GetStringValueAsync(context, "email");
-        var authToken = await JsonBodyParser.GetStringValueAsync(context, "authToken");
+        var email = await GetStringValueAsync(context, "email");
+        var authToken = await GetStringValueAsync(context, "authToken");
         if (email is null || authToken is null)
         {
-            context.Response.StatusCode = 400;
-            await context.Response.WriteAsync("Parse Authorize Info Failed.");
+            await SendErrorCode(context, FailedParseAuthorizeInfo);
             return;
         }
     
         var (errorCode , userSession) = await _memoryDb.GetSessionByEmail(email);
-        if (errorCode != ErrorCode.None)
+        if (errorCode != None)
         {
-            context.Response.StatusCode = 401;
-            await context.Response.WriteAsync($"Get Session Failed, ErrorCode : {errorCode}");
+            await SendErrorCode(context, errorCode);
             return;
         }
 
         if (authToken != userSession.authToken)
         {
-            _logger.LogInformation($"Request Token : {authToken}, Session Token : {userSession.authToken}");
-            
-            context.Response.StatusCode = 403;
-            await context.Response.WriteAsync("Invalid Auth Token.");
+            await SendErrorCode(context, FailedAuthorizeTokenVerify);
             return;       
         }
         
         context.Items["userSession"] = userSession;       
+        context.Items["NeedToLock"] = true;
         
         await _next(context);
     }

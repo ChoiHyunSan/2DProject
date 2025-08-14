@@ -73,4 +73,17 @@ public static class JsonBodyParser
             return null;
         }
     }
+    
+    public static async Task SendErrorCode(HttpContext context, ErrorCode errorCode, string? message = null)
+    {
+        var errorJsonResponse = JsonSerializer.Serialize(new 
+        {
+            code = errorCode,
+            message
+        });
+
+        var bytes = Encoding.UTF8.GetBytes(errorJsonResponse);
+
+        await context.Response.Body.WriteAsync(bytes, 0, bytes.Length);
+    }
 }

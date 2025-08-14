@@ -1,5 +1,6 @@
 ﻿using APIServer.Models.Entity;
 using CloudStructures.Structures;
+using StackExchange.Redis;
 using static APIServer.ErrorCode;
 using static APIServer.EventType;
 using static APIServer.LoggerManager;
@@ -55,6 +56,67 @@ partial class MemoryDb
                 e.StackTrace
             });
             return (FailedGetSession, new UserSession());
+        }
+    }
+
+    public async Task<ErrorCode> TrySessionRequestLock(string email, TimeSpan? ttl = null)
+    {
+        var key    = CreateSessionLockKey(email);
+        var expiry = ttl ?? TimeSpan.FromSeconds(5); 
+        
+        try
+        {
+            var handle = new RedisString<string>(_conn, key, null);
+
+            // 락의 소유 토큰(필요시 unlock 검증에 활용 가능)
+            var token = $"{Environment.MachineName}:{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
+
+            // NX + TTL: 이미 있으면 false
+            var ok = await handle.SetAsync(token, expiry, when: When.NotExists);
+            if (!ok)
+            {
+                LogInfo(_logger, SessionLock, "Session lock already exists", new { key, ttl = expiry.TotalSeconds });
+                return AlreadySessionLock; 
+            }
+
+            LogInfo(_logger, SessionLock, "Acquire session lock", new { key, ttl = expiry.TotalSeconds });
+            return None;
+        }
+        catch (Exception e)
+        {
+            LogError(_logger, FailedSessionLock, SessionLock, "Acquire session lock failed", new
+            {
+                email, key, e.Message, e.StackTrace
+            });
+            return FailedSessionLock;
+        }
+    }
+
+    public async Task<ErrorCode> TrySessionRequestUnLock(string email)
+    {
+        var key = CreateSessionLockKey(email);
+
+        try
+        {
+            var handle  = new RedisString<string>(_conn, key, null);
+            var deleted = await handle.DeleteAsync(); // 존재하면 true, 없으면 false
+
+            if (!deleted)
+            {
+                LogInfo(_logger, SessionUnLock, "Session lock not found on unlock", new { key });
+                return SessionLockNotFound;
+            }
+
+            LogInfo(_logger, SessionUnLock, "Release session lock", new { key });
+            return None;
+        }
+        catch (Exception e)
+        {
+            LogError(_logger, FailedSessionUnLock, SessionUnLock, "Release session lock failed", new
+            {
+                email, key, e.Message, e.StackTrace
+            });
+            return FailedSessionUnLock;
         }
     }
 }
