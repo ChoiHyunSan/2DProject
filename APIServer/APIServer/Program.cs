@@ -43,6 +43,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<SessionCheckMiddleware>();
+app.UseMiddleware<ResponseStatusCodeMiddleware>();
 app.UseRouting();
 
 app.UseHttpsRedirection();
@@ -54,7 +55,7 @@ Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 
 // Load Master Data
 var masterDb = app.Services.GetRequiredService<IMasterDb>();
-if (await masterDb.Load() == ErrorCode.None)
+if (await masterDb.Load() != ErrorCode.None)
 {   
     return;
 }

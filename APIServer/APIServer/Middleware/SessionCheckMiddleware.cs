@@ -36,8 +36,9 @@ public class SessionCheckMiddleware(ILogger<SessionCheckMiddleware> _logger, IMe
             }
         }        
         
-        var (parseResult, email, authToken) = await ParseAuthorizeInfoInBody(context);
-        if (parseResult != ErrorCode.None)
+        var email = await JsonBodyParser.GetStringValueAsync(context, "email");
+        var authToken = await JsonBodyParser.GetStringValueAsync(context, "authToken");
+        if (email is null || authToken is null)
         {
             context.Response.StatusCode = 400;
             await context.Response.WriteAsync("Parse Authorize Info Failed.");
@@ -64,48 +65,5 @@ public class SessionCheckMiddleware(ILogger<SessionCheckMiddleware> _logger, IMe
         context.Items["userSession"] = userSession;       
         
         await _next(context);
-    }
-
-    private async Task<(ErrorCode errorCode, string email, string authToken)> ParseAuthorizeInfoInBody(HttpContext context)
-    {
-        var ct = context.Request.ContentType;
-        var isJson = ct != null && ct.StartsWith("application/json", StringComparison.OrdinalIgnoreCase);
-        if (!isJson || context.Request.ContentLength is null or 0)
-            return (ErrorCode.BadRequest, string.Empty, string.Empty);
-
-        context.Request.EnableBuffering();
-
-        string body;
-        using (var reader = new StreamReader(
-                   context.Request.Body, Encoding.UTF8, detectEncodingFromByteOrderMarks: false, bufferSize: 1024, leaveOpen: true))
-        {
-            body = await reader.ReadToEndAsync(); // ⬅️ 비동기
-            context.Request.Body.Position = 0;
-        }
-        if (string.IsNullOrWhiteSpace(body))
-            return (ErrorCode.BadRequest, string.Empty, string.Empty);
-
-        try
-        {
-            using var doc = JsonDocument.Parse(body);
-            var root = doc.RootElement;
-
-            if (!root.TryGetProperty("email", out var emailProp) || emailProp.ValueKind != JsonValueKind.String)
-                return (ErrorCode.BadRequest, string.Empty, string.Empty);
-            if (!root.TryGetProperty("authToken", out var tokenProp) || tokenProp.ValueKind != JsonValueKind.String)
-                return (ErrorCode.BadRequest, string.Empty, string.Empty);
-
-            var email = emailProp.GetString()?.Trim() ?? string.Empty;
-            var authToken = tokenProp.GetString()?.Trim() ?? string.Empty;
-
-            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(authToken))
-                return (ErrorCode.BadRequest, string.Empty, string.Empty);
-
-            return (ErrorCode.None, email, authToken);
-        }
-        catch
-        {
-            return (ErrorCode.BadRequest, string.Empty, string.Empty);
-        }
     }
 }
