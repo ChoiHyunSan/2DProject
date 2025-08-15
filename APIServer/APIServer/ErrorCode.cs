@@ -50,4 +50,9 @@ public enum ErrorCode
     FailedUpdateGoldAndGem = 4008_500,
     AlreadyHaveCharacter = 4009_400,
     FailedPurchaseCharacter = 4010_500,
+    CannotFindInventoryItem = 4011_400,
+    CannotSellEquipmentItem = 4012_400,
+    FailedDeleteInventoryItem = 4013_500,
+    FailedGetUserGoldAndGem = 4014_500,
+    FailedUpdateUserGoldAndGem = 4015_500,
 }

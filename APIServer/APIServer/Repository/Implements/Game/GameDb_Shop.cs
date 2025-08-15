@@ -1,20 +1,11 @@
-﻿using SqlKata.Execution;
+﻿using APIServer.Models.Entity;
+using SqlKata.Execution;
 using static APIServer.LoggerManager;
 
 namespace APIServer.Repository.Implements;
 
 partial class GameDb
 {
-    /// <summary>
-    /// 캐릭터 구매 요청 메서드
-    /// 1) 현재 UserData의 Gold, Gem 조회
-    /// 2) 구매할 수 있는지 비교
-    /// 3) 구매 가능한 경우, 재화를 차감하여 캐릭터 구매
-    /// 4) 계산 결과 DB에 반영
-    ///
-    /// - 3 ~ 4번은 하나의 트랜잭션으로 묶인 상태로 작업한다. 
-    /// 반환 값 : (구매 결과 에러 코드, 현재 남은 골드 재화, 현재 남은 유료 재화)
-    /// </summary>
     public async Task<(ErrorCode, int , int)> PurchaseCharacter(long userId, long characterCode, int goldPrice, int gemPrice)
     {
         var (checkErrorCode, isAlreadyHave) = await CheckAlreadyHaveCharacter(userId, characterCode);
@@ -58,6 +49,96 @@ partial class GameDb
         return (ErrorCode.None, newGold, newGem);
     }
 
+    public async Task<ErrorCode> SellInventoryItem(long userId, long itemId)
+    {
+        var txCode = await WithTransactionAsync(async q =>
+        {
+            // 1) 아이템 조회
+            var item = await GetInventoryItemAsync(q, userId, itemId);
+            if (item == null)
+                return ErrorCode.CannotFindInventoryItem;
+
+            // 2) 장착 여부 확인
+            var equipped = await IsItemEquippedAsync(q, itemId);
+            if (equipped)
+                return ErrorCode.CannotSellEquipmentItem;
+
+            // 3) 인벤토리에서 삭제
+            var deleted = await DeleteInventoryItemAsync(q, userId, itemId);
+            if (!deleted)
+                return ErrorCode.FailedDeleteInventoryItem;
+
+            // 4) 현재 재화 조회
+            var currency = await GetUserCurrencyAsync(q, userId);
+            if (currency == null)
+                return ErrorCode.FailedGetUserGoldAndGem;
+
+            // 5) 마스터에서 판매가 조회(골드 증가)
+            var (_, gold) = await _masterDb.GetItemSellPriceAsync(item.itemCode, item.level);
+
+            var newGold = currency.Value.gold + gold;
+            var newGem  = currency.Value.gem;
+
+            // 6) 재화 업데이트
+            var updated = await UpdateUserCurrencyAsync(q, userId, newGold, newGem);
+            if (!updated)
+                return ErrorCode.FailedUpdateUserGoldAndGem;
+
+            LogInfo(_logger, EventType.SellItem, "Sell Item Success", new
+            {
+                userId, itemId,
+                newGold, newGem
+            });
+            
+            return ErrorCode.None;
+        });
+
+        return txCode;
+    }
+
+    private Task<UserInventoryItem?> GetInventoryItemAsync(QueryFactory q, long userId, long itemId)
+    {
+        return q.Query(TABLE_USER_INVENTORY_ITEM)
+            .Where(USER_ID, userId)
+            .Where(ITEM_ID, itemId)
+            .FirstOrDefaultAsync<UserInventoryItem>();
+    }
+
+    private async Task<bool> IsItemEquippedAsync(QueryFactory q, long itemId)
+    {
+        var exists = await q.Query(TABLE_CHARACTER_EQUIPMENT_ITEM)
+            .Where(ITEM_ID, itemId)
+            .SelectRaw("1")
+            .Limit(1)
+            .FirstOrDefaultAsync<int?>();
+        return exists.HasValue;
+    }
+
+    private async Task<bool> DeleteInventoryItemAsync(QueryFactory q, long userId, long itemId)
+    {
+        var affected = await q.Query(TABLE_USER_INVENTORY_ITEM)
+            .Where(USER_ID, userId)
+            .Where(ITEM_ID, itemId)
+            .DeleteAsync();
+        return affected == 1;
+    }
+
+    private Task<(int gold, int gem)?> GetUserCurrencyAsync(QueryFactory q, long userId)
+    {
+        return q.Query(TABLE_USER_GAME_DATA)
+            .Where(USER_ID, userId)
+            .Select(GOLD, GEM)
+            .FirstOrDefaultAsync<(int gold, int gem)?>();
+    }
+
+    private async Task<bool> UpdateUserCurrencyAsync(QueryFactory q, long userId, int gold, int gem)
+    {
+        var affected = await q.Query(TABLE_USER_GAME_DATA)
+            .Where(USER_ID, userId)
+            .UpdateAsync(new { gold, gem });
+        return affected == 1;
+    }
+    
     private async Task<(ErrorCode, bool)> CheckAlreadyHaveCharacter(long userId, long characterCode)
     {
         try

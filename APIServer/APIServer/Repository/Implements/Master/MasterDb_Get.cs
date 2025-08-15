@@ -14,4 +14,15 @@ partial class MasterDb
 
         return (ErrorCode.None, characterOriginData);
     }
+
+    public async Task<(ErrorCode, int)> GetItemSellPriceAsync(long itemCode, int level)
+    {
+        var enhanceData = _itemEnhanceDatas.GetValueOrDefault((itemCode, level));
+        if (enhanceData == null)
+        {
+            return (ErrorCode.FailedGetMasterData, 0);
+        }
+
+        return (ErrorCode.None, enhanceData.sellPrice);
+    }
 }

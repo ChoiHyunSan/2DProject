@@ -12,8 +12,16 @@ public interface IMasterDb
     public Task<ErrorCode> Load();
 
     /// <summary>
+    /// 캐릭터 원본 데이터 조회 메서드
     /// 
-    /// 
+    /// 반환 값 : (에러 코드, 원본 데이터)
     /// </summary>
     Task<(ErrorCode, CharacterOriginData)> GetCharacterOriginDataAsync(long characterCode);
+
+    /// <summary>
+    /// 아이템 판매 가격 조회 메서드
+    ///
+    /// 반환 값 : (에러 코드, 판매 가격)
+    /// </summary>
+    Task<(ErrorCode, int)> GetItemSellPriceAsync(long itemCode, int level);
 }

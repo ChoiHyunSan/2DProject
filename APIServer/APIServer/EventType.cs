@@ -44,5 +44,7 @@ public enum EventType
     CreateAccount = 5000,
     Login = 5001,
     PurchaseCharacter = 5002,
+    SellItem = 5003,
+    SellRune = 5004,
     
 }

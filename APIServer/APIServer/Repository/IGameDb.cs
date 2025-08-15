@@ -82,4 +82,14 @@ public interface IGameDb
     /// 반환 값 : (구매 결과 에러 코드, 현재 남은 골드 재화, 현재 남은 유료 재화)
     /// </summary>
     Task<(ErrorCode errorCode, int currentGold, int currentGem)> PurchaseCharacter(long userId, long characterCode, int goldPrice, int gemPrice);
+
+    /// <summary>
+    /// 아이템 판매 메서드
+    /// 1) 아이템을 가지고 있다면 삭제
+    /// 2) 아이템 가격에 맞는 판매 가격만큼 재화 획득
+    ///
+    /// - 장착중인 아이템은 판매할 수 없다.
+    /// 반환 값 : 에러 코드 (성공 : ErrorCode.None)
+    /// </summary>
+    Task<ErrorCode> SellInventoryItem(long userId, long itemId);
 }

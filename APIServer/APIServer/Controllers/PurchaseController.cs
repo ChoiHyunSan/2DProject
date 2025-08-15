@@ -19,7 +19,7 @@ public class PurchaseController(ILogger<PurchaseController> logger, IShopService
     {
         var session = HttpContext.Items["userSession"] as UserSession;
         
-        LoggerManager.LogInfo(_logger, EventType.PurchaseCharacter, "Request Purchase Character", new { request });
+        LoggerManager.LogInfo(_logger, EventType.PurchaseCharacter, "Request Purchase Character", new { session.userId, request.characterCode });
         
         var (errorCode, currentGold, currentGem) = await _shopService.PurchaseCharacter(session.userId, request.characterCode);
         if (errorCode != ErrorCode.None)

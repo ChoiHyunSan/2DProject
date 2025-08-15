@@ -28,4 +28,11 @@ public class ShopService(ILogger<ShopService> logger, IMasterDb masterDb, IGameD
         
         return (ErrorCode.None, currentGold, currentGem); 
     }
+
+    public async Task<ErrorCode> SellItem(long userId, long itemId)
+    {
+        LoggerManager.LogInfo(_logger, EventType.SellItem, "Sell Item", new { userId, itemId });
+        
+        return await _gameDb.SellInventoryItem(userId, itemId);
+    }
 }
