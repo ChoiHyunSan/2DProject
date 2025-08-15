@@ -329,12 +329,14 @@ partial class GameDb
 
                 items = itemRows.Select(x => new ItemData
                 {
+                    itemId = x.item_id,
                     itemCode = x.itemCode,
                     level = x.level
                 }).ToList(),
 
                 runes = runeRows.Select(x => new RuneData
                 {
+                    runeId = x.rune_id,
                     runeCode = x.runeCode,
                     level = x.level
                 }).ToList(),
@@ -345,10 +347,10 @@ partial class GameDb
 
             // 캐릭터 + 장착 정보 조립
             var equipItemsByChar = equipItemRows.GroupBy(x => x.character_id)
-                .ToDictionary(g => g.Key, g => g.Select(e => new ItemData { itemCode = e.itemCode, level = e.level }).ToList());
+                .ToDictionary(g => g.Key, g => g.Select(e => new EquipItemData() { itemCode = e.itemCode, level = e.level }).ToList());
 
             var equipRunesByChar = equipRuneRows.GroupBy(x => x.character_id)
-                .ToDictionary(g => g.Key, g => g.Select(e => new RuneData { runeCode = e.runeCode, level = e.level }).ToList());
+                .ToDictionary(g => g.Key, g => g.Select(e => new EquipRuneData() { runeCode = e.runeCode, level = e.level }).ToList());
 
             gameData.characters = characterRows.Select(c => new CharacterData
             {

@@ -37,19 +37,34 @@ public class GameData
 
 public class CharacterData
 {
+    public long characterId { get; set; }
     public long characterCode { get; set; }
     public int level { get; set; }
-    public List<ItemData> equipItems { get; set; } = [];
-    public List<RuneData> equipRunes { get; set; } = [];
+    public List<EquipItemData> equipItems { get; set; } = [];
+    public List<EquipRuneData> equipRunes { get; set; } = [];
 }
 
 public class ItemData
 {
+    public long itemId { get; set; }
     public long itemCode { get; set; }
     public int level { get; set; }
 }
 
 public class RuneData
+{
+    public long runeId { get; set; }
+    public long runeCode { get; set; }
+    public int level { get; set; }
+}
+
+public class EquipItemData
+{
+    public long itemCode { get; set; }
+    public int level { get; set; }
+}
+
+public class EquipRuneData
 {
     public long runeCode { get; set; }
     public int level { get; set; }
