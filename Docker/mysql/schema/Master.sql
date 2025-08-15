@@ -43,7 +43,9 @@ DROP TABLE IF EXISTS `character_origin_data`;
 CREATE TABLE IF NOT EXISTS `character_origin_data` (
     `character_code`   BIGINT        NOT NULL       PRIMARY KEY     COMMENT '캐릭터 식별 코드',
     `name`             VARCHAR(100)  NOT NULL       UNIQUE          COMMENT '캐릭터 이름',
-    `description`      VARCHAR(200)  NOT NULL                       COMMENT '캐릭터 설명'
+    `description`      VARCHAR(200)  NOT NULL                       COMMENT '캐릭터 설명',
+    `price_gold`       INT           NOT NULL                       COMMENT '구매에 필요한 골드 재화',
+    `price_gem`        INT           NOT NULL                       COMMENT '구매에 필요한 유료 재화'
 );
 
 # 데이터 Impoort

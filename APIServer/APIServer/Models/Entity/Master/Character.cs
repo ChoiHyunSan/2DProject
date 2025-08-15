@@ -16,6 +16,12 @@ public class CharacterOriginData
     
     [Column("description")]
     public string description { get; set; } = string.Empty;     // 캐릭터 설명
+    
+    [Column("price_gold")]
+    public int priceGold { get; set; }                          // 구매 필요 골드 재화
+    
+    [Column("price_gem")]
+    public int priceGem { get; set; }                           // 구매 필요 유료 재화
 }
 
 /// <summary>

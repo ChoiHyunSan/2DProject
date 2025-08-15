@@ -70,4 +70,16 @@ public interface IGameDb
     /// 반환 값 : GameData
     /// </summary>
     Task<(ErrorCode, GameData?)> GetAllGameDataByUserIdAsync(long accountUserId);
+
+    /// <summary>
+    /// 캐릭터 구매 요청 메서드
+    /// 1) 현재 UserData의 Gold, Gem 조회
+    /// 2) 구매할 수 있는지 비교
+    /// 3) 구매 가능한 경우, 재화를 차감하여 캐릭터 구매
+    /// 4) 계산 결과 DB에 반영
+    ///
+    /// - 3 ~ 4번은 하나의 트랜잭션으로 묶인 상태로 작업한다. 
+    /// 반환 값 : (구매 결과 에러 코드, 현재 남은 골드 재화, 현재 남은 유료 재화)
+    /// </summary>
+    Task<(ErrorCode errorCode, int currentGold, int currentGem)> PurchaseCharacter(long userId, long characterCode, int goldPrice, int gemPrice);
 }

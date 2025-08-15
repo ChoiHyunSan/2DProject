@@ -1,6 +1,9 @@
-﻿using MySqlConnector;
+﻿using System.Data;
+using System.Transactions;
+using MySqlConnector;
 using SqlKata.Compilers;
 using SqlKata.Execution;
+using IsolationLevel = System.Data.IsolationLevel;
 
 namespace APIServer.Repository;
 
@@ -35,4 +38,71 @@ public abstract class MySQLBase
     {
         _conn.Close();
     }
+
+    private void EnsureOpen()
+    {
+        if (_conn.State != ConnectionState.Open)
+            _conn.Open();
+    }
+    
+
+    // 비동기, 반환값 없음
+    public async Task<ErrorCode> WithTransactionAsync(
+        Func<QueryFactory, Task<ErrorCode>> action,
+        IsolationLevel isolation = IsolationLevel.ReadCommitted)
+    {
+        var txOptions = new TransactionOptions
+        {
+            IsolationLevel = MapIsolation(isolation),
+            Timeout = TransactionManager.DefaultTimeout
+        };
+
+        using var scope = new TransactionScope(
+            TransactionScopeOption.Required,
+            txOptions,
+            TransactionScopeAsyncFlowOption.Enabled);
+        
+        EnsureOpen();
+        _conn.EnlistTransaction(Transaction.Current!); 
+
+        var ec = await action(_queryFactory);
+
+        if (ec == ErrorCode.None)
+            scope.Complete(); 
+
+        return ec;
+    }
+
+    // 비동기, 반환값 있음
+    public async Task<TResult> WithTransactionAsync<TResult>(
+        Func<QueryFactory, Task<TResult>> func,
+        IsolationLevel isolation = IsolationLevel.ReadCommitted)
+    {
+        EnsureOpen();
+
+        var txOptions = new TransactionOptions
+        {
+            IsolationLevel = MapIsolation(isolation),
+            Timeout = TransactionManager.DefaultTimeout
+        };
+
+        using var scope = new TransactionScope(
+            TransactionScopeOption.Required,
+            txOptions,
+            TransactionScopeAsyncFlowOption.Enabled);
+        var result = await func(_queryFactory);
+        scope.Complete();
+        return result;
+    }
+    
+    private static System.Transactions.IsolationLevel MapIsolation(IsolationLevel iso) =>
+        iso switch
+        {
+            IsolationLevel.ReadUncommitted => System.Transactions.IsolationLevel.ReadUncommitted,
+            IsolationLevel.ReadCommitted   => System.Transactions.IsolationLevel.ReadCommitted,
+            IsolationLevel.RepeatableRead  => System.Transactions.IsolationLevel.RepeatableRead,
+            IsolationLevel.Serializable    => System.Transactions.IsolationLevel.Serializable,
+            IsolationLevel.Snapshot        => System.Transactions.IsolationLevel.Snapshot,
+            _ => System.Transactions.IsolationLevel.ReadCommitted
+        };
 }

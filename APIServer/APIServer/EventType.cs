@@ -24,7 +24,11 @@ public enum EventType
     InsertAttendanceWeek = 2006,
     InsertQuest = 2007,
     RollBackDefaultData = 2008,
-
+    GetGoldAndGem = 2009,
+    UpdateGoldAndGem = 2010,
+    InsertNewCharacter = 2011,
+    CheckAlreadyHaveCharacter = 2012,
+    
     // AccountDb 3000 ~ 4999
     CreateAccountUserData = 3000,
     GetAccountUserData = 3001,
@@ -39,5 +43,6 @@ public enum EventType
     // Controller 5000 ~ 5999
     CreateAccount = 5000,
     Login = 5001,
+    PurchaseCharacter = 5002,
     
 }

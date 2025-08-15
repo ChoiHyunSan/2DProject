@@ -18,7 +18,7 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
     public async Task<ErrorCode> RegisterAccountAsync(string email, string password)
     {
         var (_, isExists) = await _accountDb.CheckExistAccountByEmailAsync(email);
-        if (isExists == false)
+        if (isExists)
         {
             return DuplicatedEmail;
         }

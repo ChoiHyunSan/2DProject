@@ -19,5 +19,11 @@ partial class GameDb(ILogger<GameDb> logger, IOptions<DbConfig> dbConfig)
     private const string TABLE_USER_QUEST_INPROGRESS = "user_quest_inprogress";
 
     // GameDb Table Column
-    public readonly string USER_ID = "user_id";
+    private readonly string USER_ID = "user_id";
+    private readonly string GOLD = "gold";
+    private readonly string GEM = "gem";
+    private readonly string CHARACTER_CODE = "character_code";
+    private readonly string ITEM_CODE = "item_code";
+    private readonly string RUNE_CODE = "rune_code";
+    private readonly string LEVEL = "level";
 }

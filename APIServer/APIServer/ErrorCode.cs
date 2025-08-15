@@ -17,7 +17,7 @@ public enum ErrorCode
     FailedAuthorizeTokenVerify = 501_401,
     
     // MasterDb 1000 ~ 1999
-    
+    FailedGetMasterData = 1000_500,
     
     // GameDb 2000 ~ 2999
     FailedInsertData = 2000_500,
@@ -44,4 +44,10 @@ public enum ErrorCode
     FailedCreateAccount = 4002_500,
     FailedPasswordVerify = 4003_401,
     FailedLoadUserData = 4004_500,
+    CannotPurchaseCharacter = 4005_400,
+    CannotInsertNewCharacter = 4006_400,
+    FailedInsertNewCharacter = 4007_500,
+    FailedUpdateGoldAndGem = 4008_500,
+    AlreadyHaveCharacter = 4009_400,
+    FailedPurchaseCharacter = 4010_500,
 }

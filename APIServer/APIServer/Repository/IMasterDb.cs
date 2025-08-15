@@ -1,4 +1,6 @@
-﻿namespace APIServer.Repository;
+﻿using APIServer.Models.Entity.Data;
+
+namespace APIServer.Repository;
 
 public interface IMasterDb
 {
@@ -8,4 +10,10 @@ public interface IMasterDb
     /// 반환 값 : 에러 코드 (성공 : ErrorCode.None)
     /// </summary>
     public Task<ErrorCode> Load();
+
+    /// <summary>
+    /// 
+    /// 
+    /// </summary>
+    Task<(ErrorCode, CharacterOriginData)> GetCharacterOriginDataAsync(long characterCode);
 }

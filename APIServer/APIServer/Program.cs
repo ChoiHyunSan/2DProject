@@ -17,8 +17,8 @@ var configuration = builder.Configuration;
 builder.Services.Configure<DbConfig>(configuration.GetSection(nameof(DbConfig)));
 
 // Register services
-builder.Services.AddScoped<ITestService, TestService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IShopService, ShopService>();
 
 // Register Repositories
 builder.Services.AddScoped<IAccountDb, AccountDb>();
