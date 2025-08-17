@@ -14,6 +14,12 @@ public class EnhanceController(ILogger<EnhanceController> logger, IInventoryServ
     private readonly ILogger<EnhanceController> _logger = logger;
     private readonly IInventoryService _inventoryService = inventoryService;
     
+    /// <summary>
+    /// 아이템 강화 요청 API
+    /// 세션 인증 : O
+    /// 반환 값 :
+    /// - 반환 코드 : 강화 요청 결과 (성공 : ErrorCode.None)
+    /// </summary>
     [HttpPost]
     [Route("item")]
     public async Task<EnhanceItemResponse> EnhanceItemAsync([FromBody] EnhanceItemRequest request)
@@ -31,6 +37,12 @@ public class EnhanceController(ILogger<EnhanceController> logger, IInventoryServ
         return new EnhanceItemResponse { code = errorCode };       
     }
     
+    /// <summary>
+    /// 룬 강화 요청 API
+    /// 세션 인증 : O
+    /// 반환 값 :
+    /// - 반환 코드 : 강화 요청 결과 (성공 : ErrorCode.None)
+    /// </summary>
     [HttpPost]
     [Route("rune")]
     public async Task<EnhanceRuneResponse> EnhanceRuneAsync([FromBody] EnhanceRuneRequest request)

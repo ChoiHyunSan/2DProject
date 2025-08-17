@@ -14,6 +14,13 @@ public class PurchaseController(ILogger<PurchaseController> logger, IShopService
     private readonly ILogger<PurchaseController> _logger = logger;
     private readonly IShopService _shopService = shopService;
     
+    /// <summary>
+    /// 캐릭터 구매 요청 API
+    /// 세션 인증 : O
+    /// 반환 값 :
+    /// - 반환 코드 : 장착 요청 결과 (성공 : ErrorCode.None)
+    /// - 구매 결과 (캐릭터 코드, 남은 골드, 남은 유료 재화)
+    /// </summary>
     [HttpPost]
     [Route("character")]
     public async Task<PurchaseCharacterResponse> PurchaseCharacterAsync([FromBody] PurchaseCharacterRequest request)

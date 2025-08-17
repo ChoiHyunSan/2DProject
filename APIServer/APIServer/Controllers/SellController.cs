@@ -13,6 +13,12 @@ public class SellController(ILogger<SellController> logger, IShopService shopSer
     private readonly ILogger<SellController> _logger = logger;
     private readonly IShopService _shopService = shopService;
 
+    /// <summary>
+    /// 아이템 판매 요청 API
+    /// 세션 인증 : O
+    /// 반환 값 :
+    /// - 반환 코드 : 강화 요청 결과 (성공 : ErrorCode.None)
+    /// </summary>
     [HttpPost]
     [Route("item")]
     public async Task<ItemSellResponse> SellItemAsync([FromBody] ItemSellRequest request)

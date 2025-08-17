@@ -14,6 +14,12 @@ public class EquipmentController(ILogger<EquipmentController> logger, IInventory
     private readonly ILogger<EquipmentController> _logger = logger;
     private readonly IInventoryService _inventoryService = inventoryService;
 
+    /// <summary>
+    /// 아이템 장착 요청 API
+    /// 세션 인증 : O
+    /// 반환 값 :
+    /// - 반환 코드 : 장착 요청 결과 (성공 : ErrorCode.None)
+    /// </summary>
     [HttpPost]
     [Route("item")]   
     public async Task<EquipmentItemResponse> EquipmentItemAsync([FromBody] EquipmentItemRequest request)
@@ -31,6 +37,12 @@ public class EquipmentController(ILogger<EquipmentController> logger, IInventory
         return new EquipmentItemResponse { code = errorCode };       
     }
 
+    /// <summary>
+    /// 룬 장착 요청 API
+    /// 세션 인증 : O
+    /// 반환 값 :
+    /// - 반환 코드 : 장착 요청 결과 (성공 : ErrorCode.None)
+    /// </summary>
     [HttpPost]
     [Route("rune")]  
     public async Task<EquipmentRuneResponse> EquipmentRuneAsync([FromBody] EquipmentRuneRequest request)
