@@ -104,4 +104,16 @@ public interface IGameDb
     /// 
     /// </summary>
     Task<ErrorCode> TryEquipRune(long userId, long characterId, long runeId);
+
+    /// <summary>
+    ///
+    /// 
+    /// </summary>
+    Task<ErrorCode> TryEnhanceItem(long userId, long itemId);
+    
+    /// <summary>
+    ///
+    /// 
+    /// </summary>
+    Task<ErrorCode> TryEnhanceRune(long userId, long runeId);
 }

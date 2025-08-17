@@ -24,4 +24,17 @@ public interface IMasterDb
     /// 반환 값 : (에러 코드, 판매 가격)
     /// </summary>
     Task<(ErrorCode, int)> GetItemSellPriceAsync(long itemCode, int level);
+
+    /// <summary>
+    /// 아이템 강화 정보 조회 메서드
+    ///
+    /// 반환 값 : (
+    /// </summary>
+    Task<(ErrorCode, ItemEnhanceData)> GetItemEnhanceData(long itemCode, int level);
+    
+    /// <summary>
+    ///
+    /// 
+    /// </summary>
+    Task<(ErrorCode, RuneEnhanceData)> GetRuneEnhanceData(long runeCode, int level);
 }
