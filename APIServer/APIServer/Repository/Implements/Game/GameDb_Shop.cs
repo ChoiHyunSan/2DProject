@@ -6,80 +6,97 @@ namespace APIServer.Repository.Implements;
 
 partial class GameDb
 {
-    public async Task<Result<(int, int)>> PurchaseCharacterAsync(long userId, long characterCode, int goldPrice, int gemPrice)
+    public async Task<Result<(int gold, int gem)>> PurchaseCharacterAsync(
+        long userId, long characterCode, int goldPrice, int gemPrice)
     {
-        var checkCharacter = await CheckAlreadyHaveCharacter(userId, characterCode);
-        if (checkCharacter.IsFailed) return Result<(int,int)>.Failure(checkCharacter.ErrorCode);
-        
-        var getGoldAndGem = await GetGoldAndGem(userId);
-        if (getGoldAndGem.IsFailed) return Result<(int,int)>.Failure(getGoldAndGem.ErrorCode);
-        
-        var (currentGold, currentGem) = getGoldAndGem.Value;
-        if (goldPrice > currentGold || gemPrice > currentGem)
-        {
-            return Result<(int,int)>.Failure(ErrorCode.CannotPurchaseCharacter);
-        }
+        // 0) 입력 가드
+        if (goldPrice < 0 || gemPrice < 0)
+            return Result<(int gold, int gem)>.Failure(ErrorCode.InvalidPrice);
 
+        // 1) 이미 보유 여부 확인
+        var alreadyHave = await CheckAlreadyHaveCharacter(userId, characterCode);
+        if (alreadyHave.IsFailed)
+            return Result<(int gold, int gem)>.Failure(alreadyHave.ErrorCode);
+
+        // 2) 재화 조회
+        var balance = await GetGoldAndGem(userId);
+        if (balance.IsFailed)
+            return Result<(int gold, int gem)>.Failure(balance.ErrorCode);
+
+        var (currentGold, currentGem) = balance.Value;
+
+        // 3) 구매 가능 여부
+        var canPayGold = currentGold >= goldPrice;
+        var canPayGem  = currentGem >= gemPrice;
+        if (!canPayGold || !canPayGem)
+            return Result<(int gold, int gem)>.Failure(ErrorCode.CannotPurchaseCharacter);
+
+        // 4) 결과 값 계산
         var newGold = currentGold - goldPrice;
-        var newGem = currentGem - gemPrice;
-        
-        var txCode = await WithTransactionAsync(async q =>
-        {
-            var updated = await UpdateGoldAndGem(userId, newGold, newGem);
-            if (updated.IsFailed) return updated.ErrorCode;
+        var newGem  = currentGem  - gemPrice;
 
-            var insertNew = await InsertNewCharacterAsync(userId, characterCode);
-            if (insertNew.IsFailed) return insertNew.ErrorCode;
+        // 5) 트랜잭션: 재화 차감 → 캐릭터 지급
+        var code = await WithTransactionAsync(async _ =>
+        {
+            var updateBal = await UpdateGoldAndGem(userId, newGold, newGem);
+            if (updateBal.IsFailed) return updateBal.ErrorCode;
+
+            var insertChar = await InsertNewCharacterAsync(userId, characterCode);
+            if (insertChar.IsFailed) return insertChar.ErrorCode;
 
             return ErrorCode.None;
         });
 
-        if (txCode != ErrorCode.None)
-        {
-            return Result<(int,int)>.Failure(txCode);    
-        }
+        if (code != ErrorCode.None)
+            return Result<(int gold, int gem)>.Failure(code);
 
-        return Result<(int,int)>.Success((newGold, newGem));
+        // 6) 최신 잔액 반환
+        return Result<(int gold, int gem)>.Success((newGold, newGem));
     }
+
 
     public async Task<Result> SellInventoryItemAsync(long userId, long itemId)
     {
-        var txCode = await WithTransactionAsync(async q =>
+        // 1) 아이템 조회
+        var it = await GetInventoryItemAsync(userId, itemId);
+        if (it.IsFailed) return Result.Failure(it.ErrorCode);
+        var item = it.Value;
+
+        // 2) 장착 여부 확인
+        var eq = await IsItemEquippedAsync(itemId);
+        if (eq.IsFailed) return Result.Failure(eq.ErrorCode);
+
+        // 3) 판매가 및 현재 잔액 조회
+        var (_, sellGold) = await _masterDb.GetItemSellPriceAsync(item.itemCode, item.level);
+
+        var cur = await GetUserCurrencyAsync(userId);
+        if (cur.IsFailed) return Result.Failure(cur.ErrorCode);
+
+        var curGold = cur.Value.gold;
+        var curGem  = cur.Value.gem;
+
+        // 4) 결과 잔액 계산 (반환은 안 하지만 로직/로그에 사용)
+        var newGold = curGold + sellGold;
+        var newGem  = curGem;
+
+        // 5) 트랜잭션: 인벤 삭제 → 재화 갱신
+        var code = await WithTransactionAsync(async _ =>
         {
-            // 1) 아이템 조회
-            var getItem = await GetInventoryItemAsync(userId, itemId);
-            if (getItem.IsFailed) return getItem.ErrorCode;
-            var item = getItem.Value;
-            
-            // 2) 장착 여부 확인
-            var equipped = await IsItemEquippedAsync(itemId);
-            if (equipped.IsFailed) return equipped.ErrorCode;
+            var del = await DeleteInventoryItemAsync(userId, itemId);
+            if (del.IsFailed) return del.ErrorCode;
 
-            // 3) 인벤토리에서 삭제
-            var deleted = await DeleteInventoryItemAsync(userId, itemId);
-            if (deleted.IsFailed) return deleted.ErrorCode;
+            var up = await UpdateUserCurrencyAsync(userId, newGold, newGem);
+            if (up.IsFailed) return up.ErrorCode;
 
-            // 4) 현재 재화 조회
-            var currency = await GetUserCurrencyAsync(userId);
-            if (currency.IsFailed) return currency.ErrorCode;
+            LogInfo(_logger, EventType.SellItem, "Sell Item Success",
+                new { userId, itemId, beforeGold = curGold, beforeGem = curGem, newGold, newGem });
 
-            // 5) 마스터에서 판매가 조회(골드 증가)
-            var (_, gold) = await _masterDb.GetItemSellPriceAsync(item.itemCode, item.level);
-
-            var newGold = currency.Value.gold + gold;
-            var newGem  = currency.Value.gem;
-
-            // 6) 재화 업데이트
-            var updated = await UpdateUserCurrencyAsync(userId, newGold, newGem);
-            if (updated.IsFailed) return updated.ErrorCode;
-
-            LogInfo(_logger, EventType.SellItem, "Sell Item Success", new { userId, itemId, newGold, newGem });
-            
             return ErrorCode.None;
         });
 
-        return txCode == ErrorCode.None ? Result.Success() : Result.Failure(txCode);
+        return code == ErrorCode.None ? Result.Success() : Result.Failure(code);
     }
+
 
     private async Task<Result<UserInventoryItem>> GetInventoryItemAsync(long userId, long itemId)
     {

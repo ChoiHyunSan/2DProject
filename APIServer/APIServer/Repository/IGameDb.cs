@@ -33,7 +33,7 @@ public interface IGameDb
     Task<Result<GameData>> GetAllGameDataByUserIdAsync(long accountUserId);
 
     /// <summary> 캐릭터 구매 </summary>
-    Task<Result<(int currentGold, int currentGem)>> PurchaseCharacterAsync(long userId, long characterCode, int goldPrice, int gemPrice);
+    Task<Result<(int gold, int gem)>> PurchaseCharacterAsync(long userId, long characterCode, int goldPrice, int gemPrice);
 
     /// <summary> 아이템 판매 </summary>
     Task<Result> SellInventoryItemAsync(long userId, long itemId);

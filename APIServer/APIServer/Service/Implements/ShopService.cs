@@ -26,8 +26,9 @@ public class ShopService(ILogger<ShopService> logger, IMasterDb masterDb, IGameD
         }
         
         LoggerManager.LogInfo(_logger, EventType.PurchaseCharacter, "Purchase Character Success", new { userId, characterCode, originData.priceGold, originData.priceGem });
-        
-        return Result<(int,int)>.Success((purchaseResult.Value.currentGold, purchaseResult.Value.currentGem)); 
+
+        var (gold, gem) = purchaseResult.Value;
+        return Result<(int,int)>.Success((gold, gem)); 
     }
 
     public async Task<Result> SellItemAsync(long userId, long itemId)

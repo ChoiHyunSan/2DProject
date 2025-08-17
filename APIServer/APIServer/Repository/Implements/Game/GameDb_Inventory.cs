@@ -8,7 +8,7 @@ partial class GameDb
 {
     public async Task<Result> TryEquipItemAsync(long userId, long characterId, long itemId)
     {
-        var code = await WithTransactionAsync(async q =>
+        var code = await WithTransactionAsync(async _ =>
         {
             var checkCharacter = await IsCharacterExistsAsync(userId, characterId);
             if (checkCharacter.IsFailed) return checkCharacter.ErrorCode;
@@ -52,30 +52,32 @@ partial class GameDb
         if (getItem.IsFailed) return getItem.ErrorCode;
         var item = getItem.Value;
 
-        var getEnhanceData = await GetItemEnhanceData(item.itemCode, item.level);
-        if(getEnhanceData.IsFailed) return getEnhanceData.ErrorCode;
-        var enhanceData = getEnhanceData.Value;
-            
-        var getGoldAndGem = await GetGoldAndGem(userId);
-        if (getGoldAndGem.IsFailed) return getGoldAndGem.ErrorCode;
-        var (gold, gem) = getGoldAndGem.Value;
+        var getEnhance = await GetItemEnhanceData(item.itemCode, item.level);
+        if (getEnhance.IsFailed) return getEnhance.ErrorCode;
+        var enhance = getEnhance.Value;
 
-        var verifyEnhanceItem = await VerifyEnhanceItem(enhanceData, gold);
-        if(verifyEnhanceItem.IsFailed) return verifyEnhanceItem.ErrorCode;
-            
-        var newLevel = enhanceData.level + 1;
-        var newGold = gold -= enhanceData.enhancePrice;
-        
-        return await WithTransactionAsync(async q =>
+        var getBal = await GetGoldAndGem(userId);
+        if (getBal.IsFailed) return getBal.ErrorCode;
+        var (gold, gem) = getBal.Value;
+
+        var verify = await VerifyEnhanceItem(enhance, gold);
+        if (verify.IsFailed) return verify.ErrorCode;
+
+        var newLevel = enhance.level + 1;
+        var newGold  = gold - enhance.enhancePrice; // 원본 변경 없이 명확히 계산
+
+        var code = await WithTransactionAsync(async _ =>
         {
-            var updateItem = await UpdateItemLevel(q, userId, itemId, newLevel);
-            if(updateItem.IsFailed) return  updateItem.ErrorCode;
-            
-            var updateGoldAndGem = await UpdateGoldAndGem(userId, newGold, gem);
-            if (updateGoldAndGem.IsFailed) return updateGoldAndGem.ErrorCode;
-            
+            var upItem = await UpdateItemLevel(userId, itemId, newLevel);
+            if (upItem.IsFailed) return upItem.ErrorCode;
+
+            var upBal = await UpdateGoldAndGem(userId, newGold, gem);
+            if (upBal.IsFailed) return upBal.ErrorCode;
+
             return ErrorCode.None;
         });
+
+        return code;
     }
 
     public async Task<Result> TryEnhanceRuneAsync(long userId, long runeId)
@@ -84,30 +86,32 @@ partial class GameDb
         if (getRune.IsFailed) return getRune.ErrorCode;
         var rune = getRune.Value;
 
-        var getEnhanceData = await GetRuneEnhanceData(rune.runeCode, rune.level);
-        if (getEnhanceData.IsFailed) return getEnhanceData.ErrorCode;
-        var enhanceData = getEnhanceData.Value;
-            
-        var getGoldAndGem = await GetGoldAndGem(userId);
-        if (getGoldAndGem.IsFailed) return getGoldAndGem.ErrorCode;
-        var (gold, gem) = getGoldAndGem.Value;
-            
-        var verifyEnhanceRune = await VerifyEnhanceRune(enhanceData, gold);
-        if (verifyEnhanceRune.IsFailed) return verifyEnhanceRune.ErrorCode;
-            
-        var newLevel = enhanceData.level + 1;
-        var newGold = gold -= enhanceData.enhanceCount;
-        
-        return await WithTransactionAsync(async q =>
+        var getEnhance = await GetRuneEnhanceData(rune.runeCode, rune.level);
+        if (getEnhance.IsFailed) return getEnhance.ErrorCode;
+        var enhance = getEnhance.Value;
+
+        var getBal = await GetGoldAndGem(userId);
+        if (getBal.IsFailed) return getBal.ErrorCode;
+        var (gold, gem) = getBal.Value;
+
+        var verify = await VerifyEnhanceRune(enhance, gold);
+        if (verify.IsFailed) return verify.ErrorCode;
+
+        var newLevel = enhance.level + 1;
+        var newGold  = gold - enhance.enhanceCount; 
+
+        var code = await WithTransactionAsync(async _ =>
         {
-            var updateRune = await UpdateRuneLevel(q, userId, runeId, newLevel);
-            if(updateRune.IsFailed) return  updateRune.ErrorCode;
-            
-            var updateGoldAndGem = await UpdateGoldAndGem(userId, newGold, gem);
-            if (updateGoldAndGem.IsFailed) return updateGoldAndGem.ErrorCode;
-            
+            var upRune = await UpdateRuneLevel(userId, runeId, newLevel);
+            if (upRune.IsFailed) return upRune.ErrorCode;
+
+            var upBal = await UpdateGoldAndGem(userId, newGold, gem);
+            if (upBal.IsFailed) return upBal.ErrorCode;
+
             return ErrorCode.None;
         });
+
+        return code;
     }
     
     private async Task<Result> VerifyEnhanceItem(ItemEnhanceData enhanceData, int gold)
@@ -140,11 +144,11 @@ partial class GameDb
         return ErrorCode.None;
     }
     
-    private async Task<Result> UpdateItemLevel(QueryFactory q, long userId, long itemId, int newLevel)
+    private async Task<Result> UpdateItemLevel(long userId, long itemId, int newLevel)
     {
         try
         {
-            var result = await q.Query(TABLE_USER_INVENTORY_ITEM)
+            var result = await _queryFactory.Query(TABLE_USER_INVENTORY_ITEM)
                 .Where(USER_ID, userId)
                 .Where(ITEM_ID, itemId)
                 .UpdateAsync(new
@@ -171,11 +175,11 @@ partial class GameDb
         }
     }
     
-    private async Task<Result> UpdateRuneLevel(QueryFactory q, long userId, long runeId, int newLevel)
+    private async Task<Result> UpdateRuneLevel(long userId, long runeId, int newLevel)
     {
         try
         {
-            var result = await q.Query(TABLE_USER_INVENTORY_RUNE)
+            var result = await _queryFactory.Query(TABLE_USER_INVENTORY_RUNE)
                 .Where(USER_ID, userId)
                 .Where(RUNE_ID, runeId)
                 .UpdateAsync(new

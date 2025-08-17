@@ -70,4 +70,5 @@ public enum ErrorCode
     AlreadyMaximumLevelItem        = 4020_400,
     AlreadyMaximumLevelRune        = 4021_400,
     GoldShortage                   = 4022_400,
+    InvalidPrice                   = 4023_500,
 }
