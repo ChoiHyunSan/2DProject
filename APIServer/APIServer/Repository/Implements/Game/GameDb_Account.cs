@@ -354,6 +354,7 @@ partial class GameDb
 
             gameData.characters = characterRows.Select(c => new CharacterData
             {
+                characterId = c.character_id,
                 characterCode = c.characterCode,
                 level = c.level,
                 equipItems = equipItemsByChar.TryGetValue(c.character_id, out var equipItems) ? equipItems : [],

@@ -92,4 +92,16 @@ public interface IGameDb
     /// 반환 값 : 에러 코드 (성공 : ErrorCode.None)
     /// </summary>
     Task<ErrorCode> SellInventoryItem(long userId, long itemId);
+
+    /// <summary>
+    /// 
+    /// 
+    /// </summary>
+    Task<ErrorCode> TryEquipItem(long userId, long characterId, long itemId);
+    
+    /// <summary>
+    /// 
+    /// 
+    /// </summary>
+    Task<ErrorCode> TryEquipRune(long userId, long characterId, long runeId);
 }

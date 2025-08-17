@@ -46,5 +46,8 @@ public enum EventType
     PurchaseCharacter = 5002,
     SellItem = 5003,
     SellRune = 5004,
-    
+    EquipItem = 5005,
+    EquipRune = 5006,
+    EnhanceItem = 5007,
+    EnhanceRune = 5008,
 }

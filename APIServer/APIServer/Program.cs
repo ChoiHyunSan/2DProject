@@ -19,6 +19,7 @@ builder.Services.Configure<DbConfig>(configuration.GetSection(nameof(DbConfig)))
 // Register services
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IShopService, ShopService>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
 
 // Register Repositories
 builder.Services.AddScoped<IAccountDb, AccountDb>();

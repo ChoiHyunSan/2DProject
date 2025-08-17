@@ -26,6 +26,7 @@ partial class GameDb(ILogger<GameDb> logger, IOptions<DbConfig> dbConfig, IMaste
     private readonly string USER_ID = "user_id";
     private readonly string ITEM_ID = "item_id";
     private readonly string RUNE_ID = "rune_id";
+    private readonly string CHARACTER_ID = "character_id";
     private readonly string GOLD = "gold";
     private readonly string GEM = "gem";
     private readonly string CHARACTER_CODE = "character_code";
