@@ -24,10 +24,12 @@ public enum EventType
     InsertAttendanceWeek = 2006,
     InsertQuest = 2007,
     RollBackDefaultData = 2008,
-    GetGoldAndGem = 2009,
-    UpdateGoldAndGem = 2010,
+    GetUserGoods = 2009,
+    UpdateUserGoods = 2010,
     InsertNewCharacter = 2011,
-    CheckAlreadyHaveCharacter = 2012,
+    CheckUserHaveCharacter = 2012,
+    UpdateItemLevel    = 2013,
+    UpdateRuneLevel = 2014,
     
     // AccountDb 3000 ~ 4999
     CreateAccountUserData = 3000,

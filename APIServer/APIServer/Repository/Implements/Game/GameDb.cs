@@ -7,8 +7,6 @@ partial class GameDb(ILogger<GameDb> logger, IOptions<DbConfig> dbConfig, IMaste
     : MySQLBase(dbConfig.Value.GameDb), IGameDb
 {
     private readonly IMasterDb _masterDb = masterDb;
-    
-    // Logger
     private readonly ILogger<GameDb> _logger = logger;
     
     // GameDb Table

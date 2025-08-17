@@ -10,7 +10,7 @@ public class ShopService(ILogger<ShopService> logger, IMasterDb masterDb, IGameD
     private readonly IGameDb _gameDb = gameDb;
     private readonly IMemoryDb _memoryDb = memoryDb;
     
-    public async Task<(ErrorCode errorCode, int currentGold, int currentGem)> PurchaseCharacter(long userId, long characterCode)
+    public async Task<(ErrorCode errorCode, int currentGold, int currentGem)> PurchaseCharacterAsync(long userId, long characterCode)
     {
         var (getDataResult, originData) = await _masterDb.GetCharacterOriginDataAsync(characterCode);
         if (getDataResult != ErrorCode.None)
@@ -29,7 +29,7 @@ public class ShopService(ILogger<ShopService> logger, IMasterDb masterDb, IGameD
         return (ErrorCode.None, currentGold, currentGem); 
     }
 
-    public async Task<ErrorCode> SellItem(long userId, long itemId)
+    public async Task<ErrorCode> SellItemAsync(long userId, long itemId)
     {
         LoggerManager.LogInfo(_logger, EventType.SellItem, "Sell Item", new { userId, itemId });
         

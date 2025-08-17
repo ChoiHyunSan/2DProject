@@ -1,6 +1,5 @@
 ﻿using APIServer.Models.DTO;
 using CloudStructures.Structures;
-using static APIServer.ErrorCode;
 
 namespace APIServer.Repository.Implements.Memory;
 
@@ -15,18 +14,18 @@ partial class MemoryDb
             _ = await handler.SetAsync(gameData, TimeSpan.FromMinutes(60));
             
             LoggerManager.LogInfo(_logger, EventType.CacheGameData, "Cache Game Data", new { key });
-            return None;
+            return ErrorCode.None;
         }
         catch (Exception ex)
         {
-            LoggerManager.LogError(_logger, FailedCacheGameData, EventType.CacheGameData, "Cache Game Data Failed", new
+            LoggerManager.LogError(_logger, ErrorCode.FailedCacheGameData, EventType.CacheGameData, "Cache Game Data Failed", new
             {
                 email,
                 ex.Message,
                 ex.StackTrace
             });
 
-            return FailedCacheGameData;
+            return ErrorCode.FailedCacheGameData;
         }
     }
 }

@@ -21,7 +21,7 @@ public class SellController(ILogger<SellController> logger, IShopService shopSer
         
         LoggerManager.LogInfo(_logger, EventType.SellItem, "Request Sell Item", new { session.userId, request.itemId });
         
-        var errorCode = await _shopService.SellItem(session.userId, request.itemId);
+        var errorCode = await _shopService.SellItemAsync(session.userId, request.itemId);
         if (errorCode != ErrorCode.None)
         {
             return new ItemSellResponse { code = errorCode };       

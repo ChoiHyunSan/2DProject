@@ -1,8 +1,6 @@
 ﻿using System.Collections.Immutable;
 using APIServer.Models.Entity.Data;
 using SqlKata.Execution;
-using static APIServer.ErrorCode;
-using static APIServer.EventType;
 using static APIServer.LoggerManager;
 
 namespace APIServer.Repository.Implements;
@@ -11,7 +9,7 @@ partial class MasterDb
 {
     public async Task<ErrorCode> Load()
     {
-        if (isAlreadyLoad) return None;
+        if (isAlreadyLoad) return ErrorCode.None;
 
         if (await LoadAttendanceAsync() == false ||
             await LoadCharacterAsync() == false ||
@@ -21,13 +19,13 @@ partial class MasterDb
             await LoadStageAsync() == false)
         {
             Thread.Sleep(1000);
-            return FailedDataLoad;
+            return ErrorCode.FailedDataLoad;
         }
         
-        LogInfo(_logger, LoadMasterDb, "Master Data Load Success");
+        LogInfo(_logger, EventType.LoadMasterDb, "Master Data Load Success");
         
         isAlreadyLoad = true;
-        return None;
+        return ErrorCode.None;
     }
     
     private async Task<bool> LoadAttendanceAsync()
@@ -47,7 +45,7 @@ partial class MasterDb
         }
         catch (Exception e)
         {
-            LogError(_logger, FailedDataLoad, LoadAttendance, e.ToString());
+            LogError(_logger, ErrorCode.FailedDataLoad, EventType.LoadAttendance, e.ToString());
             return false;
         }
         
@@ -71,7 +69,7 @@ partial class MasterDb
         }
         catch (Exception e)
         {
-            LogError(_logger, FailedDataLoad, LoadCharacter, e.ToString());
+            LogError(_logger, ErrorCode.FailedDataLoad, EventType.LoadCharacter, e.ToString());
             return false;
         }
         
@@ -95,7 +93,7 @@ partial class MasterDb
         }
         catch (Exception e)
         {
-            LogError(_logger, FailedDataLoad, LoadItem, e.ToString());
+            LogError(_logger, ErrorCode.FailedDataLoad, EventType.LoadItem, e.ToString());
             return false;       
         }
         
@@ -119,7 +117,7 @@ partial class MasterDb
         }
         catch(Exception e)
         {
-            LogError(_logger, FailedDataLoad, LoadRune, e.ToString());
+            LogError(_logger, ErrorCode.FailedDataLoad, EventType.LoadRune, e.ToString());
             return false;       
         }
         
@@ -137,7 +135,7 @@ partial class MasterDb
         }
         catch (Exception e)
         {
-            LogError(_logger, FailedDataLoad, LoadQuest, e.ToString());
+            LogError(_logger, ErrorCode.FailedDataLoad, EventType.LoadQuest, e.ToString());
             return false;
         }
 
@@ -171,7 +169,7 @@ partial class MasterDb
         }
         catch (Exception e)
         {
-            LogError(_logger, FailedDataLoad, LoadStage, e.ToString());
+            LogError(_logger, ErrorCode.FailedDataLoad, EventType.LoadStage, e.ToString());
             return false;
         }
         

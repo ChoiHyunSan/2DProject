@@ -2,7 +2,6 @@
 using APIServer.Models.Entity;
 using APIServer.Service;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 using static APIServer.LoggerManager;
 
 namespace APIServer.Controllers;
@@ -23,7 +22,7 @@ public class EquipmentController(ILogger<EquipmentController> logger, IInventory
         
         LogInfo(_logger, EventType.EquipItem, "Request Equipment Item", new { session.userId, request.characterId, request.itemId });
 
-        var errorCode = await _inventoryService.EquipItem(session.userId, request.characterId, request.itemId);
+        var errorCode = await _inventoryService.EquipItemAsync(session.userId, request.characterId, request.itemId);
         if (errorCode == ErrorCode.None)
         {
             LogInfo(_logger, EventType.EquipItem, "Equipment Item Success", new { session.userId, request.characterId, request.itemId });
@@ -40,7 +39,7 @@ public class EquipmentController(ILogger<EquipmentController> logger, IInventory
         
         LogInfo(_logger, EventType.EquipRune, "Request Equipment Rune", new { session.userId, request.characterId, request.runeId });
 
-        var errorCode = await _inventoryService.EquipRune(session.userId, request.characterId, request.runeId);
+        var errorCode = await _inventoryService.EquipRuneAsnyc(session.userId, request.characterId, request.runeId);
         if (errorCode == ErrorCode.None)
         {
             LogInfo(_logger, EventType.EquipRune, "Equipment Item Success", new { session.userId, request.characterId,  request.runeId });

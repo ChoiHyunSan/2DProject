@@ -1,7 +1,6 @@
 ﻿using APIServer.Models.DTO;
 using APIServer.Service;
 using Microsoft.AspNetCore.Mvc;
-using static APIServer.EventType;
 using static APIServer.LoggerManager;
 
 namespace APIServer.Controllers;
@@ -21,7 +20,7 @@ public class RegisterAccountController(ILogger<RegisterAccountController> logger
     [HttpPost]
     public async Task<RegisterAccountResponse> RegisterAccountAsync([FromBody] RegisterAccountRequest request)
     {
-        LogInfo(_logger, CreateAccount , $"Request Register Account", new { request });
+        LogInfo(_logger, EventType.CreateAccount , $"Request Register Account", new { request });
         
         var response = new RegisterAccountResponse();
         var errorCode = await accountService.RegisterAccountAsync(request.email, request.password);
@@ -30,7 +29,7 @@ public class RegisterAccountController(ILogger<RegisterAccountController> logger
             response.code = errorCode;
         }
         
-        LogInfo(_logger, CreateAccount , $"Response Register Account", new { request.email, responseCode = response.code });
+        LogInfo(_logger, EventType.CreateAccount , $"Response Register Account", new { request.email, responseCode = response.code });
         return response;
     }
 }

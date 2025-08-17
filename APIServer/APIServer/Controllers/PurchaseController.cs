@@ -2,6 +2,7 @@
 using APIServer.Models.Entity;
 using APIServer.Service;
 using Microsoft.AspNetCore.Mvc;
+using static APIServer.LoggerManager;
 
 namespace APIServer.Controllers;
 
@@ -19,15 +20,15 @@ public class PurchaseController(ILogger<PurchaseController> logger, IShopService
     {
         var session = HttpContext.Items["userSession"] as UserSession;
         
-        LoggerManager.LogInfo(_logger, EventType.PurchaseCharacter, "Request Purchase Character", new { session.userId, request.characterCode });
+        LogInfo(_logger, EventType.PurchaseCharacter, "Request Purchase Character", new { session.userId, request.characterCode });
         
-        var (errorCode, currentGold, currentGem) = await _shopService.PurchaseCharacter(session.userId, request.characterCode);
+        var (errorCode, currentGold, currentGem) = await _shopService.PurchaseCharacterAsync(session.userId, request.characterCode);
         if (errorCode != ErrorCode.None)
         {
             return new PurchaseCharacterResponse { code = errorCode };       
         }
         
-        LoggerManager.LogInfo(_logger, EventType.PurchaseCharacter, "Purchase Character Success", new { request, currentGold, currentGem });
+        LogInfo(_logger, EventType.PurchaseCharacter, "Purchase Character Success", new { request, currentGold, currentGem });
         
         return new PurchaseCharacterResponse
         {

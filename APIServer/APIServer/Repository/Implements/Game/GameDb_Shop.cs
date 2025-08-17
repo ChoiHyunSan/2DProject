@@ -104,6 +104,14 @@ partial class GameDb
             .FirstOrDefaultAsync<UserInventoryItem>();
     }
 
+    private Task<UserInventoryRune?> GetInventoryRuneAsync(QueryFactory q, long userId, long runeId)
+    {
+        return q.Query(TABLE_USER_INVENTORY_RUNE)
+            .Where(USER_ID, userId)
+            .Where(RUNE_ID, runeId)
+            .FirstOrDefaultAsync<UserInventoryRune>();
+    }
+    
     private async Task<bool> IsItemEquippedAsync(QueryFactory q, long itemId)
     {
         var exists = await q.Query(TABLE_CHARACTER_EQUIPMENT_ITEM)
@@ -143,7 +151,7 @@ partial class GameDb
     {
         try
         {
-            LogInfo(_logger, EventType.CheckAlreadyHaveCharacter, "Check Already Have Character", new { userId, characterCode });
+            LogInfo(_logger, EventType.CheckUserHaveCharacter, "Check Already Have Character", new { userId, characterCode });
 
             var cnt = await _queryFactory.Query(TABLE_USER_INVENTORY_CHARACTER)
                 .Where(USER_ID, userId)
@@ -156,7 +164,7 @@ partial class GameDb
         }
         catch (Exception e)
         {
-            LogError(_logger, ErrorCode.FailedLoadUserData, EventType.CheckAlreadyHaveCharacter, "Failed Check Already Have Character", new
+            LogError(_logger,ErrorCode.FailedLoadUserData, EventType.CheckUserHaveCharacter, "Failed Check Already Have Character", new
             {
                 userId, characterCode,
                 e.Message,
@@ -170,7 +178,7 @@ partial class GameDb
     {
         try
         {
-            LogInfo(_logger, EventType.GetGoldAndGem, "Get Gold And Gem", new { userId });
+            LogInfo(_logger, EventType.GetUserGoods, "Get Gold And Gem", new { userId });
             
             var (gold, gem) = await _queryFactory.Query(TABLE_USER_GAME_DATA)
                 .Where(USER_ID, userId)
@@ -181,7 +189,7 @@ partial class GameDb
         }
         catch (Exception e)
         {
-            LogError(_logger, ErrorCode.FailedLoadAllGameData , EventType.GetGoldAndGem, "Failed Get Gold And Gem", new
+            LogError(_logger, ErrorCode.FailedLoadAllGameData , EventType.GetUserGoods, "Failed Get Gold And Gem", new
             {
                 userId,
                 e.Message,
@@ -195,7 +203,7 @@ partial class GameDb
     {
         try
         {
-            LogInfo(_logger, EventType.UpdateGoldAndGem, "Update Gold And Gem", new { userId, newGold, newGem });
+            LogInfo(_logger, EventType.UpdateUserGoods, "Update Gold And Gem", new { userId, newGold, newGem });
 
             var result = await _queryFactory.Query(TABLE_USER_GAME_DATA)
                 .Where(USER_ID, userId)
@@ -207,7 +215,7 @@ partial class GameDb
 
             if (result == 0)
             {
-                LogError(_logger, ErrorCode.FailedUpdateGoldAndGem, EventType.UpdateGoldAndGem, "Failed Update Gold And Gem", new
+                LogError(_logger, ErrorCode.FailedUpdateGoldAndGem, EventType.UpdateUserGoods, "Failed Update Gold And Gem", new
                 {
                     userId
                 });
@@ -218,7 +226,7 @@ partial class GameDb
         }
         catch (Exception e)
         {
-            LogError(_logger, ErrorCode.FailedUpdateGoldAndGem, EventType.UpdateGoldAndGem, "Failed Update Gold And Gem", new
+            LogError(_logger, ErrorCode.FailedUpdateGoldAndGem, EventType.UpdateUserGoods, "Failed Update Gold And Gem", new
             {
                 userId, 
                 e.Message,

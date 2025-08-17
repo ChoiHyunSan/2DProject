@@ -25,4 +25,26 @@ partial class MasterDb
 
         return (ErrorCode.None, enhanceData.sellPrice);
     }
+
+    public async Task<(ErrorCode, ItemEnhanceData)> GetItemEnhanceData(long itemCode, int level)
+    {
+        var enhanceData = _itemEnhanceDatas.GetValueOrDefault((itemCode, level));
+        if (enhanceData == null)
+        {
+            return (ErrorCode.FailedGetMasterData, new ItemEnhanceData());
+        }
+
+        return (ErrorCode.None, enhanceData);
+    }
+
+    public async Task<(ErrorCode, RuneEnhanceData)> GetRuneEnhanceData(long runeCode, int level)
+    {
+        var enhanceData = _runeEnhanceDatas.GetValueOrDefault((runeCode, level));
+        if (enhanceData == null)
+        {
+            return (ErrorCode.FailedGetMasterData, new RuneEnhanceData());
+        }
+
+        return (ErrorCode.None, enhanceData);
+    }
 }

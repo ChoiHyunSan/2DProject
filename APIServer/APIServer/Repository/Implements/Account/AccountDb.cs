@@ -2,8 +2,6 @@
 using APIServer.Models.Entity;
 using Microsoft.Extensions.Options;
 using SqlKata.Execution;
-using static APIServer.ErrorCode;
-using static APIServer.EventType;
 using static APIServer.LoggerManager;
 
 namespace APIServer.Repository.Implements;
@@ -17,23 +15,23 @@ public class AccountDb(ILogger<AccountDb> logger, IOptions<DbConfig> dbConfig)
     {
         try
         {
-            LogInfo(_logger, LoadAccountDb, "CheckExistsAccountByEmailAsync", new { email });
+            LogInfo(_logger, EventType.LoadAccountDb, "CheckExistsAccountByEmailAsync", new { email });
             
             var result =  await _queryFactory.Query("user_account")
                 .SelectRaw("EXISTS(SELECT 1 FROM user_account WHERE email = ?)", email)
                 .FirstOrDefaultAsync<bool>();
 
-            return (None, result);
+            return (ErrorCode.None, result);
         }
         catch (Exception e)
         {
-            LogError(_logger, FailedDataLoad, LoadAccountDb, "CheckExistsAccountByEmailAsync Failed", new
+            LogError(_logger, ErrorCode.FailedDataLoad, EventType.LoadAccountDb, "CheckExistsAccountByEmailAsync Failed", new
             {
                 email,
                 e.Message,
                 e.StackTrace
             });
-            return (FailedDataLoad, false);
+            return (ErrorCode.FailedDataLoad, false);
         }
     }
 
@@ -52,21 +50,21 @@ public class AccountDb(ILogger<AccountDb> logger, IOptions<DbConfig> dbConfig)
                 salt_value = saltValue,
             });
             
-            LogInfo(_logger, CreateAccountUserData, "Create New Account", new { userId, email });
+            LogInfo(_logger, EventType.CreateAccountUserData, "Create New Account", new { userId, email });
         }
         catch (Exception e)
         {
-            LogError(_logger, FailedCreateAccountUserData, CreateAccountUserData, "Create New Account Failed", new
+            LogError(_logger, ErrorCode.FailedCreateAccountUserData, EventType.CreateAccountUserData, "Create New Account Failed", new
             {
                 userId,
                 email,
                 e.Message,
                 e.StackTrace
             });
-            return FailedCreateAccountUserData;
+            return ErrorCode.FailedCreateAccountUserData;
         }
 
-        return None;
+        return ErrorCode.None;
     }
 
     public async Task<(ErrorCode, UserAccount)> GetUserAccountByEmail(string email)
@@ -77,17 +75,17 @@ public class AccountDb(ILogger<AccountDb> logger, IOptions<DbConfig> dbConfig)
                 .Where("email", email)
                 .FirstAsync<UserAccount>();
             
-            LogInfo(_logger, GetAccountUserData, "Get Account By Email", new { email });
-            return (None, userAccount);
+            LogInfo(_logger, EventType.GetAccountUserData, "Get Account By Email", new { email });
+            return (ErrorCode.None, userAccount);
         }catch(Exception e)
         {
-            LogError(_logger, FailedGetAccountUserData, GetAccountUserData, "GetUserAccountByEmail Failed", new
+            LogError(_logger, ErrorCode.FailedGetAccountUserData, EventType.GetAccountUserData, "GetUserAccountByEmail Failed", new
             {
                 email,
                 e.Message,
                 e.StackTrace
             });
-            return (FailedGetAccountUserData, new UserAccount());
+            return (ErrorCode.FailedGetAccountUserData, new UserAccount());
         }
     }
 }

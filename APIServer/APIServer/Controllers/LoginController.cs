@@ -1,7 +1,6 @@
 ﻿using APIServer.Models.DTO;
 using APIServer.Service;
 using Microsoft.AspNetCore.Mvc;
-using static APIServer.EventType;
 using static APIServer.LoggerManager;
 
 namespace APIServer.Controllers;
@@ -24,11 +23,11 @@ public class LoginController(ILogger<LoginController> logger, IAccountService ac
     [HttpPost]
     public async Task<LoginResponse> LoginAsync([FromBody] LoginRequest request)
     {
-        LogInfo(_logger, Login, "Request Login", new { request });
+        LogInfo(_logger, EventType.Login, "Request Login", new { request });
         
         var (gameData, authToken, errorCode) = await _accountService.LoginAsync(request.email, request.password);
         
-        LogInfo(_logger, Login, "Response Login", new { request.email, responseCode = errorCode });
+        LogInfo(_logger, EventType.Login, "Response Login", new { request.email, responseCode = errorCode });
         
         return new LoginResponse
         {

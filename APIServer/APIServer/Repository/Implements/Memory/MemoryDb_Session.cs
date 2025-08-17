@@ -1,8 +1,6 @@
 ﻿using APIServer.Models.Entity;
 using CloudStructures.Structures;
 using StackExchange.Redis;
-using static APIServer.ErrorCode;
-using static APIServer.EventType;
 using static APIServer.LoggerManager;
 
 namespace APIServer.Repository.Implements.Memory;
@@ -17,20 +15,20 @@ partial class MemoryDb
             var handle = new RedisString<UserSession>(_conn, key, null);
             _ = await handle.SetAsync(session, TimeSpan.FromMinutes(60));
             
-            LogInfo(_logger, RegisterSession, "Register Session", new { key });
+            LogInfo(_logger, EventType.RegisterSession, "Register Session", new { key });
         }
         catch (Exception e)
         {
-            LogError(_logger, FailedRegisterSession, RegisterSession, "Register Session Failed",new
+            LogError(_logger, ErrorCode.FailedRegisterSession, EventType.RegisterSession, "Register Session Failed",new
             {
                 session.email,
                 e.Message,
                 e.StackTrace
             });
-            return FailedRegisterSession;
+            return ErrorCode.FailedRegisterSession;
         }
         
-        return None;
+        return ErrorCode.None;
     }
 
     public async Task<(ErrorCode, UserSession)> GetSessionByEmail(string email)
@@ -42,20 +40,20 @@ partial class MemoryDb
             var data = await handle.GetAsync();
             if (data.HasValue)
             {
-                return (None, data.Value);
+                return (ErrorCode.None, data.Value);
             }
 
-            return (SessionNotFound, new UserSession());
+            return (ErrorCode.SessionNotFound, new UserSession());
         }
         catch (Exception e)
         {
-            LogError(_logger, FailedGetSession, GetSession, "Get Session By Email Failed",new
+            LogError(_logger, ErrorCode.FailedGetSession, EventType.GetSession, "Get Session By Email Failed",new
             {
                 email,
                 e.Message,
                 e.StackTrace
             });
-            return (FailedGetSession, new UserSession());
+            return (ErrorCode.FailedGetSession, new UserSession());
         }
     }
 
@@ -75,20 +73,20 @@ partial class MemoryDb
             var ok = await handle.SetAsync(token, expiry, when: When.NotExists);
             if (!ok)
             {
-                LogInfo(_logger, SessionLock, "Session lock already exists", new { key, ttl = expiry.TotalSeconds });
-                return AlreadySessionLock; 
+                LogInfo(_logger, EventType.SessionLock, "Session lock already exists", new { key, ttl = expiry.TotalSeconds });
+                return ErrorCode.AlreadySessionLock; 
             }
 
-            LogInfo(_logger, SessionLock, "Acquire session lock", new { key, ttl = expiry.TotalSeconds });
-            return None;
+            LogInfo(_logger, EventType.SessionLock, "Acquire session lock", new { key, ttl = expiry.TotalSeconds });
+            return ErrorCode.None;
         }
         catch (Exception e)
         {
-            LogError(_logger, FailedSessionLock, SessionLock, "Acquire session lock failed", new
+            LogError(_logger, ErrorCode.FailedSessionLock, EventType.SessionLock, "Acquire session lock failed", new
             {
                 email, key, e.Message, e.StackTrace
             });
-            return FailedSessionLock;
+            return ErrorCode.FailedSessionLock;
         }
     }
 
@@ -103,20 +101,20 @@ partial class MemoryDb
 
             if (!deleted)
             {
-                LogInfo(_logger, SessionUnLock, "Session lock not found on unlock", new { key });
-                return SessionLockNotFound;
+                LogInfo(_logger, EventType.SessionUnLock, "Session lock not found on unlock", new { key });
+                return ErrorCode.SessionLockNotFound;
             }
 
-            LogInfo(_logger, SessionUnLock, "Release session lock", new { key });
-            return None;
+            LogInfo(_logger, EventType.SessionUnLock, "Release session lock", new { key });
+            return ErrorCode.None;
         }
         catch (Exception e)
         {
-            LogError(_logger, FailedSessionUnLock, SessionUnLock, "Release session lock failed", new
+            LogError(_logger, ErrorCode.FailedSessionUnLock, EventType.SessionUnLock, "Release session lock failed", new
             {
                 email, key, e.Message, e.StackTrace
             });
-            return FailedSessionUnLock;
+            return ErrorCode.FailedSessionUnLock;
         }
     }
 }

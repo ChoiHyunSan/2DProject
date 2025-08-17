@@ -33,11 +33,12 @@ public enum ErrorCode
     FailedDeleteInventoryItem      = 2010_500,
     FailedGetUserGoldAndGem        = 2011_500,
     FailedUpdateUserGoldAndGem     = 2012_500,
-
+    FailedUpdateItemLevel          = 2013_500,
+    FailedUpdateRuneLevel          = 2014_500,
+    
     // AccountDb 3000 ~ 3999
     FailedCreateAccountUserData    = 3000_500,
     FailedGetAccountUserData       = 3001_500,
-    // ↓ Controller에서 이관
     FailedCreateAccount            = 3002_500,
 
     // MemoryDb 4000 ~ 4999
@@ -49,7 +50,9 @@ public enum ErrorCode
     AlreadySessionLock             = 4005_409,
     SessionLockNotFound            = 4006_404,
     FailedCacheGameData            = 4007_500,
-
+    FailedGetItemEnhanceData       = 4008_500,
+    FailedGetRuneEnhanceData       = 4009_500,
+    
     // Controller (비즈니스/검증/권한/리소스 미존재 등)
     DuplicatedEmail                = 4000_400,
     FailedPasswordVerify           = 4003_401,
@@ -62,4 +65,7 @@ public enum ErrorCode
     AlreadyEquippedRune            = 4017_400,
     CannotFindInventoryRune        = 4018_404,
     CannotFindCharacter            = 4019_404,
+    AlreadyMaximumLevelItem        = 4020_400,
+    AlreadyMaximumLevelRune        = 4021_400,
+    GoldShortage                   = 4022_400,
 }
