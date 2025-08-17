@@ -29,11 +29,6 @@ public class EquipmentController(ILogger<EquipmentController> logger, IInventory
         LogInfo(_logger, EventType.EquipItem, "Request Equipment Item", new { session.userId, request.characterId, request.itemId });
 
         var errorCode = await _inventoryService.EquipItemAsync(session.userId, request.characterId, request.itemId);
-        if (errorCode == ErrorCode.None)
-        {
-            LogInfo(_logger, EventType.EquipItem, "Equipment Item Success", new { session.userId, request.characterId, request.itemId });
-        }
-        
         return new EquipmentItemResponse { code = errorCode };       
     }
 
@@ -52,11 +47,6 @@ public class EquipmentController(ILogger<EquipmentController> logger, IInventory
         LogInfo(_logger, EventType.EquipRune, "Request Equipment Rune", new { session.userId, request.characterId, request.runeId });
 
         var errorCode = await _inventoryService.EquipRuneAsnyc(session.userId, request.characterId, request.runeId);
-        if (errorCode == ErrorCode.None)
-        {
-            LogInfo(_logger, EventType.EquipRune, "Equipment Item Success", new { session.userId, request.characterId,  request.runeId });
-        }
-        
         return new EquipmentRuneResponse { code = errorCode };   
     }
 }

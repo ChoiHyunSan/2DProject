@@ -52,11 +52,6 @@ public class EnhanceController(ILogger<EnhanceController> logger, IInventoryServ
         LogInfo(_logger, EventType.EnhanceRune, "Request Enhance Rune", new { session.userId, request.runeId });
         
         var errorCode = await _inventoryService.EnhanceRuneAsync(session.userId, request.runeId);
-        if (errorCode == ErrorCode.None)
-        {
-            LogInfo(_logger, EventType.EnhanceRune, "Enhance Rune Success", new { session.userId, request.runeId });
-        }
-        
         return new EnhanceRuneResponse { code = errorCode };      
     }
 }

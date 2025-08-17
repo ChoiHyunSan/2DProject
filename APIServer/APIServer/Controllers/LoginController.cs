@@ -26,9 +26,6 @@ public class LoginController(ILogger<LoginController> logger, IAccountService ac
         LogInfo(_logger, EventType.Login, "Request Login", new { request });
         
         var (gameData, authToken, errorCode) = await _accountService.LoginAsync(request.email, request.password);
-        
-        LogInfo(_logger, EventType.Login, "Response Login", new { request.email, responseCode = errorCode });
-        
         return new LoginResponse
         {
             authToken = authToken,
