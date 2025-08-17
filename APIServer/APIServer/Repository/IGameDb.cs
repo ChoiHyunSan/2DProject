@@ -5,7 +5,7 @@ namespace APIServer.Repository;
 
 public interface IGameDb
 {
-    Task<UserGameData> TestInsert();
+    Task<Result<UserGameData>> TestInsertAsync();
     
     /// <summary>
     /// 유저 데이터 생성 메서드
@@ -13,63 +13,63 @@ public interface IGameDb
     /// 
     /// 반환 값 : 생성된 유저 ID (실패 시, 0 반환)
     /// </summary>
-    Task<(ErrorCode, long)> CreateUserGameDataAndReturnUserIdAsync();
+    Task<Result<long>> CreateUserGameDataAndReturnUserIdAsync();
     
     /// <summary>
     /// 캐릭터 획득 메서드
     /// 
     /// 반환 값 : 획득 결과
     /// </summary>
-    Task<ErrorCode> InsertCharacterAsync(long userId, UserInventoryCharacter character);
+    Task<Result> InsertCharacterAsync(long userId, UserInventoryCharacter character);
     
     /// <summary>
     /// 아이템 획득 메서드
     /// 
     /// 반환 값 : 획득 결과
     /// </summary>
-    Task<ErrorCode> InsertItemAsync(long userId, UserInventoryItem item);
+    Task<Result> InsertItemAsync(long userId, UserInventoryItem item);
     
     /// <summary>
     /// 른 획득 메서드
     /// 
     /// 반환 값 : 획득 결과
     /// </summary>
-    Task<ErrorCode> InsertRuneAsync(long userId, UserInventoryRune rune);
+    Task<Result> InsertRuneAsync(long userId, UserInventoryRune rune);
     
     /// <summary>
     /// 월간 출석 보상 데이터 생성 메서드
     /// 
     /// 반환 값 : 획득 결과
     /// </summary>
-    Task<ErrorCode> InsertAttendanceMonthAsync(long userId);
+    Task<Result> InsertAttendanceMonthAsync(long userId);
     
     /// <summary>
     /// 주간 출석 보상 데이터 생성 메서드
     /// 
     /// 반환 값 : 획득 결과
     /// </summary>
-    Task<ErrorCode> InsertAttendanceWeekAsync(long userId);
+    Task<Result> InsertAttendanceWeekAsync(long userId);
     
     /// <summary>
     /// 퀘스트 진행 데이터 생성 메서드
     /// 
     /// 반환 값 : 생성 결과
     /// </summary>
-    Task<ErrorCode> InsertQuestAsync(long userId, long questCode, DateTime expireDate);
+    Task<Result> InsertQuestAsync(long userId, long questCode, DateTime expireDate);
     
     /// <summary>
     /// 유저 게임 데이저 삭제 메서드
     /// 
     /// 반환 값 : 삭제 결과
     /// </summary>
-    Task<ErrorCode> DeleteGameDataByUserIdAsync(long userId);
+    Task<Result> DeleteGameDataByUserIdAsync(long userId);
 
     /// <summary>
     /// 유저 전체 게임 데이터 조회 메서드
     ///
     /// 반환 값 : GameData
     /// </summary>
-    Task<(ErrorCode, GameData?)> GetAllGameDataByUserIdAsync(long accountUserId);
+    Task<Result<GameData>> GetAllGameDataByUserIdAsync(long accountUserId);
 
     /// <summary>
     /// 캐릭터 구매 요청 메서드
@@ -81,7 +81,7 @@ public interface IGameDb
     /// - 3 ~ 4번은 하나의 트랜잭션으로 묶인 상태로 작업한다. 
     /// 반환 값 : (구매 결과 에러 코드, 현재 남은 골드 재화, 현재 남은 유료 재화)
     /// </summary>
-    Task<(ErrorCode errorCode, int currentGold, int currentGem)> PurchaseCharacter(long userId, long characterCode, int goldPrice, int gemPrice);
+    Task<Result<(int currentGold, int currentGem)>> PurchaseCharacterAsync(long userId, long characterCode, int goldPrice, int gemPrice);
 
     /// <summary>
     /// 아이템 판매 메서드
@@ -91,29 +91,29 @@ public interface IGameDb
     /// - 장착중인 아이템은 판매할 수 없다.
     /// 반환 값 : 에러 코드 (성공 : ErrorCode.None)
     /// </summary>
-    Task<ErrorCode> SellInventoryItem(long userId, long itemId);
+    Task<Result> SellInventoryItemAsync(long userId, long itemId);
 
     /// <summary>
     /// 
     /// 
     /// </summary>
-    Task<ErrorCode> TryEquipItem(long userId, long characterId, long itemId);
+    Task<Result> TryEquipItemAsync(long userId, long characterId, long itemId);
     
     /// <summary>
     /// 
     /// 
     /// </summary>
-    Task<ErrorCode> TryEquipRune(long userId, long characterId, long runeId);
+    Task<Result> TryEquipRuneAsync(long userId, long characterId, long runeId);
 
     /// <summary>
     ///
     /// 
     /// </summary>
-    Task<ErrorCode> TryEnhanceItem(long userId, long itemId);
+    Task<Result> TryEnhanceItemAsync(long userId, long itemId);
     
     /// <summary>
     ///
     /// 
     /// </summary>
-    Task<ErrorCode> TryEnhanceRune(long userId, long runeId);
+    Task<Result> TryEnhanceRuneAsync(long userId, long runeId);
 }

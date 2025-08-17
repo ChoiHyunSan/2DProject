@@ -32,9 +32,9 @@ public class RequestLockMiddleware(ILogger<RequestLockMiddleware> logger, Reques
             }
 
             var lockResult = await _memoryDb.TrySessionRequestLock(session.email);
-            if (lockResult != ErrorCode.None)
+            if (lockResult.IsFailed)
             {
-                await SendErrorCode(context, lockResult, "Session Request Lock Failed");
+                await SendErrorCode(context, lockResult.ErrorCode, "Session Request Lock Failed");
                 return;
             }   
         }
@@ -44,9 +44,9 @@ public class RequestLockMiddleware(ILogger<RequestLockMiddleware> logger, Reques
         if (needToLock)
         {
             var unLockResult = await _memoryDb.TrySessionRequestUnLock(session.email);
-            if (unLockResult != ErrorCode.None)
+            if (unLockResult.IsFailed)
             {
-                await SendErrorCode(context, unLockResult, "Session Request UnLock Failed");
+                await SendErrorCode(context, unLockResult.ErrorCode, "Session Request UnLock Failed");
             }   
         }
     }

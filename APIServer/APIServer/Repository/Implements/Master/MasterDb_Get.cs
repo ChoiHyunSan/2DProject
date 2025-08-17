@@ -4,47 +4,47 @@ namespace APIServer.Repository.Implements;
 
 partial class MasterDb
 {
-    public async Task<(ErrorCode, CharacterOriginData)> GetCharacterOriginDataAsync(long characterCode)
+    public async Task<Result<CharacterOriginData>> GetCharacterOriginDataAsync(long characterCode)
     {
         _ = _characterOriginDatas.TryGetValue(characterCode, out var characterOriginData) ? characterOriginData : null;
         if (characterOriginData == null)
         {
-            return (ErrorCode.FailedGetMasterData, new CharacterOriginData());
+            return Result<CharacterOriginData>.Failure(ErrorCode.FailedGetMasterData);
         }
 
-        return (ErrorCode.None, characterOriginData);
+        return Result<CharacterOriginData>.Success(characterOriginData);
     }
 
-    public async Task<(ErrorCode, int)> GetItemSellPriceAsync(long itemCode, int level)
+    public async Task<Result<int>> GetItemSellPriceAsync(long itemCode, int level)
     {
         var enhanceData = _itemEnhanceDatas.GetValueOrDefault((itemCode, level));
         if (enhanceData == null)
         {
-            return (ErrorCode.FailedGetMasterData, 0);
+            return Result<int>.Failure(ErrorCode.FailedGetMasterData);
         }
-
-        return (ErrorCode.None, enhanceData.sellPrice);
+        
+        return Result<int>.Success(enhanceData.sellPrice);
     }
 
-    public async Task<(ErrorCode, ItemEnhanceData)> GetItemEnhanceData(long itemCode, int level)
+    public async Task<Result<ItemEnhanceData>> GetItemEnhanceData(long itemCode, int level)
     {
         var enhanceData = _itemEnhanceDatas.GetValueOrDefault((itemCode, level));
         if (enhanceData == null)
         {
-            return (ErrorCode.FailedGetMasterData, new ItemEnhanceData());
+            return Result<ItemEnhanceData>.Failure(ErrorCode.FailedGetMasterData);
         }
-
-        return (ErrorCode.None, enhanceData);
+    
+        return Result<ItemEnhanceData>.Success(enhanceData);
     }
 
-    public async Task<(ErrorCode, RuneEnhanceData)> GetRuneEnhanceData(long runeCode, int level)
+    public async Task<Result<RuneEnhanceData>> GetRuneEnhanceData(long runeCode, int level)
     {
         var enhanceData = _runeEnhanceDatas.GetValueOrDefault((runeCode, level));
         if (enhanceData == null)
         {
-            return (ErrorCode.FailedGetMasterData, new RuneEnhanceData());
+            return Result<RuneEnhanceData>.Failure(ErrorCode.FailedGetMasterData);
         }
 
-        return (ErrorCode.None, enhanceData);
+        return Result<RuneEnhanceData>.Success(enhanceData);
     }
 }

@@ -5,7 +5,7 @@ namespace APIServer.Repository.Implements.Memory;
 
 partial class MemoryDb
 {
-    public async Task<ErrorCode> CacheGameData(string email, GameData gameData)
+    public async Task<Result> CacheGameData(string email, GameData gameData)
     {
         var key = CreateGameDataKey(email);
         try

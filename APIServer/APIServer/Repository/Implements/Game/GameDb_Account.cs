@@ -1,6 +1,8 @@
-﻿using APIServer.Models.DTO;
+﻿using APIServer.Config;
+using APIServer.Models.DTO;
 using APIServer.Models.Entity;
 using Dapper;
+using Microsoft.Extensions.Options;
 using MySqlConnector;
 using SqlKata.Execution;
 using static APIServer.LoggerManager;
@@ -9,7 +11,7 @@ namespace APIServer.Repository.Implements;
 
 partial class GameDb
 {
-    public async Task<UserGameData> TestInsert()
+    public async Task<Result<UserGameData>> TestInsertAsync()
     {
         var userId = await _queryFactory.Query(TABLE_USER_GAME_DATA).InsertGetIdAsync<long>(new
         {
@@ -25,10 +27,10 @@ partial class GameDb
             .Where(USER_ID, userId)
             .FirstAsync<UserGameData>();
 
-        return userData;
+        return Result<UserGameData>.Success(userData);
     }
     
-    public async Task<(ErrorCode, long)> CreateUserGameDataAndReturnUserIdAsync()
+    public async Task<Result<long>> CreateUserGameDataAndReturnUserIdAsync()
     {
         try
         {
@@ -43,7 +45,7 @@ partial class GameDb
             });
 
             LogInfo(_logger, EventType.CreateUserGameData, "Success Create New User Game Data", new { userId });
-            return (ErrorCode.None, userId);
+            return Result<long>.Success(userId);
         }
         catch (Exception e)
         {
@@ -53,11 +55,11 @@ partial class GameDb
                     e.Message,
                     e.StackTrace
                 });
-            return (ErrorCode.None, 0);
+            return Result<long>.Failure(ErrorCode.FailedInsertData);
         }
     }
 
-    public async Task<ErrorCode> InsertCharacterAsync(long userId, UserInventoryCharacter character)
+    public async Task<Result> InsertCharacterAsync(long userId, UserInventoryCharacter character)
     {
         try
         {
@@ -80,10 +82,10 @@ partial class GameDb
                 });
             return ErrorCode.FailedInsertData;
         }
-        return ErrorCode.None;
+        return Result.Success();
     }
 
-    public async Task<ErrorCode> InsertItemAsync(long userId, UserInventoryItem item)
+    public async Task<Result> InsertItemAsync(long userId, UserInventoryItem item)
     {
         try
         {
@@ -106,10 +108,10 @@ partial class GameDb
                 });
             return ErrorCode.FailedInsertData;
         }
-        return ErrorCode.None;
+        return Result.Success();
     }
     
-    public async Task<ErrorCode> InsertRuneAsync(long userId, UserInventoryRune rune)
+    public async Task<Result> InsertRuneAsync(long userId, UserInventoryRune rune)
     {
         try
         {
@@ -132,10 +134,10 @@ partial class GameDb
                 });
             return ErrorCode.FailedInsertData;
         }
-        return ErrorCode.None;
+        return Result.Success();
     }
     
-    public async Task<ErrorCode> InsertAttendanceMonthAsync(long userId)
+    public async Task<Result> InsertAttendanceMonthAsync(long userId)
     {
         try
         {
@@ -159,10 +161,10 @@ partial class GameDb
                 });
             return ErrorCode.FailedInsertData;
         }
-        return ErrorCode.None;
+        return Result.Success();
     }
     
-    public async Task<ErrorCode> InsertAttendanceWeekAsync(long userId)
+    public async Task<Result> InsertAttendanceWeekAsync(long userId)
     {
         try
         {
@@ -186,10 +188,10 @@ partial class GameDb
                 });
             return ErrorCode.FailedInsertData;
         }
-        return ErrorCode.None;
+        return Result.Success();
     }
     
-    public async Task<ErrorCode> InsertQuestAsync(long userId, long questCode, DateTime expireDate)
+    public async Task<Result> InsertQuestAsync(long userId, long questCode, DateTime expireDate)
     {
         try
         {
@@ -213,10 +215,10 @@ partial class GameDb
                 });
             return ErrorCode.FailedInsertData;
         }
-        return ErrorCode.None;
+        return Result.Success();
     }
 
-    public async Task<ErrorCode> DeleteGameDataByUserIdAsync(long userId)
+    public async Task<Result> DeleteGameDataByUserIdAsync(long userId)
     {
         try
         {
@@ -240,10 +242,10 @@ partial class GameDb
                 });
             return ErrorCode.FailedRollbackDefaultData;
         }
-        return ErrorCode.None;
+        return Result.Success();
     }
 
-    public async Task<(ErrorCode, GameData?)> GetAllGameDataByUserIdAsync(long userId)
+    public async Task<Result<GameData>> GetAllGameDataByUserIdAsync(long userId)
     {
          var sql = @"
             SELECT gold, gem, exp, level,
@@ -296,7 +298,7 @@ partial class GameDb
 
             // 1) 기본 스탯
             var baseRow = await multi.ReadFirstOrDefaultAsync<(int gold, int gem, int exp, int level, int totalMonsterKillCount, int totalClearCount)>();
-            if (baseRow.Equals(default)) return (ErrorCode.FailedLoadAllGameData, new GameData()); // 없으면 빈값
+            if (baseRow.Equals(default)) return Result<GameData>.Failure(ErrorCode.FailedLoadAllGameData);
 
             // 2) 캐릭터
             var characterRows = (await multi.ReadAsync<(long character_id, long characterCode, int level)>()).ToList();
@@ -362,7 +364,7 @@ partial class GameDb
                 userId
             });
             
-            return (ErrorCode.None, gameData);
+            return Result<GameData>.Success(gameData);
          }
          catch (Exception e)
          {
@@ -373,7 +375,7 @@ partial class GameDb
                  message = e.Message,
              });
              
-             return (ErrorCode.FailedLoadAllGameData, null);
+             return Result<GameData>.Failure(ErrorCode.FailedLoadAllGameData);
          } 
     }
 }

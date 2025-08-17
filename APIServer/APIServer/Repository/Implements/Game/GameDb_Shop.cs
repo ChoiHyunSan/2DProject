@@ -6,23 +6,23 @@ namespace APIServer.Repository.Implements;
 
 partial class GameDb
 {
-    public async Task<(ErrorCode, int , int)> PurchaseCharacter(long userId, long characterCode, int goldPrice, int gemPrice)
+    public async Task<Result<(int, int)>> PurchaseCharacterAsync(long userId, long characterCode, int goldPrice, int gemPrice)
     {
         var (checkErrorCode, isAlreadyHave) = await CheckAlreadyHaveCharacter(userId, characterCode);
         if (checkErrorCode != ErrorCode.None || isAlreadyHave)
         {
-            return (checkErrorCode, 0, 0);
+            return Result<(int,int)>.Failure(checkErrorCode);
         }
         
         var (errorCode, currentGold, currentGem) = await GetGoldAndGem(userId);
         if (errorCode != ErrorCode.None)
         {
-            return (errorCode, currentGold, currentGem);
+            return Result<(int,int)>.Success((currentGold, currentGem));
         }
 
         if (goldPrice > currentGold || gemPrice > currentGem)
         {
-            return (ErrorCode.CannotPurchaseCharacter, currentGold, currentGem);
+            return Result<(int,int)>.Failure(ErrorCode.CannotPurchaseCharacter);
         }
 
         var newGold = currentGold - goldPrice;
@@ -43,13 +43,13 @@ partial class GameDb
 
         if (txCode != ErrorCode.None)
         {
-            return (txCode, currentGold, currentGem);    
+            return Result<(int,int)>.Failure(txCode);    
         }
 
-        return (ErrorCode.None, newGold, newGem);
+        return Result<(int,int)>.Success((newGold, newGem));
     }
 
-    public async Task<ErrorCode> SellInventoryItem(long userId, long itemId)
+    public async Task<Result> SellInventoryItemAsync(long userId, long itemId)
     {
         var txCode = await WithTransactionAsync(async q =>
         {
@@ -93,7 +93,7 @@ partial class GameDb
             return ErrorCode.None;
         });
 
-        return txCode;
+        return txCode == ErrorCode.None ? Result.Success() : Result.Failure(txCode);
     }
 
     private Task<UserInventoryItem?> GetInventoryItemAsync(QueryFactory q, long userId, long itemId)
@@ -164,7 +164,7 @@ partial class GameDb
         }
         catch (Exception e)
         {
-            LogError(_logger,ErrorCode.FailedLoadUserData, EventType.CheckUserHaveCharacter, "Failed Check Already Have Character", new
+            LogError(_logger, ErrorCode.FailedLoadUserData, EventType.CheckUserHaveCharacter, "Failed Check Already Have Character", new
             {
                 userId, characterCode,
                 e.Message,

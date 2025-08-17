@@ -29,13 +29,13 @@ public class PurchaseController(ILogger<PurchaseController> logger, IShopService
         
         LogInfo(_logger, EventType.PurchaseCharacter, "Request Purchase Character", new { session.userId, request.characterCode });
         
-        var (errorCode, currentGold, currentGem) = await _shopService.PurchaseCharacterAsync(session.userId, request.characterCode);
+        var result= await _shopService.PurchaseCharacterAsync(session.userId, request.characterCode);
         return new PurchaseCharacterResponse
         {
-            code = errorCode,
+            code = result.ErrorCode,
             characterCode = request.characterCode,
-            currentGold = currentGold,
-            currentGem = currentGem,
+            currentGold = result.Value.currentGold,
+            currentGem = result.Value.currentGem,
         };
     }
 }

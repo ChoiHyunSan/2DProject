@@ -25,12 +25,12 @@ public class LoginController(ILogger<LoginController> logger, IAccountService ac
     {
         LogInfo(_logger, EventType.Login, "Request Login", new { request });
         
-        var (gameData, authToken, errorCode) = await _accountService.LoginAsync(request.email, request.password);
+        var result = await _accountService.LoginAsync(request.email, request.password);
         return new LoginResponse
         {
-            authToken = authToken,
-            gameData = gameData,
-            code = errorCode
+            authToken = result.Value.authToken,
+            gameData = result.Value.gameData,
+            code = result.ErrorCode
         };
     }
 }

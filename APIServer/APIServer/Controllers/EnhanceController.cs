@@ -28,13 +28,8 @@ public class EnhanceController(ILogger<EnhanceController> logger, IInventoryServ
 
         LogInfo(_logger, EventType.EnhanceItem, "Request Enhance Item", new { session.userId, request.itemId });
         
-        var errorCode = await _inventoryService.EnhanceItemAsync(session.userId, request.itemId);
-        if (errorCode == ErrorCode.None)
-        {
-            LogInfo(_logger, EventType.EnhanceItem, "Enhance Item Success", new { session.userId, request.itemId });
-        }
-        
-        return new EnhanceItemResponse { code = errorCode };       
+        var result = await _inventoryService.EnhanceItemAsync(session.userId, request.itemId);
+        return new EnhanceItemResponse { code = result.ErrorCode };       
     }
     
     /// <summary>
@@ -51,7 +46,7 @@ public class EnhanceController(ILogger<EnhanceController> logger, IInventoryServ
         
         LogInfo(_logger, EventType.EnhanceRune, "Request Enhance Rune", new { session.userId, request.runeId });
         
-        var errorCode = await _inventoryService.EnhanceRuneAsync(session.userId, request.runeId);
-        return new EnhanceRuneResponse { code = errorCode };      
+        var result = await _inventoryService.EnhanceRuneAsync(session.userId, request.runeId);
+        return new EnhanceRuneResponse { code = result.ErrorCode };      
     }
 }

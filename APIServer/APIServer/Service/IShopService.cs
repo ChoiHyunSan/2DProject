@@ -11,12 +11,12 @@ public interface IShopService
     ///
     /// 반환 값 : (에러 코드, 현재 골드 재화, 현재 유료 재화)
     /// </summary>
-    Task<(ErrorCode errorCode, int currentGold, int currentGem)> PurchaseCharacterAsync(long userId, long characterCode);
+    Task<Result<(int currentGold, int currentGem)>> PurchaseCharacterAsync(long userId, long characterCode);
 
     /// <summary>
     /// 아이템 판매 메서드
     /// 
     /// 반환 값 : 에러 코드 (성공 : ErrorCode.None)
     /// </summary>
-    Task<ErrorCode> SellItemAsync(long userId, long itemId);
+    Task<Result> SellItemAsync(long userId, long itemId);
 }

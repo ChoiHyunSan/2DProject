@@ -10,8 +10,8 @@ public class AccountDb(ILogger<AccountDb> logger, IOptions<DbConfig> dbConfig)
     : MySQLBase(dbConfig.Value.AccountDb), IAccountDb
 {
     private readonly ILogger<AccountDb> _logger = logger;
-    
-    public async Task<(ErrorCode, bool)> CheckExistAccountByEmailAsync(string email)
+
+    public async Task<Result<bool>> CheckExistAccountByEmailAsync(string email)
     {
         try
         {
@@ -21,7 +21,7 @@ public class AccountDb(ILogger<AccountDb> logger, IOptions<DbConfig> dbConfig)
                 .SelectRaw("EXISTS(SELECT 1 FROM user_account WHERE email = ?)", email)
                 .FirstOrDefaultAsync<bool>();
 
-            return (ErrorCode.None, result);
+            return Result<bool>.Success(result);
         }
         catch (Exception e)
         {
@@ -31,11 +31,11 @@ public class AccountDb(ILogger<AccountDb> logger, IOptions<DbConfig> dbConfig)
                 e.Message,
                 e.StackTrace
             });
-            return (ErrorCode.FailedDataLoad, false);
+            return Result<bool>.Failure(ErrorCode.FailedDataLoad);
         }
     }
 
-    public async Task<ErrorCode> CreateAccountUserDataAsync(long userId, string email, string password)
+    public async Task<Result> CreateAccountUserDataAsync(long userId, string email, string password)
     {
         try
         {
@@ -67,7 +67,7 @@ public class AccountDb(ILogger<AccountDb> logger, IOptions<DbConfig> dbConfig)
         return ErrorCode.None;
     }
 
-    public async Task<(ErrorCode, UserAccount)> GetUserAccountByEmail(string email)
+    public async Task<Result<UserAccount>> GetUserAccountByEmail(string email)
     {
         try
         {
@@ -76,7 +76,7 @@ public class AccountDb(ILogger<AccountDb> logger, IOptions<DbConfig> dbConfig)
                 .FirstAsync<UserAccount>();
             
             LogInfo(_logger, EventType.GetAccountUserData, "Get Account By Email", new { email });
-            return (ErrorCode.None, userAccount);
+            return Result<UserAccount>.Success(userAccount);
         }catch(Exception e)
         {
             LogError(_logger, ErrorCode.FailedGetAccountUserData, EventType.GetAccountUserData, "GetUserAccountByEmail Failed", new
@@ -85,7 +85,7 @@ public class AccountDb(ILogger<AccountDb> logger, IOptions<DbConfig> dbConfig)
                 e.Message,
                 e.StackTrace
             });
-            return (ErrorCode.FailedGetAccountUserData, new UserAccount());
+            return Result<UserAccount>.Failure(ErrorCode.FailedGetAccountUserData);
         }
     }
 }

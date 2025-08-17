@@ -10,29 +10,31 @@ public class ShopService(ILogger<ShopService> logger, IMasterDb masterDb, IGameD
     private readonly IGameDb _gameDb = gameDb;
     private readonly IMemoryDb _memoryDb = memoryDb;
     
-    public async Task<(ErrorCode errorCode, int currentGold, int currentGem)> PurchaseCharacterAsync(long userId, long characterCode)
+    public async Task<Result<(int currentGold, int currentGem)>> PurchaseCharacterAsync(long userId, long characterCode)
     {
-        var (getDataResult, originData) = await _masterDb.GetCharacterOriginDataAsync(characterCode);
-        if (getDataResult != ErrorCode.None)
+        var getDataResult = await _masterDb.GetCharacterOriginDataAsync(characterCode);
+        if (getDataResult.IsFailed)
         {
-            return (getDataResult, 0, 0);
+            return Result<(int, int)>.Failure(getDataResult.ErrorCode);
         }
-        
-        var (purchaseResult, currentGold, currentGem) = await _gameDb.PurchaseCharacter(userId, characterCode, originData.priceGold , originData.priceGem);
-        if (purchaseResult != ErrorCode.None)
+
+        var originData = getDataResult.Value;
+        var purchaseResult = await _gameDb.PurchaseCharacterAsync(userId, characterCode, originData.priceGold , originData.priceGem);
+        if (!purchaseResult.IsSuccess)
         {
-            return (purchaseResult, 0, 0);
+            return Result<(int, int)>.Failure(purchaseResult.ErrorCode);
         }
         
         LoggerManager.LogInfo(_logger, EventType.PurchaseCharacter, "Purchase Character Success", new { userId, characterCode, originData.priceGold, originData.priceGem });
         
-        return (ErrorCode.None, currentGold, currentGem); 
+        return Result<(int,int)>.Success((purchaseResult.Value.currentGold, purchaseResult.Value.currentGem)); 
     }
 
-    public async Task<ErrorCode> SellItemAsync(long userId, long itemId)
+    public async Task<Result> SellItemAsync(long userId, long itemId)
     {
         LoggerManager.LogInfo(_logger, EventType.SellItem, "Sell Item", new { userId, itemId });
         
-        return await _gameDb.SellInventoryItem(userId, itemId);
+        var result = await _gameDb.SellInventoryItemAsync(userId, itemId);
+        return result.ErrorCode;
     }
 }

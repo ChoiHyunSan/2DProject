@@ -22,7 +22,7 @@ public class RegisterAccountController(ILogger<RegisterAccountController> logger
     {
         LogInfo(_logger, EventType.CreateAccount , $"Request Register Account", new { request });
         
-        var errorCode = await accountService.RegisterAccountAsync(request.email, request.password);
-        return new RegisterAccountResponse { code = errorCode };
+        var result = await accountService.RegisterAccountAsync(request.email, request.password);
+        return new RegisterAccountResponse { code = result.ErrorCode };
     }
 }

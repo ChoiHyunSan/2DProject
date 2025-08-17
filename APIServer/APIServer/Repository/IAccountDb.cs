@@ -9,14 +9,14 @@ public interface IAccountDb
     ///
     /// 반환 값 : (에러 코드, 존재 여부)
     /// </summary>
-    Task<(ErrorCode, bool)> CheckExistAccountByEmailAsync(string email);
+    Task<Result<bool>> CheckExistAccountByEmailAsync(string email);
     
     /// <summary>
     /// Account 계정 생성 요청 메서드
     ///
     /// 반환 값 : (에러 코드, 생성 여부)
     /// </summary>
-    Task<ErrorCode> CreateAccountUserDataAsync(long userId, string email, string password);
+    Task<Result> CreateAccountUserDataAsync(long userId, string email, string password);
     
     
     /// <summary>
@@ -24,5 +24,5 @@ public interface IAccountDb
     ///
     /// 반환 값 : (에러 코드, UserAccount 객체)
     /// </summary>
-    Task<(ErrorCode, UserAccount)> GetUserAccountByEmail(string email);
+    Task<Result<UserAccount>> GetUserAccountByEmail(string email);
 }

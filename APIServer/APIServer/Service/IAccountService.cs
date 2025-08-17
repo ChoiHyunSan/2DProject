@@ -13,7 +13,7 @@ public interface IAccountService
     /// 
     /// 반환 값 : 요청 결과 (ErrorCode.None인 경우, 성공)
     /// </summary>
-    Task<ErrorCode> RegisterAccountAsync(string email, string password);
+    Task<Result> RegisterAccountAsync(string email, string password);
     
     
     /// <summary>
@@ -27,5 +27,5 @@ public interface IAccountService
     /// 
     /// 반환 값 : (게임 데이터, 인증 토큰, 요청 결과)
     /// </summary>
-    Task<(GameData?, string, ErrorCode)> LoginAsync(string email, string password);
+    Task<Result<(GameData gameData, string authToken)>> LoginAsync(string email, string password);
 }

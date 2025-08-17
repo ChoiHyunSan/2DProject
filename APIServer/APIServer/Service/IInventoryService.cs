@@ -10,7 +10,7 @@ public interface IInventoryService
     /// 
     /// 반환 값 : 에러 코드 (성공 : ErrorCode.None)
     /// </summary>
-    Task<ErrorCode> EquipItemAsync(long userId, long characterId, long itemId);
+    Task<Result> EquipItemAsync(long userId, long characterId, long itemId);
 
     /// <summary>
     /// 룬 장착 메서드
@@ -20,7 +20,7 @@ public interface IInventoryService
     /// 
     /// 반환 값 : 에러 코드 (성공 : ErrorCode.None)
     /// </summary>
-    Task<ErrorCode> EquipRuneAsnyc(long userId, long characterId,  long runeId);
+    Task<Result> EquipRuneAsnyc(long userId, long characterId,  long runeId);
 
     /// <summary>
     /// 아이템 강화 메서드
@@ -30,7 +30,7 @@ public interface IInventoryService
     ///
     /// 반환 값 : 에러 코드 (성공 : ErrorCode.None)
     /// </summary>
-    Task<ErrorCode> EnhanceItemAsync(long userId, long itemId);
+    Task<Result> EnhanceItemAsync(long userId, long itemId);
     
     /// <summary>
     /// 룬 강화 메서드
@@ -40,5 +40,5 @@ public interface IInventoryService
     ///
     /// 반환 값 : 에러 코드 (성공 : ErrorCode.None)
     /// </summary>
-    Task<ErrorCode> EnhanceRuneAsync(long userId, long itemId);
+    Task<Result> EnhanceRuneAsync(long userId, long itemId);
 }

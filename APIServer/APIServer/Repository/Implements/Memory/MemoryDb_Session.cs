@@ -7,7 +7,7 @@ namespace APIServer.Repository.Implements.Memory;
 
 partial class MemoryDb
 {
-    public async Task<ErrorCode> RegisterSessionAsync(UserSession session)
+    public async Task<Result> RegisterSessionAsync(UserSession session)
     {
         var key = CreateSessionKey(session.email);
         try
@@ -31,7 +31,7 @@ partial class MemoryDb
         return ErrorCode.None;
     }
 
-    public async Task<(ErrorCode, UserSession)> GetSessionByEmail(string email)
+    public async Task<Result<UserSession>> GetSessionByEmail(string email)
     {
         var key = CreateSessionKey(email);
         try
@@ -40,10 +40,10 @@ partial class MemoryDb
             var data = await handle.GetAsync();
             if (data.HasValue)
             {
-                return (ErrorCode.None, data.Value);
+                return Result<UserSession>.Success(data.Value);
             }
 
-            return (ErrorCode.SessionNotFound, new UserSession());
+            return Result<UserSession>.Failure(ErrorCode.SessionNotFound);
         }
         catch (Exception e)
         {
@@ -53,11 +53,11 @@ partial class MemoryDb
                 e.Message,
                 e.StackTrace
             });
-            return (ErrorCode.FailedGetSession, new UserSession());
+            return Result<UserSession>.Failure(ErrorCode.FailedGetSession);
         }
     }
 
-    public async Task<ErrorCode> TrySessionRequestLock(string email, TimeSpan? ttl = null)
+    public async Task<Result> TrySessionRequestLock(string email, TimeSpan? ttl = null)
     {
         var key    = CreateSessionLockKey(email);
         var expiry = ttl ?? TimeSpan.FromSeconds(5); 
@@ -90,7 +90,7 @@ partial class MemoryDb
         }
     }
 
-    public async Task<ErrorCode> TrySessionRequestUnLock(string email)
+    public async Task<Result> TrySessionRequestUnLock(string email)
     {
         var key = CreateSessionLockKey(email);
 

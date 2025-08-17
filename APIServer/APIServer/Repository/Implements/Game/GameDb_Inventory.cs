@@ -6,87 +6,101 @@ namespace APIServer.Repository.Implements;
 
 partial class GameDb
 {
-    public async Task<ErrorCode> TryEquipItem(long userId, long characterId, long itemId)
+    public async Task<Result> TryEquipItemAsync(long userId, long characterId, long itemId)
     {
-        return await WithTransactionAsync(async q =>
+        var code = await WithTransactionAsync(async q =>
         {
-            if (await IsCharacterExistsAsync(q, userId, characterId) == false)
+            if (!await IsCharacterExistsAsync(q, userId, characterId))
             {
-                LogError(_logger, ErrorCode.CannotFindCharacter, EventType.EquipItem, "Cannot Find Character", new {userId, characterId});
+                LogError(_logger, ErrorCode.CannotFindCharacter, EventType.EquipItem,
+                    "Cannot Find Character", new { userId, characterId });
                 return ErrorCode.CannotFindCharacter;
             }
-            
-            if (await IsItemExistsAsync(q, userId, itemId) == false)
+
+            if (!await IsItemExistsAsync(q, userId, itemId))
             {
-                LogError(_logger, ErrorCode.CannotFindInventoryItem, EventType.EquipItem, "Cannot Find Inventory Item", new{ userId, itemId});
+                LogError(_logger, ErrorCode.CannotFindInventoryItem, EventType.EquipItem,
+                    "Cannot Find Inventory Item", new { userId, itemId });
                 return ErrorCode.CannotFindInventoryItem;
             }
 
             if (await IsItemEquippedAsync(q, itemId))
             {
-                LogError(_logger, ErrorCode.AlreadyEquippedItem, EventType.EquipItem, "Already Equipped Item", new{ userId, itemId});
+                LogError(_logger, ErrorCode.AlreadyEquippedItem, EventType.EquipItem,
+                    "Already Equipped Item", new { userId, itemId });
                 return ErrorCode.AlreadyEquippedItem;
             }
 
-            return await EquipItemAsync(q, characterId, itemId);
+            return await EquipItemAsync(q, characterId, itemId); // ErrorCode 반환
         });
+
+        return code == ErrorCode.None ? Result.Success() : Result.Failure(code);
     }
 
-    public async Task<ErrorCode> TryEquipRune(long userId, long characterId, long runeId)
+    public async Task<Result> TryEquipRuneAsync(long userId, long characterId, long runeId)
     {
-        return await WithTransactionAsync(async q =>
+        var code = await WithTransactionAsync(async q =>
         {
-            if (await IsCharacterExistsAsync(q, userId, characterId) == false)
+            if (!await IsCharacterExistsAsync(q, userId, characterId))
             {
-                LogError(_logger, ErrorCode.CannotFindCharacter, EventType.EquipItem, "Cannot Find Character", new {userId, characterId});
+                LogError(_logger, ErrorCode.CannotFindCharacter, EventType.EquipRune,
+                    "Cannot Find Character", new { userId, characterId });
                 return ErrorCode.CannotFindCharacter;
             }
-            
-            if (await IsRuneExistsAsync(q, userId, runeId) == false)
+
+            if (!await IsRuneExistsAsync(q, userId, runeId))
             {
-                LogError(_logger, ErrorCode.CannotFindInventoryRune, EventType.EquipRune, "Cannot Find Inventory Rune", new { userId, runeId });
+                LogError(_logger, ErrorCode.CannotFindInventoryRune, EventType.EquipRune,
+                    "Cannot Find Inventory Rune", new { userId, runeId });
                 return ErrorCode.CannotFindInventoryRune;
             }
 
             if (await IsRuneEquippedAsync(q, runeId))
             {
-                LogError(_logger, ErrorCode.AlreadyEquippedRune, EventType.EquipRune, "Already Equipped Rune", new { userId, runeId });
+                LogError(_logger, ErrorCode.AlreadyEquippedRune, EventType.EquipRune,
+                    "Already Equipped Rune", new { userId, runeId });
                 return ErrorCode.AlreadyEquippedRune;
             }
 
             return await EquipRuneAsync(q, characterId, runeId);
         });
+
+        return code == ErrorCode.None ? Result.Success() : Result.Failure(code);
     }
 
-    public async Task<ErrorCode> TryEnhanceItem(long userId, long itemId)
+    public async Task<Result> TryEnhanceItemAsync(long userId, long itemId)
     {
         return await WithTransactionAsync(async q =>
         {
             var item = await GetInventoryItemAsync(q, userId, itemId);
             if (item is null)
             {
-                LogError(_logger, ErrorCode.CannotFindInventoryItem, EventType.EquipItem, "Cannot Find Inventory Item", new{ userId, itemId});
+                LogError(_logger, ErrorCode.CannotFindInventoryItem, EventType.EquipItem, 
+                    "Cannot Find Inventory Item", new{ userId, itemId});
                 return ErrorCode.CannotFindInventoryItem;
             }
 
             var enhanceData = await GetItemEnhanceData(item.itemCode, item.level);
             if (enhanceData is null)
             {
-                LogError(_logger, ErrorCode.FailedGetItemEnhanceData, EventType.EnhanceItem, "Enhance Data", new{ userId, itemId});
+                LogError(_logger, ErrorCode.FailedGetItemEnhanceData, EventType.EnhanceItem, 
+                    "Enhance Data", new{ userId, itemId});
                 return ErrorCode.FailedGetItemEnhanceData;
             }
 
             var (errorCode, gold, gem) = await GetGoldAndGem(userId);
             if (errorCode != ErrorCode.None)
             {
-                LogError(_logger, ErrorCode.FailedGetUserGoldAndGem, EventType.EnhanceItem, "Enhance Data", new{ userId});   
+                LogError(_logger, ErrorCode.FailedGetUserGoldAndGem, EventType.EnhanceItem, 
+                    "Enhance Data", new{ userId});   
                 return errorCode;
             }
 
             var verifyResult = await VerifyEnhanceItem(enhanceData, gold);
             if (verifyResult != ErrorCode.None)
             {
-                LogError(_logger, verifyResult, EventType.EnhanceItem, "Cannot Enhance Item", new { userId, itemId });
+                LogError(_logger, verifyResult, EventType.EnhanceItem, 
+                    "Cannot Enhance Item", new { userId, itemId });
                 return verifyResult;
             }
             
@@ -109,35 +123,39 @@ partial class GameDb
         });
     }
 
-    public async Task<ErrorCode> TryEnhanceRune(long userId, long runeId)
+    public async Task<Result> TryEnhanceRuneAsync(long userId, long runeId)
     {
         return await WithTransactionAsync(async q =>
         {
             var rune = await GetInventoryRuneAsync(q, userId, runeId);
             if (rune is null)
             {
-                LogError(_logger, ErrorCode.CannotFindInventoryRune, EventType.EquipRune, "Cannot Find Inventory Rune", new { userId, runeId });
+                LogError(_logger, ErrorCode.CannotFindInventoryRune, EventType.EquipRune, 
+                    "Cannot Find Inventory Rune", new { userId, runeId });
                 return ErrorCode.CannotFindInventoryRune;
             }
 
             var enhanceData = await GetRuneEnhanceData(rune.runeCode, rune.level);
             if (enhanceData is null)
             {
-                LogError(_logger, ErrorCode.FailedGetRuneEnhanceData, EventType.EnhanceRune, "Enhance Data", new{ userId, runeId });
+                LogError(_logger, ErrorCode.FailedGetRuneEnhanceData, EventType.EnhanceRune, 
+                    "Enhance Data", new{ userId, runeId });
                 return ErrorCode.FailedGetRuneEnhanceData;
             }
 
             var (errorCode, gold, gem) = await GetGoldAndGem(userId);
             if (errorCode != ErrorCode.None)
             {
-                LogError(_logger, ErrorCode.FailedGetUserGoldAndGem, EventType.EnhanceItem, "Enhance Data", new{ userId});   
+                LogError(_logger, ErrorCode.FailedGetUserGoldAndGem, EventType.EnhanceItem, 
+                    "Enhance Data", new{ userId});   
                 return errorCode;
             }
             
             var verifyResult = await VerifyEnhanceRune(enhanceData, gold);
             if (verifyResult != ErrorCode.None)
             {
-                LogError(_logger, verifyResult, EventType.EnhanceItem, "Cannot Enhance Item", new { userId, runeId });
+                LogError(_logger, verifyResult, EventType.EnhanceItem, 
+                    "Cannot Enhance Item", new { userId, runeId });
                 return verifyResult;
             }
             
