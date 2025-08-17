@@ -8,18 +8,13 @@ partial class GameDb
 {
     public async Task<Result<(int, int)>> PurchaseCharacterAsync(long userId, long characterCode, int goldPrice, int gemPrice)
     {
-        var (checkErrorCode, isAlreadyHave) = await CheckAlreadyHaveCharacter(userId, characterCode);
-        if (checkErrorCode != ErrorCode.None || isAlreadyHave)
-        {
-            return Result<(int,int)>.Failure(checkErrorCode);
-        }
+        var checkCharacter = await CheckAlreadyHaveCharacter(userId, characterCode);
+        if (checkCharacter.IsFailed) return Result<(int,int)>.Failure(checkCharacter.ErrorCode);
         
-        var (errorCode, currentGold, currentGem) = await GetGoldAndGem(userId);
-        if (errorCode != ErrorCode.None)
-        {
-            return Result<(int,int)>.Success((currentGold, currentGem));
-        }
-
+        var getGoldAndGem = await GetGoldAndGem(userId);
+        if (getGoldAndGem.IsFailed) return Result<(int,int)>.Failure(getGoldAndGem.ErrorCode);
+        
+        var (currentGold, currentGem) = getGoldAndGem.Value;
         if (goldPrice > currentGold || gemPrice > currentGem)
         {
             return Result<(int,int)>.Failure(ErrorCode.CannotPurchaseCharacter);
@@ -30,13 +25,11 @@ partial class GameDb
         
         var txCode = await WithTransactionAsync(async q =>
         {
-            var e1 = await UpdateGoldAndGem(userId, newGold, newGem);
-            if (e1 != ErrorCode.None)
-                return e1;
+            var updated = await UpdateGoldAndGem(userId, newGold, newGem);
+            if (updated.IsFailed) return updated.ErrorCode;
 
-            var e2 = await InsertNewCharacter(userId, characterCode);
-            if (e2 != ErrorCode.None)
-                return e2;
+            var insertNew = await InsertNewCharacterAsync(userId, characterCode);
+            if (insertNew.IsFailed) return insertNew.ErrorCode;
 
             return ErrorCode.None;
         });
@@ -54,24 +47,21 @@ partial class GameDb
         var txCode = await WithTransactionAsync(async q =>
         {
             // 1) 아이템 조회
-            var item = await GetInventoryItemAsync(q, userId, itemId);
-            if (item == null)
-                return ErrorCode.CannotFindInventoryItem;
-
+            var getItem = await GetInventoryItemAsync(userId, itemId);
+            if (getItem.IsFailed) return getItem.ErrorCode;
+            var item = getItem.Value;
+            
             // 2) 장착 여부 확인
-            var equipped = await IsItemEquippedAsync(q, itemId);
-            if (equipped)
-                return ErrorCode.CannotSellEquipmentItem;
+            var equipped = await IsItemEquippedAsync(itemId);
+            if (equipped.IsFailed) return equipped.ErrorCode;
 
             // 3) 인벤토리에서 삭제
-            var deleted = await DeleteInventoryItemAsync(q, userId, itemId);
-            if (!deleted)
-                return ErrorCode.FailedDeleteInventoryItem;
+            var deleted = await DeleteInventoryItemAsync(userId, itemId);
+            if (deleted.IsFailed) return deleted.ErrorCode;
 
             // 4) 현재 재화 조회
-            var currency = await GetUserCurrencyAsync(q, userId);
-            if (currency == null)
-                return ErrorCode.FailedGetUserGoldAndGem;
+            var currency = await GetUserCurrencyAsync(userId);
+            if (currency.IsFailed) return currency.ErrorCode;
 
             // 5) 마스터에서 판매가 조회(골드 증가)
             var (_, gold) = await _masterDb.GetItemSellPriceAsync(item.itemCode, item.level);
@@ -80,15 +70,10 @@ partial class GameDb
             var newGem  = currency.Value.gem;
 
             // 6) 재화 업데이트
-            var updated = await UpdateUserCurrencyAsync(q, userId, newGold, newGem);
-            if (!updated)
-                return ErrorCode.FailedUpdateUserGoldAndGem;
+            var updated = await UpdateUserCurrencyAsync(userId, newGold, newGem);
+            if (updated.IsFailed) return updated.ErrorCode;
 
-            LogInfo(_logger, EventType.SellItem, "Sell Item Success", new
-            {
-                userId, itemId,
-                newGold, newGem
-            });
+            LogInfo(_logger, EventType.SellItem, "Sell Item Success", new { userId, itemId, newGold, newGem });
             
             return ErrorCode.None;
         });
@@ -96,115 +81,175 @@ partial class GameDb
         return txCode == ErrorCode.None ? Result.Success() : Result.Failure(txCode);
     }
 
-    private Task<UserInventoryItem?> GetInventoryItemAsync(QueryFactory q, long userId, long itemId)
-    {
-        return q.Query(TABLE_USER_INVENTORY_ITEM)
-            .Where(USER_ID, userId)
-            .Where(ITEM_ID, itemId)
-            .FirstOrDefaultAsync<UserInventoryItem>();
-    }
-
-    private Task<UserInventoryRune?> GetInventoryRuneAsync(QueryFactory q, long userId, long runeId)
-    {
-        return q.Query(TABLE_USER_INVENTORY_RUNE)
-            .Where(USER_ID, userId)
-            .Where(RUNE_ID, runeId)
-            .FirstOrDefaultAsync<UserInventoryRune>();
-    }
-    
-    private async Task<bool> IsItemEquippedAsync(QueryFactory q, long itemId)
-    {
-        var exists = await q.Query(TABLE_CHARACTER_EQUIPMENT_ITEM)
-            .Where(ITEM_ID, itemId)
-            .SelectRaw("1")
-            .Limit(1)
-            .FirstOrDefaultAsync<int?>();
-        return exists.HasValue;
-    }
-
-    private async Task<bool> DeleteInventoryItemAsync(QueryFactory q, long userId, long itemId)
-    {
-        var affected = await q.Query(TABLE_USER_INVENTORY_ITEM)
-            .Where(USER_ID, userId)
-            .Where(ITEM_ID, itemId)
-            .DeleteAsync();
-        return affected == 1;
-    }
-
-    private Task<(int gold, int gem)?> GetUserCurrencyAsync(QueryFactory q, long userId)
-    {
-        return q.Query(TABLE_USER_GAME_DATA)
-            .Where(USER_ID, userId)
-            .Select(GOLD, GEM)
-            .FirstOrDefaultAsync<(int gold, int gem)?>();
-    }
-
-    private async Task<bool> UpdateUserCurrencyAsync(QueryFactory q, long userId, int gold, int gem)
-    {
-        var affected = await q.Query(TABLE_USER_GAME_DATA)
-            .Where(USER_ID, userId)
-            .UpdateAsync(new { gold, gem });
-        return affected == 1;
-    }
-    
-    private async Task<(ErrorCode, bool)> CheckAlreadyHaveCharacter(long userId, long characterCode)
+    private async Task<Result<UserInventoryItem>> GetInventoryItemAsync(long userId, long itemId)
     {
         try
         {
-            LogInfo(_logger, EventType.CheckUserHaveCharacter, "Check Already Have Character", new { userId, characterCode });
+            var result =  await _queryFactory.Query(TABLE_USER_INVENTORY_ITEM)
+                .Where(USER_ID, userId)
+                .Where(ITEM_ID, itemId)
+                .FirstOrDefaultAsync<UserInventoryItem>();
+            
+            return result is null
+                ? Result<UserInventoryItem>.Failure(ErrorCode.CannotFindInventoryItem)
+                : Result<UserInventoryItem>.Success(result);
+        }
+        catch (Exception e)
+        {
+            LogError(_logger, ErrorCode.FailedLoadUserData, EventType.GetUserInventory, 
+                "Failed Get Inventory Item", new { userId, itemId });
+            return Result<UserInventoryItem>.Failure(ErrorCode.FailedLoadUserData);
+        }
+    }
 
+    private async Task<Result<UserInventoryRune>> GetInventoryRuneAsync(long userId, long runeId)
+    {
+        try
+        {
+            var result =  await _queryFactory.Query(TABLE_USER_INVENTORY_RUNE)
+                .Where(USER_ID, userId)
+                .Where(RUNE_ID, runeId)
+                .FirstOrDefaultAsync<UserInventoryRune>();
+
+            return result is null
+                ? Result<UserInventoryRune>.Failure(ErrorCode.CannotFindInventoryRune)
+                : Result<UserInventoryRune>.Success(result);
+        }
+        catch (Exception e)
+        {
+            LogError(_logger, ErrorCode.FailedLoadUserData, EventType.GetUserInventory, 
+                "Failed Get Inventory Rune", new { userId, runeId });
+            return Result<UserInventoryRune>.Failure(ErrorCode.FailedLoadUserData);
+        }
+    }
+    
+    private async Task<Result> IsItemEquippedAsync(long itemId)
+    {
+        try
+        {
+            var exists = await _queryFactory.Query(TABLE_CHARACTER_EQUIPMENT_ITEM)
+                .Where(ITEM_ID, itemId)
+                .SelectRaw("1")
+                .Limit(1)
+                .FirstOrDefaultAsync<int?>();
+            
+            return exists.HasValue 
+                ? Result.Success()
+                : Result.Failure(ErrorCode.AlreadyEquippedItem);
+        }
+        catch (Exception ex)
+        {
+            LogError(_logger, ErrorCode.FailedLoadUserData, EventType.CheckItemEquipped, 
+                "Failed Check Already Item Equipped", new { itemId });
+            return Result.Failure(ErrorCode.FailedLoadUserData);
+        }
+    }
+
+    private async Task<Result> DeleteInventoryItemAsync(long userId, long itemId)
+    {
+        try
+        {
+            var affected = await _queryFactory.Query(TABLE_USER_INVENTORY_ITEM)
+                .Where(USER_ID, userId)
+                .Where(ITEM_ID, itemId)
+                .DeleteAsync();
+            
+            return affected == 1 
+                ? Result.Success()
+                : Result.Failure(ErrorCode.FailedDeleteInventoryItem);
+        }
+        catch (Exception e)
+        {
+            LogError(_logger, ErrorCode.FailedLoadUserData, EventType.GetUserCurrency, 
+                "Failed Delete Inventory Item", new { userId, e.Message, e.StackTrace });
+            return Result.Failure(ErrorCode.FailedLoadUserData);
+        }
+    }
+
+    private async Task<Result<(int gold, int gem)>> GetUserCurrencyAsync(long userId)
+    {
+        try
+        {
+            var result = _queryFactory.Query(TABLE_USER_GAME_DATA)
+                .Where(USER_ID, userId)
+                .Select(GOLD, GEM)
+                .FirstOrDefaultAsync<(int, int)>();
+            
+            var (gold, gem) = result.Result;
+            return Result<(int gold, int gem)>.Success((gold, gem));
+        }
+        catch (Exception e)
+        {
+            LogError(_logger, ErrorCode.FailedLoadUserData, EventType.GetUserCurrency, 
+                "Failed Get User Currency", new { userId, e.Message, e.StackTrace });
+            return Result<(int, int)>.Failure(ErrorCode.FailedLoadUserData);
+        }
+    }
+
+    private async Task<Result> UpdateUserCurrencyAsync(long userId, int gold, int gem)
+    {
+        try
+        {
+            var affected = await _queryFactory.Query(TABLE_USER_GAME_DATA)
+                .Where(USER_ID, userId)
+                .UpdateAsync(new { gold, gem });
+
+            return affected == 1
+                ? Result.Success()
+                : Result.Failure(ErrorCode.FailedUpdateUserGoldAndGem);
+        }
+        catch (Exception e)
+        {
+            LogError(_logger, ErrorCode.FailedLoadUserData, EventType.GetUserCurrency,
+                "Failed Update User Currency", new { userId, e.Message, e.StackTrace });
+            return Result.Failure(ErrorCode.FailedLoadUserData);
+        }
+    }
+    
+    private async Task<Result> CheckAlreadyHaveCharacter(long userId, long characterCode)
+    {
+        try
+        {
             var cnt = await _queryFactory.Query(TABLE_USER_INVENTORY_CHARACTER)
                 .Where(USER_ID, userId)
                 .Where(CHARACTER_CODE, characterCode)
                 .CountAsync<long>();
             
             return cnt > 0 
-                ? (ErrorCode.AlreadyHaveCharacter, true) 
-                : (ErrorCode.None, false);
+                ? Result.Failure(ErrorCode.AlreadyHaveCharacter)
+                : Result.Success();
         }
         catch (Exception e)
         {
-            LogError(_logger, ErrorCode.FailedLoadUserData, EventType.CheckUserHaveCharacter, "Failed Check Already Have Character", new
-            {
-                userId, characterCode,
-                e.Message,
-                e.StackTrace
-            });
-            return (ErrorCode.FailedLoadUserData, false);
+            LogError(_logger, ErrorCode.FailedLoadUserData, EventType.CheckUserHaveCharacter, 
+                "Failed Check Already Have Character", new { userId, characterCode, e.Message, e.StackTrace });
+            return Result.Failure(ErrorCode.FailedLoadUserData);
         }
     }
     
-    private async Task<(ErrorCode, int, int)> GetGoldAndGem(long userId)
+    private async Task<Result<(int,int)>> GetGoldAndGem(long userId)
     {
         try
         {
-            LogInfo(_logger, EventType.GetUserGoods, "Get Gold And Gem", new { userId });
-            
             var (gold, gem) = await _queryFactory.Query(TABLE_USER_GAME_DATA)
                 .Where(USER_ID, userId)
                 .Select(GOLD, GEM)
                 .FirstOrDefaultAsync<(int, int)>();
             
-            return (ErrorCode.None, gold, gem);
+            return Result<(int, int)>.Success((gold, gem));
         }
         catch (Exception e)
         {
-            LogError(_logger, ErrorCode.FailedLoadAllGameData , EventType.GetUserGoods, "Failed Get Gold And Gem", new
-            {
-                userId,
-                e.Message,
-                e.StackTrace
-            });
-            return (ErrorCode.FailedLoadAllGameData, 0, 0);
+            LogError(_logger, ErrorCode.FailedLoadAllGameData , EventType.GetUserGoods, 
+                "Failed Get Gold And Gem", new { userId, e.Message, e.StackTrace });
+            return Result<(int, int)>.Failure(ErrorCode.FailedLoadAllGameData);
         }
     }
 
-    private async Task<ErrorCode> UpdateGoldAndGem(long userId, int newGold, int newGem)
+    private async Task<Result> UpdateGoldAndGem(long userId, int newGold, int newGem)
     {
         try
         {
-            LogInfo(_logger, EventType.UpdateUserGoods, "Update Gold And Gem", new { userId, newGold, newGem });
-
             var result = await _queryFactory.Query(TABLE_USER_GAME_DATA)
                 .Where(USER_ID, userId)
                 .UpdateAsync(new
@@ -215,10 +260,8 @@ partial class GameDb
 
             if (result == 0)
             {
-                LogError(_logger, ErrorCode.FailedUpdateGoldAndGem, EventType.UpdateUserGoods, "Failed Update Gold And Gem", new
-                {
-                    userId
-                });
+                LogError(_logger, ErrorCode.FailedUpdateGoldAndGem, EventType.UpdateUserGoods, 
+                    "Failed Update Gold And Gem", new { userId });
                 return ErrorCode.FailedUpdateGoldAndGem;
             }
             
@@ -226,22 +269,16 @@ partial class GameDb
         }
         catch (Exception e)
         {
-            LogError(_logger, ErrorCode.FailedUpdateGoldAndGem, EventType.UpdateUserGoods, "Failed Update Gold And Gem", new
-            {
-                userId, 
-                e.Message,
-                e.StackTrace
-            });
+            LogError(_logger, ErrorCode.FailedUpdateGoldAndGem, EventType.UpdateUserGoods, 
+                "Failed Update Gold And Gem", new { userId, e.Message, e.StackTrace });
             return ErrorCode.FailedUpdateGoldAndGem;
         }
     }
 
-    private async Task<ErrorCode> InsertNewCharacter(long userId, long characterCode)
+    private async Task<Result> InsertNewCharacterAsync(long userId, long characterCode)
     {
         try
         {
-            LogInfo(_logger, EventType.InsertNewCharacter, "Insert New Character", new { userId, characterCode });
-
             var result = await _queryFactory.Query(TABLE_USER_INVENTORY_CHARACTER)
                 .InsertAsync(new
                 {
@@ -252,11 +289,8 @@ partial class GameDb
 
             if (result == 0)
             {
-                LogError(_logger, ErrorCode.CannotInsertNewCharacter ,EventType.InsertNewCharacter, "Failed Insert New Character", new
-                {
-                    userId, 
-                    characterCode
-                });
+                LogError(_logger, ErrorCode.CannotInsertNewCharacter ,EventType.InsertNewCharacter, 
+                    "Failed Insert New Character", new { userId, characterCode });
                 return ErrorCode.CannotInsertNewCharacter;
             }
             
@@ -264,12 +298,8 @@ partial class GameDb
         }
         catch (Exception e)
         {
-           LogError(_logger, ErrorCode.FailedInsertNewCharacter, EventType.InsertNewCharacter, "Failed Insert New Character", new
-           {
-               userId, characterCode,
-               e.Message,
-               e.StackTrace
-           });
+           LogError(_logger, ErrorCode.FailedInsertNewCharacter, EventType.InsertNewCharacter, 
+               "Failed Insert New Character", new { userId, characterCode, e.Message, e.StackTrace });
            return ErrorCode.FailedInsertNewCharacter;
         }
     }

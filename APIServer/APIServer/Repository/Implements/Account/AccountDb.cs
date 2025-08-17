@@ -67,7 +67,7 @@ public class AccountDb(ILogger<AccountDb> logger, IOptions<DbConfig> dbConfig)
         return ErrorCode.None;
     }
 
-    public async Task<Result<UserAccount>> GetUserAccountByEmail(string email)
+    public async Task<Result<UserAccount>> GetUserAccountByEmailAsync(string email)
     {
         try
         {

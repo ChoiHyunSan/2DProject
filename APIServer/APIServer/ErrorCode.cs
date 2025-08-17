@@ -35,6 +35,8 @@ public enum ErrorCode
     FailedUpdateUserGoldAndGem     = 2012_500,
     FailedUpdateItemLevel          = 2013_500,
     FailedUpdateRuneLevel          = 2014_500,
+    CannotFindUserCurrency         = 2015_404,
+    
     
     // AccountDb 3000 ~ 3999
     FailedCreateAccountUserData    = 3000_500,

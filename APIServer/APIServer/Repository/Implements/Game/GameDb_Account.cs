@@ -1,8 +1,6 @@
-﻿using APIServer.Config;
-using APIServer.Models.DTO;
+﻿using APIServer.Models.DTO;
 using APIServer.Models.Entity;
 using Dapper;
-using Microsoft.Extensions.Options;
 using MySqlConnector;
 using SqlKata.Execution;
 using static APIServer.LoggerManager;
@@ -11,25 +9,6 @@ namespace APIServer.Repository.Implements;
 
 partial class GameDb
 {
-    public async Task<Result<UserGameData>> TestInsertAsync()
-    {
-        var userId = await _queryFactory.Query(TABLE_USER_GAME_DATA).InsertGetIdAsync<long>(new
-        {
-            gold = 10000,
-            gem = 0,
-            exp = 0,
-            level = 1,
-            total_monster_kill_count = 0,
-            total_clear_count = 0
-        });
-        
-        var userData = await _queryFactory.Query(TABLE_USER_GAME_DATA)
-            .Where(USER_ID, userId)
-            .FirstAsync<UserGameData>();
-
-        return Result<UserGameData>.Success(userData);
-    }
-    
     public async Task<Result<long>> CreateUserGameDataAndReturnUserIdAsync()
     {
         try
@@ -50,11 +29,7 @@ partial class GameDb
         catch (Exception e)
         {
             LogError(_logger, ErrorCode.FailedInsertData, EventType.CreateUserGameData,
-                "Create User GameData And Return UserId Async Failed", new
-                {
-                    e.Message,
-                    e.StackTrace
-                });
+                "Create User GameData And Return UserId Async Failed", new { e.Message, e.StackTrace });
             return Result<long>.Failure(ErrorCode.FailedInsertData);
         }
     }
@@ -70,16 +45,13 @@ partial class GameDb
                 user_id = userId
             });
             
-            LogInfo(_logger, EventType.InsertItem, "Success Create New User Character", new { userId, character.characterCode });
+            LogInfo(_logger, EventType.InsertItem, "Success Create New User Character", 
+                new { userId, character.characterCode });
             
         }catch(Exception e)
         {
             LogError(_logger, ErrorCode.FailedInsertData, EventType.InsertCharacter, 
-                "InsertCharacterAsync Failed", new
-                {
-                    e.Message,
-                    e.StackTrace
-                });
+                "InsertCharacterAsync Failed", new { e.Message, e.StackTrace });
             return ErrorCode.FailedInsertData;
         }
         return Result.Success();
@@ -101,11 +73,7 @@ partial class GameDb
         }catch(Exception e)
         {
             LogError(_logger, ErrorCode.FailedInsertData, EventType.InsertItem, 
-                "InsertItemAsync Failed", new
-                {
-                    e.Message,
-                    e.StackTrace
-                });
+                "InsertItemAsync Failed", new { e.Message, e.StackTrace });
             return ErrorCode.FailedInsertData;
         }
         return Result.Success();
@@ -127,11 +95,7 @@ partial class GameDb
         }catch(Exception e)
         {
             LogError(_logger, ErrorCode.FailedInsertData, EventType.InsertRune, 
-                "InsertRuneAsync Failed", new
-                {
-                    e.Message,
-                    e.StackTrace
-                });
+                "InsertRuneAsync Failed", new { e.Message, e.StackTrace });
             return ErrorCode.FailedInsertData;
         }
         return Result.Success();

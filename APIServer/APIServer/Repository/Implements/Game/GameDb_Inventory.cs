@@ -10,28 +10,17 @@ partial class GameDb
     {
         var code = await WithTransactionAsync(async q =>
         {
-            if (!await IsCharacterExistsAsync(q, userId, characterId))
-            {
-                LogError(_logger, ErrorCode.CannotFindCharacter, EventType.EquipItem,
-                    "Cannot Find Character", new { userId, characterId });
-                return ErrorCode.CannotFindCharacter;
-            }
+            var checkCharacter = await IsCharacterExistsAsync(userId, characterId);
+            if (checkCharacter.IsFailed) return checkCharacter.ErrorCode;
 
-            if (!await IsItemExistsAsync(q, userId, itemId))
-            {
-                LogError(_logger, ErrorCode.CannotFindInventoryItem, EventType.EquipItem,
-                    "Cannot Find Inventory Item", new { userId, itemId });
-                return ErrorCode.CannotFindInventoryItem;
-            }
+            var checkItem = await IsItemExistsAsync(userId, itemId);
+            if(checkItem.IsFailed) return  checkItem.ErrorCode;
 
-            if (await IsItemEquippedAsync(q, itemId))
-            {
-                LogError(_logger, ErrorCode.AlreadyEquippedItem, EventType.EquipItem,
-                    "Already Equipped Item", new { userId, itemId });
-                return ErrorCode.AlreadyEquippedItem;
-            }
+            var checkItemEquip = await IsItemEquippedAsync(itemId);
+            if(checkItemEquip.IsFailed)  return checkItemEquip.ErrorCode;
 
-            return await EquipItemAsync(q, characterId, itemId); // ErrorCode 반환
+            var equipItem = await EquipItemAsync(characterId, itemId);
+            return equipItem.ErrorCode;
         });
 
         return code == ErrorCode.None ? Result.Success() : Result.Failure(code);
@@ -41,28 +30,17 @@ partial class GameDb
     {
         var code = await WithTransactionAsync(async q =>
         {
-            if (!await IsCharacterExistsAsync(q, userId, characterId))
-            {
-                LogError(_logger, ErrorCode.CannotFindCharacter, EventType.EquipRune,
-                    "Cannot Find Character", new { userId, characterId });
-                return ErrorCode.CannotFindCharacter;
-            }
+            var checkCharacter = await IsCharacterExistsAsync(userId, characterId);
+            if(checkCharacter.IsFailed) return checkCharacter.ErrorCode;
 
-            if (!await IsRuneExistsAsync(q, userId, runeId))
-            {
-                LogError(_logger, ErrorCode.CannotFindInventoryRune, EventType.EquipRune,
-                    "Cannot Find Inventory Rune", new { userId, runeId });
-                return ErrorCode.CannotFindInventoryRune;
-            }
+            var checkRune = await IsRuneExistsAsync(userId, runeId);   
+            if(checkRune.IsFailed) return checkRune.ErrorCode;
 
-            if (await IsRuneEquippedAsync(q, runeId))
-            {
-                LogError(_logger, ErrorCode.AlreadyEquippedRune, EventType.EquipRune,
-                    "Already Equipped Rune", new { userId, runeId });
-                return ErrorCode.AlreadyEquippedRune;
-            }
-
-            return await EquipRuneAsync(q, characterId, runeId);
+            var  checkRuneEquip = await IsRuneEquippedAsync(runeId);
+            if(checkRuneEquip.IsFailed) return  checkRuneEquip.ErrorCode;
+            
+            var equipRune = await EquipRuneAsync(characterId, runeId);
+            return  equipRune.ErrorCode;
         });
 
         return code == ErrorCode.None ? Result.Success() : Result.Failure(code);
@@ -70,54 +48,31 @@ partial class GameDb
 
     public async Task<Result> TryEnhanceItemAsync(long userId, long itemId)
     {
+        var getItem = await GetInventoryItemAsync(userId, itemId);
+        if (getItem.IsFailed) return getItem.ErrorCode;
+        var item = getItem.Value;
+
+        var getEnhanceData = await GetItemEnhanceData(item.itemCode, item.level);
+        if(getEnhanceData.IsFailed) return getEnhanceData.ErrorCode;
+        var enhanceData = getEnhanceData.Value;
+            
+        var getGoldAndGem = await GetGoldAndGem(userId);
+        if (getGoldAndGem.IsFailed) return getGoldAndGem.ErrorCode;
+        var (gold, gem) = getGoldAndGem.Value;
+
+        var verifyEnhanceItem = await VerifyEnhanceItem(enhanceData, gold);
+        if(verifyEnhanceItem.IsFailed) return verifyEnhanceItem.ErrorCode;
+            
+        var newLevel = enhanceData.level + 1;
+        var newGold = gold -= enhanceData.enhancePrice;
+        
         return await WithTransactionAsync(async q =>
         {
-            var item = await GetInventoryItemAsync(q, userId, itemId);
-            if (item is null)
-            {
-                LogError(_logger, ErrorCode.CannotFindInventoryItem, EventType.EquipItem, 
-                    "Cannot Find Inventory Item", new{ userId, itemId});
-                return ErrorCode.CannotFindInventoryItem;
-            }
-
-            var enhanceData = await GetItemEnhanceData(item.itemCode, item.level);
-            if (enhanceData is null)
-            {
-                LogError(_logger, ErrorCode.FailedGetItemEnhanceData, EventType.EnhanceItem, 
-                    "Enhance Data", new{ userId, itemId});
-                return ErrorCode.FailedGetItemEnhanceData;
-            }
-
-            var (errorCode, gold, gem) = await GetGoldAndGem(userId);
-            if (errorCode != ErrorCode.None)
-            {
-                LogError(_logger, ErrorCode.FailedGetUserGoldAndGem, EventType.EnhanceItem, 
-                    "Enhance Data", new{ userId});   
-                return errorCode;
-            }
-
-            var verifyResult = await VerifyEnhanceItem(enhanceData, gold);
-            if (verifyResult != ErrorCode.None)
-            {
-                LogError(_logger, verifyResult, EventType.EnhanceItem, 
-                    "Cannot Enhance Item", new { userId, itemId });
-                return verifyResult;
-            }
+            var updateItem = await UpdateItemLevel(q, userId, itemId, newLevel);
+            if(updateItem.IsFailed) return  updateItem.ErrorCode;
             
-            var newLevel = enhanceData.level + 1;
-            var newGold = gold -= enhanceData.enhancePrice;
-
-            errorCode = await UpdateItemLevel(q, userId, itemId, newLevel);
-            if (errorCode != ErrorCode.None)
-            {
-                return errorCode;
-            }
-            
-            errorCode = await UpdateGoldAndGem(userId, newGold, gem);
-            if (errorCode != ErrorCode.None)
-            {
-                return errorCode;
-            }
+            var updateGoldAndGem = await UpdateGoldAndGem(userId, newGold, gem);
+            if (updateGoldAndGem.IsFailed) return updateGoldAndGem.ErrorCode;
             
             return ErrorCode.None;
         });
@@ -125,60 +80,37 @@ partial class GameDb
 
     public async Task<Result> TryEnhanceRuneAsync(long userId, long runeId)
     {
+        var getRune = await GetInventoryRuneAsync(userId, runeId);
+        if (getRune.IsFailed) return getRune.ErrorCode;
+        var rune = getRune.Value;
+
+        var getEnhanceData = await GetRuneEnhanceData(rune.runeCode, rune.level);
+        if (getEnhanceData.IsFailed) return getEnhanceData.ErrorCode;
+        var enhanceData = getEnhanceData.Value;
+            
+        var getGoldAndGem = await GetGoldAndGem(userId);
+        if (getGoldAndGem.IsFailed) return getGoldAndGem.ErrorCode;
+        var (gold, gem) = getGoldAndGem.Value;
+            
+        var verifyEnhanceRune = await VerifyEnhanceRune(enhanceData, gold);
+        if (verifyEnhanceRune.IsFailed) return verifyEnhanceRune.ErrorCode;
+            
+        var newLevel = enhanceData.level + 1;
+        var newGold = gold -= enhanceData.enhanceCount;
+        
         return await WithTransactionAsync(async q =>
         {
-            var rune = await GetInventoryRuneAsync(q, userId, runeId);
-            if (rune is null)
-            {
-                LogError(_logger, ErrorCode.CannotFindInventoryRune, EventType.EquipRune, 
-                    "Cannot Find Inventory Rune", new { userId, runeId });
-                return ErrorCode.CannotFindInventoryRune;
-            }
-
-            var enhanceData = await GetRuneEnhanceData(rune.runeCode, rune.level);
-            if (enhanceData is null)
-            {
-                LogError(_logger, ErrorCode.FailedGetRuneEnhanceData, EventType.EnhanceRune, 
-                    "Enhance Data", new{ userId, runeId });
-                return ErrorCode.FailedGetRuneEnhanceData;
-            }
-
-            var (errorCode, gold, gem) = await GetGoldAndGem(userId);
-            if (errorCode != ErrorCode.None)
-            {
-                LogError(_logger, ErrorCode.FailedGetUserGoldAndGem, EventType.EnhanceItem, 
-                    "Enhance Data", new{ userId});   
-                return errorCode;
-            }
+            var updateRune = await UpdateRuneLevel(q, userId, runeId, newLevel);
+            if(updateRune.IsFailed) return  updateRune.ErrorCode;
             
-            var verifyResult = await VerifyEnhanceRune(enhanceData, gold);
-            if (verifyResult != ErrorCode.None)
-            {
-                LogError(_logger, verifyResult, EventType.EnhanceItem, 
-                    "Cannot Enhance Item", new { userId, runeId });
-                return verifyResult;
-            }
-            
-            var newLevel = enhanceData.level + 1;
-            var newGold = gold -= enhanceData.enhanceCount;
-
-            errorCode = await UpdateRuneLevel(q, userId, runeId, newLevel);
-            if (errorCode != ErrorCode.None)
-            {
-                return errorCode;
-            }
-            
-            errorCode = await UpdateGoldAndGem(userId, newGold, gem);
-            if (errorCode != ErrorCode.None)
-            {
-                return errorCode;
-            }
+            var updateGoldAndGem = await UpdateGoldAndGem(userId, newGold, gem);
+            if (updateGoldAndGem.IsFailed) return updateGoldAndGem.ErrorCode;
             
             return ErrorCode.None;
         });
     }
     
-    private async Task<ErrorCode> VerifyEnhanceItem(ItemEnhanceData enhanceData, int gold)
+    private async Task<Result> VerifyEnhanceItem(ItemEnhanceData enhanceData, int gold)
     {
         if (enhanceData.level >= 3)
         {
@@ -193,7 +125,7 @@ partial class GameDb
         return ErrorCode.None;
     }
 
-    private async Task<ErrorCode> VerifyEnhanceRune(RuneEnhanceData enhanceData, int gold)
+    private async Task<Result> VerifyEnhanceRune(RuneEnhanceData enhanceData, int gold)
     {
         if (enhanceData.level >= 3)
         {
@@ -208,151 +140,231 @@ partial class GameDb
         return ErrorCode.None;
     }
     
-    private async Task<ErrorCode> UpdateItemLevel(QueryFactory q, long userId, long itemId, int newLevel)
+    private async Task<Result> UpdateItemLevel(QueryFactory q, long userId, long itemId, int newLevel)
     {
-        var result = await q.Query(TABLE_USER_INVENTORY_ITEM)
-            .Where(USER_ID, userId)
-            .Where(ITEM_ID, itemId)
-            .UpdateAsync(new
-            {
-                LEVEL = newLevel,
-            });
-
-        if (result == 0)
+        try
         {
-            LogError(_logger, ErrorCode.FailedUpdateItemLevel, EventType.UpdateItemLevel, "Failed Update Item Level", new
+            var result = await q.Query(TABLE_USER_INVENTORY_ITEM)
+                .Where(USER_ID, userId)
+                .Where(ITEM_ID, itemId)
+                .UpdateAsync(new
+                {
+                    LEVEL = newLevel,
+                });
+
+            if (result == 0)
             {
-                userId, itemId, newLevel
-            });
+                LogError(_logger, ErrorCode.FailedUpdateItemLevel, EventType.UpdateItemLevel, "Failed Update Item Level", new
+                {
+                    userId, itemId, newLevel
+                });
+                return ErrorCode.FailedUpdateItemLevel;
+            }
+         
+            return ErrorCode.None;
+        }
+        catch (Exception e)
+        {
+            LogError(_logger, ErrorCode.FailedUpdateItemLevel, EventType.UpdateItemLevel, 
+                "Failed Update Rune Level", new { userId, itemId, newLevel });
             return ErrorCode.FailedUpdateItemLevel;
         }
-
-        return ErrorCode.None;
     }
     
-    private async Task<ErrorCode> UpdateRuneLevel(QueryFactory q, long userId, long runeId, int newLevel)
+    private async Task<Result> UpdateRuneLevel(QueryFactory q, long userId, long runeId, int newLevel)
     {
-        var result = await q.Query(TABLE_USER_INVENTORY_RUNE)
-            .Where(USER_ID, userId)
-            .Where(RUNE_ID, runeId)
-            .UpdateAsync(new
+        try
+        {
+            var result = await q.Query(TABLE_USER_INVENTORY_RUNE)
+                .Where(USER_ID, userId)
+                .Where(RUNE_ID, runeId)
+                .UpdateAsync(new
+                {
+                    LEVEL = newLevel,
+                });
+
+            if (result == 0)
             {
-                LEVEL = newLevel,
-            });
+                LogError(_logger, ErrorCode.FailedUpdateRuneLevel, EventType.UpdateRuneLevel, 
+                    "Failed Update Rune Level", new { userId, runeId, newLevel });
+                return ErrorCode.FailedUpdateRuneLevel;
+            }
 
-        if (result == 0)
+            return ErrorCode.None;
+        }
+        catch (Exception e)
         {
-            LogError(_logger, ErrorCode.FailedUpdateRuneLevel, EventType.UpdateRuneLevel, "Failed Update Rune Level", new
+            LogError(_logger, ErrorCode.FailedUpdateRuneLevel, EventType.EquipRune, 
+                "Failed Update Rune Level", new { userId, runeId });
+            return Result.Failure(ErrorCode.FailedUpdateRuneLevel);   
+        }
+    }
+    
+    private async Task<Result<ItemEnhanceData>> GetItemEnhanceData(long itemCode, int level)
+    {
+        var result = await _masterDb.GetItemEnhanceData(itemCode, level);
+        if (result.IsFailed)
+        {
+            return Result<ItemEnhanceData>.Failure(result.ErrorCode);
+        }
+
+        return Result<ItemEnhanceData>.Success(result.Value);
+    }
+
+    private async Task<Result<RuneEnhanceData>> GetRuneEnhanceData(long runeCode, int level)
+    {
+        var result = await _masterDb.GetRuneEnhanceData(runeCode, level);
+        if (result.IsFailed)
+        {
+            return Result<RuneEnhanceData>.Failure(result.ErrorCode);
+        }
+
+        return Result<RuneEnhanceData>.Success(result.Value);
+    }
+    
+    private async Task<Result> EquipRuneAsync(long characterId, long runeId)
+    {
+        try
+        {
+            var result = await _queryFactory.Query(TABLE_CHARACTER_EQUIPMENT_RUNE)
+                .InsertAsync(new
+                {
+                    CHARACTER_ID = characterId,
+                    RUNE_ID = runeId,
+                });
+
+            if (result != 1)
             {
-                userId, runeId, newLevel
-            });
-            return ErrorCode.FailedUpdateRuneLevel;
-        }
+                LogError(_logger, ErrorCode.FailedInsertCharacterRune, EventType.EquipRune, "Failed Equip Rune", new { characterId, runeId });;
+                return Result.Failure(ErrorCode.FailedInsertCharacterRune);
+            }
 
-        return ErrorCode.None;
-    }
-    
-    private async Task<ItemEnhanceData?> GetItemEnhanceData(long itemCode, int level)
-    {
-        var (errorCode, itemEnhanceData) = await _masterDb.GetItemEnhanceData(itemCode, level);
-        if (errorCode != ErrorCode.None)
+            return Result.Success();
+        }
+        catch (Exception e)
         {
-            return null;
+            LogError(_logger, ErrorCode.FailedInsertCharacterRune, EventType.EquipRune, 
+                "Failed Equip Rune", new { characterId, runeId });
+            return Result.Failure(ErrorCode.FailedInsertCharacterRune);   
         }
-
-        return itemEnhanceData;
     }
 
-    private async Task<RuneEnhanceData?> GetRuneEnhanceData(long runeCode, int level)
+    private async Task<Result> EquipItemAsync(long characterId, long itemId)
     {
-        var (errorCode, runeEnhanceData) = await _masterDb.GetRuneEnhanceData(runeCode, level);
-        if (errorCode != ErrorCode.None)
+        try
         {
-            return null;
-        }
+            var result = await _queryFactory.Query(TABLE_CHARACTER_EQUIPMENT_ITEM)
+                .InsertAsync(new
+                {
+                    CHARACTER_ID = characterId,
+                    ITEM_ID = itemId,
+                });
 
-        return runeEnhanceData;
-    }
-    
-    private async Task<ErrorCode> EquipRuneAsync(QueryFactory q, long characterId, long runeId)
-    {
-        var result = await q.Query(TABLE_CHARACTER_EQUIPMENT_RUNE)
-            .InsertAsync(new
+            if (result != 1)
             {
-                CHARACTER_ID = characterId,
-                RUNE_ID = runeId,
-            });
+                LogError(_logger, ErrorCode.FailedInsertCharacterItem, EventType.EquipItem, 
+                    "Failed Equip Item", new { characterId, itemId });
+                return Result.Failure(ErrorCode.FailedInsertCharacterItem);
+            }
 
-        if (result != 1)
-        {
-            LogError(_logger, ErrorCode.FailedInsertCharacterRune, EventType.EquipRune, "Failed Equip Rune", new { characterId, runeId });;
-            return ErrorCode.FailedInsertCharacterRune;
+            return Result.Success();
         }
-
-        return ErrorCode.None;
-    }
-
-    private async Task<ErrorCode> EquipItemAsync(QueryFactory q, long characterId, long itemId)
-    {
-        var result = await q.Query(TABLE_CHARACTER_EQUIPMENT_ITEM)
-            .InsertAsync(new
-            {
-                CHARACTER_ID = characterId,
-                ITEM_ID = itemId,
-            });
-
-        if (result != 1)
+        catch (Exception e)
         {
-            LogError(_logger, ErrorCode.FailedInsertCharacterItem, EventType.EquipRune, "Failed Equip Rune", new { characterId, itemId });
-            return ErrorCode.FailedInsertCharacterItem;
+            LogError(_logger, ErrorCode.FailedLoadUserData, EventType.EquipItem, 
+                "Failed Check Character Exists", new { characterId });
+            return Result.Failure(ErrorCode.FailedLoadUserData);
         }
-
-        return ErrorCode.None;
     }
     
-    private async Task<bool> IsCharacterExistsAsync(QueryFactory q, long userId, long characterId)
+    private async Task<Result> IsCharacterExistsAsync(long userId, long characterId)
     {
-        var exists = await q.Query(TABLE_USER_INVENTORY_CHARACTER)
-            .Where(CHARACTER_ID, characterId)
-            .Where(USER_ID, userId)
-            .SelectRaw("1")
-            .Limit(1)
-            .FirstOrDefaultAsync<int?>();
-        
-        return exists.HasValue;
+        try
+        {
+            var exists = await _queryFactory.Query(TABLE_USER_INVENTORY_CHARACTER)
+                .Where(CHARACTER_ID, characterId)
+                .Where(USER_ID, userId)
+                .SelectRaw("1")
+                .Limit(1)
+                .FirstOrDefaultAsync<int?>();
+
+            return exists.HasValue
+                ? Result.Success()
+                : Result.Failure(ErrorCode.CannotFindCharacter);
+        }
+        catch (Exception e)
+        {
+            LogError(_logger, ErrorCode.FailedLoadUserData, EventType.CheckUserHaveCharacter, 
+                "Failed Check Character Exists", new { characterId });
+            return Result.Failure(ErrorCode.FailedLoadUserData);
+        }
     }
     
-    private async Task<bool> IsRuneEquippedAsync(QueryFactory q, long runeId)
+    private async Task<Result> IsRuneEquippedAsync(long runeId)
     {
-        var exists = await q.Query(TABLE_CHARACTER_EQUIPMENT_RUNE)
-            .Where(RUNE_ID, runeId)
-            .SelectRaw("1")
-            .Limit(1)
-            .FirstOrDefaultAsync<int?>();
-        return exists.HasValue;
+        try
+        {
+            var exists = await _queryFactory.Query(TABLE_CHARACTER_EQUIPMENT_RUNE)
+                .Where(RUNE_ID, runeId)
+                .SelectRaw("1")
+                .Limit(1)
+                .FirstOrDefaultAsync<int?>();   
+            
+            return exists.HasValue 
+                ? Result.Success()
+                : Result.Failure(ErrorCode.AlreadyEquippedRune);
+        }
+        catch (Exception ex)
+        {
+            LogError(_logger, ErrorCode.FailedLoadUserData, EventType.CheckRuneEquipped, 
+                "Failed Check Already Rune Equipped", new { runeId });
+            return Result.Failure(ErrorCode.FailedLoadUserData);
+        }
     }
 
-    private async Task<bool> IsItemExistsAsync(QueryFactory q, long userId, long itemId)
+    private async Task<Result> IsItemExistsAsync(long userId, long itemId)
     {
-        var isExists =  await q.Query(TABLE_USER_INVENTORY_ITEM)
-            .Where(USER_ID, userId)
-            .Where(ITEM_ID, itemId)
-            .SelectRaw("1")
-            .Limit(1)
-            .FirstOrDefaultAsync<int?>();
-
-        return isExists.HasValue;
+        try
+        {
+            var isExists =  await _queryFactory.Query(TABLE_USER_INVENTORY_ITEM)
+                .Where(USER_ID, userId)
+                .Where(ITEM_ID, itemId)
+                .SelectRaw("1")
+                .Limit(1)
+                .FirstOrDefaultAsync<int?>();
+            
+            return isExists.HasValue
+                ? Result.Success()
+                : Result.Failure(ErrorCode.CannotFindInventoryItem);
+        }
+        catch (Exception e)
+        {
+            LogError(_logger, ErrorCode.FailedLoadUserData, EventType.CheckItemExists, 
+                "Failed Load UserData", new { userId, itemId });
+            return  Result.Failure(ErrorCode.FailedLoadUserData);
+        }
     }
     
-    private async Task<bool> IsRuneExistsAsync(QueryFactory q, long userId, long runeId)
+    private async Task<Result> IsRuneExistsAsync(long userId, long runeId)
     {
-        var isExists =  await q.Query(TABLE_CHARACTER_EQUIPMENT_RUNE)
-            .Where(USER_ID, userId)
-            .Where(RUNE_ID, runeId)
-            .SelectRaw("1")
-            .Limit(1)
-            .FirstOrDefaultAsync<int?>();
+        try
+        {
+            var isExists = await _queryFactory.Query(TABLE_CHARACTER_EQUIPMENT_RUNE)
+                .Where(USER_ID, userId)
+                .Where(RUNE_ID, runeId)
+                .SelectRaw("1")
+                .Limit(1)
+                .FirstOrDefaultAsync<int?>();
 
-        return isExists.HasValue;
+            return isExists.HasValue
+                ? Result.Success()
+                : Result.Failure(ErrorCode.CannotFindInventoryRune);
+        }
+        catch (Exception e)
+        {
+            LogError(_logger, ErrorCode.FailedLoadUserData, EventType.CheckRuneExists, 
+                "Failed Load UserData", new { userId, runeId });
+            return  Result.Failure(ErrorCode.FailedLoadUserData);
+        }
     }
 }

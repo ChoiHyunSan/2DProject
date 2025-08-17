@@ -30,6 +30,12 @@ public enum EventType
     CheckUserHaveCharacter = 2012,
     UpdateItemLevel    = 2013,
     UpdateRuneLevel = 2014,
+    GetUserCurrency = 2015,
+    GetUserInventory = 2016,
+    CheckItemEquipped = 2017,
+    CheckRuneExists = 2018,
+    CheckItemExists = 2019,
+    CheckRuneEquipped = 2020,
     
     // AccountDb 3000 ~ 4999
     CreateAccountUserData = 3000,

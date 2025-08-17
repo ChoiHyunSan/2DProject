@@ -4,25 +4,13 @@ namespace APIServer.Repository;
 
 public interface IAccountDb
 {
-    /// <summary>
-    /// Email 값에 대한 계정이 존재여부 메서드
-    ///
-    /// 반환 값 : (에러 코드, 존재 여부)
-    /// </summary>
+    /// <summary> 이메일 기반 계정 정보 유무 확인 </summary>
     Task<Result<bool>> CheckExistAccountByEmailAsync(string email);
     
-    /// <summary>
-    /// Account 계정 생성 요청 메서드
-    ///
-    /// 반환 값 : (에러 코드, 생성 여부)
-    /// </summary>
+    /// <summary> 계정 정보 생성 </summary>
     Task<Result> CreateAccountUserDataAsync(long userId, string email, string password);
     
     
-    /// <summary>
-    /// Email 값을 이용한 조회 메서드
-    ///
-    /// 반환 값 : (에러 코드, UserAccount 객체)
-    /// </summary>
-    Task<Result<UserAccount>> GetUserAccountByEmail(string email);
+    /// <summary> 이메일 기반 계정 정보 조회 </summary>
+    Task<Result<UserAccount>> GetUserAccountByEmailAsync(string email);
 }

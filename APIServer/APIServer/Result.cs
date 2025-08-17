@@ -26,6 +26,7 @@ public readonly record struct Result<T>(ErrorCode ErrorCode, T? Value)
     
     public static Result<T> Success(T value) => new(ErrorCode.None, value);
     public static Result<T> Failure(ErrorCode error) => new(error, default);
+    public static Result<T> Failure(ErrorCode error, T? value) => new(error, value);
 
     // callsite 가독성 개선
     public void Deconstruct(out ErrorCode error, out T? value)
