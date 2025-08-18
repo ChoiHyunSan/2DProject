@@ -10,7 +10,7 @@ namespace APIServer.Repository;
 public abstract class MySQLBase
 {
     private string _dbConfig;
-    private MySqlConnection _conn;
+    protected MySqlConnection _conn;
     protected QueryFactory _queryFactory;
 
     protected MySQLBase(string dbConfig)
@@ -39,7 +39,7 @@ public abstract class MySQLBase
         _conn.Close();
     }
 
-    private void EnsureOpen()
+    protected void EnsureOpen()
     {
         if (_conn.State != ConnectionState.Open)
             _conn.Open();
@@ -47,7 +47,7 @@ public abstract class MySQLBase
     
 
     // 비동기, 반환값 없음
-    public async Task<ErrorCode> WithTransactionAsync(
+    protected async Task<Result> WithTransactionAsync(
         Func<QueryFactory, Task<ErrorCode>> action,
         IsolationLevel isolation = IsolationLevel.ReadCommitted)
     {
@@ -74,7 +74,7 @@ public abstract class MySQLBase
     }
 
     // 비동기, 반환값 있음
-    public async Task<TResult> WithTransactionAsync<TResult>(
+    protected async Task<TResult> WithTransactionAsync<TResult>(
         Func<QueryFactory, Task<TResult>> func,
         IsolationLevel isolation = IsolationLevel.ReadCommitted)
     {
@@ -95,7 +95,7 @@ public abstract class MySQLBase
         return result;
     }
     
-    private static System.Transactions.IsolationLevel MapIsolation(IsolationLevel iso) =>
+    protected static System.Transactions.IsolationLevel MapIsolation(IsolationLevel iso) =>
         iso switch
         {
             IsolationLevel.ReadUncommitted => System.Transactions.IsolationLevel.ReadUncommitted,

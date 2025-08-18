@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using APIServer.Models.DTO;
 using APIServer.Models.Entity;
+using APIServer.Models.Redis;
 
 namespace APIServer.Repository;
 
@@ -20,4 +21,12 @@ public interface IMemoryDb
 
     /// <summary> 게임 데이터 캐싱 </summary>
     Task<Result> CacheGameData(string email, GameData gameData);
+
+    /// <summary> 스테이지 인게임 정보 캐싱 </summary>
+    Task<Result> CacheStageInfo(InStageInfo inStageInfo);
+
+    /// <summary> 스테이지 인게임 정보 조회 </summary>
+    Task<Result<InStageInfo>> GetGameInfo(string email);
+
+    Task<Result> DeleteStageInfo(InStageInfo stageInfo);
 }

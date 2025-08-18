@@ -206,7 +206,7 @@ partial class GameDb
     
     private async Task<Result<ItemEnhanceData>> GetItemEnhanceData(long itemCode, int level)
     {
-        var result = await _masterDb.GetItemEnhanceData(itemCode, level);
+        var result = await _masterDb.GetItemEnhanceDataAsync(itemCode, level);
         if (result.IsFailed)
         {
             return Result<ItemEnhanceData>.Failure(result.ErrorCode);
@@ -217,7 +217,7 @@ partial class GameDb
 
     private async Task<Result<RuneEnhanceData>> GetRuneEnhanceData(long runeCode, int level)
     {
-        var result = await _masterDb.GetRuneEnhanceData(runeCode, level);
+        var result = await _masterDb.GetRuneEnhanceDataAsync(runeCode, level);
         if (result.IsFailed)
         {
             return Result<RuneEnhanceData>.Failure(result.ErrorCode);

@@ -1,5 +1,8 @@
-﻿using APIServer.Config;
+﻿using System.Transactions;
+using APIServer.Config;
 using Microsoft.Extensions.Options;
+using SqlKata.Execution;
+using IsolationLevel = System.Data.IsolationLevel;
 
 namespace APIServer.Repository.Implements;
 
@@ -19,6 +22,7 @@ partial class GameDb(ILogger<GameDb> logger, IOptions<DbConfig> dbConfig, IMaste
     private const string TABLE_USER_QUEST_INPROGRESS = "user_quest_inprogress";
     private const string TABLE_CHARACTER_EQUIPMENT_ITEM = "character_equipment_item";
     private const string TABLE_CHARACTER_EQUIPMENT_RUNE = "character_equipment_rune";
+    private const string TABLE_USER_CLEAR_STAGE = "user_clear_stage";
     
     // GameDb Table Column
     private readonly string USER_ID = "user_id";
@@ -31,4 +35,52 @@ partial class GameDb(ILogger<GameDb> logger, IOptions<DbConfig> dbConfig, IMaste
     private readonly string ITEM_CODE = "item_code";
     private readonly string RUNE_CODE = "rune_code";
     private readonly string LEVEL = "level";
+    private readonly string STAGE_CODE = "stage_code";
+    
+    // 비동기, 반환값 없음
+    public async Task<Result> WithTransactionAsync(
+        Func<QueryFactory, Task<Result>> action)
+    {
+        var txOptions = new TransactionOptions
+        {
+            IsolationLevel = MapIsolation(IsolationLevel.ReadCommitted),
+            Timeout = TransactionManager.DefaultTimeout
+        };
+
+        using var scope = new TransactionScope(
+            TransactionScopeOption.Required,
+            txOptions,
+            TransactionScopeAsyncFlowOption.Enabled);
+        
+        EnsureOpen();
+        _conn.EnlistTransaction(Transaction.Current!); 
+
+        var ec = await action(_queryFactory);
+
+        if (ec == ErrorCode.None)
+            scope.Complete(); 
+
+        return ec;
+    }
+
+    // 비동기, 반환값 있음
+    public async Task<TResult> WithTransactionAsync<TResult>(
+        Func<QueryFactory, Task<TResult>> func)
+    {
+        EnsureOpen();
+
+        var txOptions = new TransactionOptions
+        {
+            IsolationLevel = MapIsolation(IsolationLevel.ReadCommitted),
+            Timeout = TransactionManager.DefaultTimeout
+        };
+
+        using var scope = new TransactionScope(
+            TransactionScopeOption.Required,
+            txOptions,
+            TransactionScopeAsyncFlowOption.Enabled);
+        var result = await func(_queryFactory);
+        scope.Complete();
+        return result;
+    }
 }

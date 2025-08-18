@@ -8,6 +8,9 @@ namespace APIServer.Models.Entity;
 /// </summary>
 public class UserClearStage
 {
+    [Column("user_id")]
+    public long userId { get; set; }                    // 유저 ID
+    
     [Column("stage_code")]
     public int stageCode { get; set; }                  // 스테이지 식별 코드
     

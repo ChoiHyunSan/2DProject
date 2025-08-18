@@ -14,8 +14,16 @@ public interface IMasterDb
     Task<Result<int>> GetItemSellPriceAsync(long itemCode, int level);
 
     /// <summary> 아이템 강화 정보 조회 </summary>
-    Task<Result<ItemEnhanceData>> GetItemEnhanceData(long itemCode, int level);
+    Task<Result<ItemEnhanceData>> GetItemEnhanceDataAsync(long itemCode, int level);
     
     /// <summary> 룬 강화 정보 조회 </summary>
-    Task<Result<RuneEnhanceData>> GetRuneEnhanceData(long runeCode, int level);
+    Task<Result<RuneEnhanceData>> GetRuneEnhanceDataAsync(long runeCode, int level);
+
+    Task<Result<List<StageMonsterInfo>>> GetStageMonsterListAsync(long stageCode);
+    
+    Task<Result<int>> GetGoldReward(long stageCode);
+    
+    Task<Result<int>> GetGemReward(long stageCode);
+    
+    Task<Result<int>> GetExpReward(long stageCode);
 }

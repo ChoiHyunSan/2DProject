@@ -1,10 +1,19 @@
-﻿using APIServer.Models.DTO;
+﻿using System.Data;
+using APIServer.Models.DTO;
 using APIServer.Models.Entity;
+using APIServer.Models.Redis;
+using SqlKata.Execution;
 
 namespace APIServer.Repository;
 
 public interface IGameDb
 {
+    /// <summary> 트랜잭션 코드 (반환형 X) </summary>
+    Task<Result> WithTransactionAsync(Func<QueryFactory, Task<Result>> action);
+
+    /// <summary> 트랜잭션 코드 (반환형 O) </summary>
+    Task<TResult> WithTransactionAsync<TResult>(Func<QueryFactory, Task<TResult>> func);
+    
     /// <summary> 유저 초기 데이터 생성 </summary>
     Task<Result<long>> CreateUserGameDataAndReturnUserIdAsync();
     
@@ -49,4 +58,19 @@ public interface IGameDb
     
     /// <summary> 룬 강화 시도 </summary>
     Task<Result> TryEnhanceRuneAsync(long userId, long runeId);
+
+    /// <summary> 클리어한 스테이지 목록 조회 </summary>
+    Task<Result<List<UserClearStage>>> GetClearStageList(long userId);
+
+    /// <summary> 스테이지 클리어 갱신 </summary>
+    Task<Result> UpdateClearStageAsync(long userId, long stageCode);
+
+    /// <summary> 스테이지 클리어 보상 제공 </summary>
+    Task<Result> RewardClearStage(InStageInfo stageInfo);
+
+    /// <summary> 유저 데이터 조회 </summary>
+    Task<Result<UserGameData>> GetUserDataByEmailAsync(string email);
+    
+    /// <summary> 유저 데이터 갱신 </summary>
+    Task<Result> UpdateUserDataAsync(UserGameData data);
 }

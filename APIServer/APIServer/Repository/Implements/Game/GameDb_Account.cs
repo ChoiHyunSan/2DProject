@@ -342,4 +342,14 @@ partial class GameDb
              return Result<GameData>.Failure(ErrorCode.FailedLoadAllGameData);
          } 
     }
+
+    public Task<Result<UserGameData>> GetUserDataByEmailAsync(string email)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<Result> UpdateUserDataAsync(UserGameData data)
+    {
+        throw new NotImplementedException();
+    }
 }

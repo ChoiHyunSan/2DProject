@@ -17,4 +17,9 @@ partial class MemoryDb
     {
         return $"GAME_DATA_{email}";
     }
+
+    private static string CreateStageInfoKey(string email)
+    {
+        return $"STAGE_INFO_{email}";
+    }
 }

@@ -165,7 +165,7 @@ partial class MasterDb
 
             _stageMonsterInfos = stageMonsterInfos
                 .GroupBy(m => m.stageCode)
-                .ToImmutableDictionary(g => g.Key, g => g.First());
+                .ToImmutableDictionary(g => g.Key, g => g.ToList());
         }
         catch (Exception e)
         {

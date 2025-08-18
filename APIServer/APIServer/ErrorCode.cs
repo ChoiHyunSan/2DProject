@@ -36,7 +36,7 @@ public enum ErrorCode
     FailedUpdateItemLevel          = 2013_500,
     FailedUpdateRuneLevel          = 2014_500,
     CannotFindUserCurrency         = 2015_404,
-    
+    FailedUpdateData               = 2016_500,
     
     // AccountDb 3000 ~ 3999
     FailedCreateAccountUserData    = 3000_500,
@@ -54,6 +54,9 @@ public enum ErrorCode
     FailedCacheGameData            = 4007_500,
     FailedGetItemEnhanceData       = 4008_500,
     FailedGetRuneEnhanceData       = 4009_500,
+    FailedCacheStageInfo           = 4010_500,
+    FailedLoadStageInfo            = 4011_500,
+    FailedDeleteStageInfo          = 4012_500,    
     
     // Controller (비즈니스/검증/권한/리소스 미존재 등)
     DuplicatedEmail                = 4000_400,
@@ -71,4 +74,8 @@ public enum ErrorCode
     AlreadyMaximumLevelRune        = 4021_400,
     GoldShortage                   = 4022_400,
     InvalidPrice                   = 4023_500,
+    CannotLoadStageInfo            = 4024_404,
+    CannotKillMonster              = 4025_400,
+    CannotFindMonsterCode          = 4012_404,
+    StageInProgress                = 4013_400,
 }

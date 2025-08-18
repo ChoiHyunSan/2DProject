@@ -7,9 +7,9 @@ namespace APIServer.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class RegisterAccountController(ILogger<RegisterAccountController> logger, IAccountService accountService) : ControllerBase
+public class RegisterController(ILogger<RegisterController> logger, IAccountService accountService) : ControllerBase
 {
-    private readonly ILogger<RegisterAccountController> _logger = logger;
+    private readonly ILogger<RegisterController> _logger = logger;
     private readonly IAccountService _accountService = accountService;
 
     /// <summary>

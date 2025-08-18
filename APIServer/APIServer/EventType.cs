@@ -47,6 +47,10 @@ public enum EventType
     SessionLock = 4002,
     SessionUnLock = 4003,
     CacheGameData = 4004,
+    CacheStageInfo = 4005,
+    LoadStageInfo = 4006,
+    UpdateKillMonster = 4007,
+    DeleteStageInfo = 4008,
     
     // Controller 5000 ~ 5999
     CreateAccount = 5000,
@@ -58,4 +62,8 @@ public enum EventType
     EquipRune = 5006,
     EnhanceItem = 5007,
     EnhanceRune = 5008,
+    GetClearStage = 5009,
+    EnterStage = 5010,
+    KillMonster = 5011,
+    ClearStage = 5012,
 }
