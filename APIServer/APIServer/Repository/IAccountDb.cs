@@ -5,12 +5,12 @@ namespace APIServer.Repository;
 public interface IAccountDb
 {
     /// <summary> 이메일 기반 계정 정보 유무 확인 </summary>
-    Task<Result<bool>> CheckExistAccountByEmailAsync(string email);
+    Task<bool> CheckExistAccountByEmailAsync(string email);
     
     /// <summary> 계정 정보 생성 </summary>
-    Task<Result> CreateAccountUserDataAsync(long userId, string email, string password);
+    Task<bool> CreateAccountUserDataAsync(long userId, string email, string password);
     
     
     /// <summary> 이메일 기반 계정 정보 조회 </summary>
-    Task<Result<UserAccount>> GetUserAccountByEmailAsync(string email);
+    Task<UserAccount> GetUserAccountByEmailAsync(string email);
 }

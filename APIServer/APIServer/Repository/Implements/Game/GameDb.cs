@@ -38,8 +38,8 @@ partial class GameDb(ILogger<GameDb> logger, IOptions<DbConfig> dbConfig, IMaste
     private readonly string STAGE_CODE = "stage_code";
     
     // 비동기, 반환값 없음
-    public async Task<Result> WithTransactionAsync(
-        Func<QueryFactory, Task<Result>> action)
+    public async Task<ErrorCode> WithTransactionAsync(
+        Func<QueryFactory, Task<ErrorCode>> action)
     {
         var txOptions = new TransactionOptions
         {

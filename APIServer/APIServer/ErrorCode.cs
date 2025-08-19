@@ -37,6 +37,10 @@ public enum ErrorCode
     FailedUpdateRuneLevel          = 2014_500,
     CannotFindUserCurrency         = 2015_404,
     FailedUpdateData               = 2016_500,
+    FailedEquipItem                = 2017_500,
+    FailedEquipRune                = 2018_500,  
+    FailedUpdateClearStage         = 2019_500,
+    FailedRewardClearStage         = 2020_500,
     
     // AccountDb 3000 ~ 3999
     FailedCreateAccountUserData    = 3000_500,
@@ -57,6 +61,8 @@ public enum ErrorCode
     FailedCacheStageInfo           = 4010_500,
     FailedLoadStageInfo            = 4011_500,
     FailedDeleteStageInfo          = 4012_500,    
+    CannotFindSession               = 4013_404,
+    CannotFindInStageInfo           = 4014_404,
     
     // Controller (비즈니스/검증/권한/리소스 미존재 등)
     DuplicatedEmail                = 4000_400,

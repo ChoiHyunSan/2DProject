@@ -9,68 +9,68 @@ namespace APIServer.Repository;
 public interface IGameDb
 {
     /// <summary> 트랜잭션 코드 (반환형 X) </summary>
-    Task<Result> WithTransactionAsync(Func<QueryFactory, Task<Result>> action);
+    Task<ErrorCode> WithTransactionAsync(Func<QueryFactory, Task<ErrorCode>> action);
 
     /// <summary> 트랜잭션 코드 (반환형 O) </summary>
     Task<TResult> WithTransactionAsync<TResult>(Func<QueryFactory, Task<TResult>> func);
     
     /// <summary> 유저 초기 데이터 생성 </summary>
-    Task<Result<long>> CreateUserGameDataAndReturnUserIdAsync();
+    Task<long> CreateUserGameDataAndReturnUserIdAsync();
     
     /// <summary> 캐릭터 획득 </summary>
-    Task<Result> InsertCharacterAsync(long userId, UserInventoryCharacter character);
+    Task<bool> InsertCharacterAsync(long userId, UserInventoryCharacter character);
     
     /// <summary> 아이템 획득 </summary>
-    Task<Result> InsertItemAsync(long userId, UserInventoryItem item);
+    Task<bool> InsertItemAsync(long userId, UserInventoryItem item);
     
     /// <summary> 룬 획득 </summary>
-    Task<Result> InsertRuneAsync(long userId, UserInventoryRune rune);
+    Task<bool> InsertRuneAsync(long userId, UserInventoryRune rune);
     
     /// <summary> 월간 출석 보상 생성 </summary>
-    Task<Result> InsertAttendanceMonthAsync(long userId);
+    Task<bool> InsertAttendanceMonthAsync(long userId);
     
     /// <summary> 주간 출석 보상 생성 </summary>
-    Task<Result> InsertAttendanceWeekAsync(long userId);
+    Task<bool> InsertAttendanceWeekAsync(long userId);
     
     /// <summary> 퀘스트 진행 정보 생성 </summary>
-    Task<Result> InsertQuestAsync(long userId, long questCode, DateTime expireDate);
+    Task<bool> InsertQuestAsync(long userId, long questCode, DateTime expireDate);
     
     /// <summary> 유저 게임 데이터 삭제 </summary>
-    Task<Result> DeleteGameDataByUserIdAsync(long userId);
+    Task<bool> DeleteGameDataByUserIdAsync(long userId);
 
     /// <summary> 유저 전체 게임 데이터 조회 </summary>
-    Task<Result<GameData>> GetAllGameDataByUserIdAsync(long accountUserId);
+    Task<GameData> GetAllGameDataByUserIdAsync(long accountUserId);
 
     /// <summary> 캐릭터 구매 </summary>
     Task<Result<(int gold, int gem)>> PurchaseCharacterAsync(long userId, long characterCode, int goldPrice, int gemPrice);
 
     /// <summary> 아이템 판매 </summary>
-    Task<Result> SellInventoryItemAsync(long userId, long itemId);
+    Task<ErrorCode> SellInventoryItemAsync(long userId, long itemId);
 
     /// <summary> 아이템 장착 </summary>
-    Task<Result> TryEquipItemAsync(long userId, long characterId, long itemId);
+    Task<ErrorCode> TryEquipItemAsync(long userId, long characterId, long itemId);
     
     /// <summary> 룬 장착 </summary>
-    Task<Result> TryEquipRuneAsync(long userId, long characterId, long runeId);
+    Task<ErrorCode> TryEquipRuneAsync(long userId, long characterId, long runeId);
 
     /// <summary> 아이템 강화 시도 </summary>
-    Task<Result> TryEnhanceItemAsync(long userId, long itemId);
+    Task<ErrorCode> TryEnhanceItemAsync(long userId, long itemId);
     
     /// <summary> 룬 강화 시도 </summary>
-    Task<Result> TryEnhanceRuneAsync(long userId, long runeId);
+    Task<ErrorCode> TryEnhanceRuneAsync(long userId, long runeId);
 
     /// <summary> 클리어한 스테이지 목록 조회 </summary>
-    Task<Result<List<UserClearStage>>> GetClearStageList(long userId);
+    Task<List<UserClearStage>> GetClearStageList(long userId);
 
     /// <summary> 스테이지 클리어 갱신 </summary>
-    Task<Result> UpdateClearStageAsync(long userId, long stageCode);
+    Task<bool> UpdateClearStageAsync(long userId, long stageCode);
 
     /// <summary> 스테이지 클리어 보상 제공 </summary>
-    Task<Result> RewardClearStage(InStageInfo stageInfo);
+    Task<bool> RewardClearStage(InStageInfo stageInfo);
 
     /// <summary> 유저 데이터 조회 </summary>
-    Task<Result<UserGameData>> GetUserDataByEmailAsync(string email);
+    Task<UserGameData> GetUserDataByEmailAsync(string email);
     
     /// <summary> 유저 데이터 갱신 </summary>
-    Task<Result> UpdateUserDataAsync(UserGameData data);
+    Task<bool> UpdateUserDataAsync(UserGameData data);
 }

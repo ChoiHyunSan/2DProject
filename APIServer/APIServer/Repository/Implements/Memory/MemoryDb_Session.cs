@@ -7,28 +7,22 @@ namespace APIServer.Repository.Implements.Memory;
 
 partial class MemoryDb
 {
-    public async Task<Result> RegisterSessionAsync(UserSession session)
+    public async Task<bool> RegisterSessionAsync(UserSession session)
     {
         var key = CreateSessionKey(session.email);
         try
         {
             var handle = new RedisString<UserSession>(_conn, key, null);
-            _ = await handle.SetAsync(session, TimeSpan.FromMinutes(60));
             
-            LogInfo(_logger, EventType.RegisterSession, "Register Session", new { key });
+            return await handle.SetAsync(session, TimeSpan.FromMinutes(60));
         }
         catch (Exception e)
         {
-            LogError(_logger, ErrorCode.FailedRegisterSession, EventType.RegisterSession, "Register Session Failed",new
-            {
-                session.email,
-                e.Message,
-                e.StackTrace
-            });
-            return ErrorCode.FailedRegisterSession;
+            LogError(_logger, ErrorCode.FailedRegisterSession, EventType.RegisterSession, 
+                "Register Session Failed", new { session.email, e.Message, e.StackTrace });
+            
+            return false;
         }
-        
-        return ErrorCode.None;
     }
 
     public async Task<Result<UserSession>> GetSessionByEmail(string email)
@@ -42,17 +36,14 @@ partial class MemoryDb
             {
                 return Result<UserSession>.Success(data.Value);
             }
-
-            return Result<UserSession>.Failure(ErrorCode.SessionNotFound);
+            
+            return Result<UserSession>.Failure(ErrorCode.CannotFindSession);
         }
         catch (Exception e)
         {
-            LogError(_logger, ErrorCode.FailedGetSession, EventType.GetSession, "Get Session By Email Failed",new
-            {
-                email,
-                e.Message,
-                e.StackTrace
-            });
+            LogError(_logger, ErrorCode.FailedGetSession, EventType.GetSession, 
+                "Get Session By Email Failed",new { email, e.Message, e.StackTrace });
+            
             return Result<UserSession>.Failure(ErrorCode.FailedGetSession);
         }
     }
@@ -82,10 +73,9 @@ partial class MemoryDb
         }
         catch (Exception e)
         {
-            LogError(_logger, ErrorCode.FailedSessionLock, EventType.SessionLock, "Acquire session lock failed", new
-            {
-                email, key, e.Message, e.StackTrace
-            });
+            LogError(_logger, ErrorCode.FailedSessionLock, EventType.SessionLock, 
+                "Acquire session lock failed", new { email, key, e.Message, e.StackTrace });
+            
             return ErrorCode.FailedSessionLock;
         }
     }
@@ -110,10 +100,9 @@ partial class MemoryDb
         }
         catch (Exception e)
         {
-            LogError(_logger, ErrorCode.FailedSessionUnLock, EventType.SessionUnLock, "Release session lock failed", new
-            {
-                email, key, e.Message, e.StackTrace
-            });
+            LogError(_logger, ErrorCode.FailedSessionUnLock, EventType.SessionUnLock, 
+                "Release session lock failed", new { email, key, e.Message, e.StackTrace });
+            
             return ErrorCode.FailedSessionUnLock;
         }
     }

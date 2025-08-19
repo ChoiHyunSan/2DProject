@@ -12,13 +12,7 @@ public class ShopService(ILogger<ShopService> logger, IMasterDb masterDb, IGameD
     
     public async Task<Result<(int currentGold, int currentGem)>> PurchaseCharacterAsync(long userId, long characterCode)
     {
-        var getDataResult = await _masterDb.GetCharacterOriginDataAsync(characterCode);
-        if (getDataResult.IsFailed)
-        {
-            return Result<(int, int)>.Failure(getDataResult.ErrorCode);
-        }
-
-        var originData = getDataResult.Value;
+        var originData = _masterDb.GetCharacterOriginDatas()[characterCode];
         var purchaseResult = await _gameDb.PurchaseCharacterAsync(userId, characterCode, originData.priceGold , originData.priceGem);
         if (!purchaseResult.IsSuccess)
         {
@@ -35,7 +29,6 @@ public class ShopService(ILogger<ShopService> logger, IMasterDb masterDb, IGameD
     {
         LoggerManager.LogInfo(_logger, EventType.SellItem, "Sell Item", new { userId, itemId });
         
-        var result = await _gameDb.SellInventoryItemAsync(userId, itemId);
-        return result.ErrorCode;
+        return await _gameDb.SellInventoryItemAsync(userId, itemId);
     }
 }

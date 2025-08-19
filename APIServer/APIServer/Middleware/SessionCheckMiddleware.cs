@@ -48,20 +48,21 @@ public class SessionCheckMiddleware(ILogger<SessionCheckMiddleware> _logger, IMe
             return;
         }
     
-        var (errorCode , userSession) = await _memoryDb.GetSessionByEmail(email);
-        if (errorCode != None)
+        var sessionResult = await _memoryDb.GetSessionByEmail(email);
+        if (sessionResult.IsFailed)
         {
-            await SendErrorCode(context, errorCode);
+            await SendErrorCode(context, sessionResult.ErrorCode);
             return;
         }
 
-        if (authToken != userSession.authToken)
+        var session = sessionResult.Value;
+        if (authToken != session.authToken)
         {
             await SendErrorCode(context, FailedAuthorizeTokenVerify);
             return;       
         }
         
-        context.Items["userSession"] = userSession;       
+        context.Items["userSession"] = sessionResult;       
         context.Items["NeedToLock"] = true;
         
         await _next(context);

@@ -19,10 +19,8 @@ public class StageService(ILogger<StageService> logger,IGameDb gameDb, IMemoryDb
     {
         LogInfo(_logger, EventType.GetClearStage, "Get Clear Stage", new { userId });
         
-        var stagesResult = await _gameDb.GetClearStageList(userId);
-        if(stagesResult.IsFailed) return Result<List<StageInfo>>.Failure(stagesResult.ErrorCode);
-        
-        var stageInfos = stagesResult.Value
+        var stageList = await _gameDb.GetClearStageList(userId);
+        var stageInfos = stageList
             .Select(stage => new StageInfo
             {
                 stageCode = stage.stageCode,
@@ -38,15 +36,14 @@ public class StageService(ILogger<StageService> logger,IGameDb gameDb, IMemoryDb
         LogInfo(_logger, EventType.EnterStage, "Enter Stage", new { email, stageCode, characterIds });
         
         // 스테이지 정보 조회
-        var result = await _masterDb.GetStageMonsterListAsync(stageCode);
-        if(result.IsFailed) return Result<List<MonsterInfo>>.Failure(result.ErrorCode);
-
-        var monsterInfos = result.Value;
+        var monsterInfos = _masterDb.GetStageMonsterList()[stageCode];
         
         // 인게임 정보 캐싱
         var inStageInfo = InStageInfo.Create(userId, email, stageCode, monsterInfos);
-        var cacheResult = await _memoryDb.CacheStageInfo(inStageInfo);
-        if(cacheResult.IsFailed) return  Result<List<MonsterInfo>>.Failure(cacheResult.ErrorCode);
+        if (await _memoryDb.CacheStageInfo(inStageInfo) == false)
+        {
+            return Result<List<MonsterInfo>>.Failure(ErrorCode.FailedCacheStageInfo);   
+        }
         
         // 스테이지 정보 반환
         return Result<List<MonsterInfo>>.Success(monsterInfos.Select(x => new MonsterInfo
@@ -61,47 +58,51 @@ public class StageService(ILogger<StageService> logger,IGameDb gameDb, IMemoryDb
         LogInfo(_logger, EventType.ClearStage, "Clear Stage", new { email, stageCode });
         
         // 인게임 정보 조회
-        var result = await memoryDb.GetGameInfo(email);
-        if(result.IsFailed) return Result.Failure(result.ErrorCode);
-
-        var stageInfo = result.Value;
+        var stageResult = await _memoryDb.GetGameInfo(email);
+        if (stageResult.IsFailed) return stageResult.ErrorCode;
+        var stageInfo = stageResult.Value;
         
         // 클리어 여부 확인 (모든 몬스터를 처치했는지 확인)
-        var clearCheck = await CheckStageClear(stageInfo);
-        if(clearCheck.IsFailed) return Result.Failure(clearCheck.ErrorCode);
-
-        // 보상 정보와 유저 정보 조회
-        var goldReward = await _masterDb.GetGoldReward(stageInfo.stageCode);
-        var gemReward = await _masterDb.GetGemReward(stageInfo.stageCode);
-        var expReward = await _masterDb.GetExpReward(stageInfo.stageCode);
-        if (goldReward.IsFailed || gemReward.IsFailed || expReward.IsFailed)
+        if (await CheckStageClearAsync(stageInfo) == false)
         {
-            return Result.Failure(goldReward.ErrorCode);
+            return ErrorCode.StageInProgress;
         }
         
+        // 보상 정보와 유저 정보 조회
+        var rewards = GetStageRewards(stageInfo.stageCode);
+
         var userData = await _gameDb.GetUserDataByEmailAsync(email);
-        
-        
         var txResult = await _gameDb.WithTransactionAsync<Result>(async q =>
         {
             // 클리어 확인된 경우, 클리어 정보 추가
-            var clearResult = await _gameDb.UpdateClearStageAsync(stageInfo.userId, stageInfo.stageCode);
-            if(clearResult.IsFailed) return Result.Failure(clearResult.ErrorCode);
+            if (await _gameDb.UpdateClearStageAsync(stageInfo.userId, stageInfo.stageCode) == false)
+            {
+                return ErrorCode.FailedUpdateClearStage;
+            }
             
             // 클리어 보상 조회 및 보상 전달
-            var rewardResult = await _gameDb.RewardClearStage(stageInfo);
-            if(rewardResult.IsFailed) return Result.Failure(rewardResult.ErrorCode);
+            if (await _gameDb.RewardClearStage(stageInfo) == false)
+            {
+                return ErrorCode.FailedRewardClearStage;
+            }
 
             return Result.Success();
         });
         
         // 메모리에 올려진 인게임 정보 삭제
-        var deleteResult = await _memoryDb.DeleteStageInfo(stageInfo);
-        if(deleteResult.IsFailed) return  Result.Failure(deleteResult.ErrorCode);
+        if(await _memoryDb.DeleteStageInfo(stageInfo) == false)
+        {
+            return Result.Failure(ErrorCode.FailedDeleteStageInfo);
+        }
         
         return Result.Success();
     }
-    
+
+    private (StageRewardGold, StageRewardRune, StageRewardItem) GetStageRewards(long stageCode)
+    {
+        return (masterDb.GetStageRewardsGold()[stageCode], _masterDb.GetStageRewardsRune()[stageCode], _masterDb.GetStageRewardsItem()[stageCode]);
+    }
+
     public async Task<Result> KillMonster(string email, long monsterCode)
     {
         LogInfo(_logger,  EventType.KillMonster, "Kill Monster", new { email, monsterCode });
@@ -112,21 +113,25 @@ public class StageService(ILogger<StageService> logger,IGameDb gameDb, IMemoryDb
         
         // 몬스터 처치 가능 여부 확인 (몬스터가 존재하는지 & 이미 최대 치로 잡았는지)
         var stageInfo = inGameResult.Value;
-        var verifyKillResult = await VerifyKillMonster(stageInfo, monsterCode);
-        if (verifyKillResult.IsFailed) return Result.Failure(verifyKillResult.ErrorCode);
+        if (await VerifyKillMonster(stageInfo, monsterCode) is { IsFailed: true } result)
+        {
+            return result.ErrorCode;
+        }
         
         // 처치 가능한 경우, 처치 숫자 갱신
         var updateKillResult = await UpdateKillMonster(stageInfo, monsterCode);
         if(updateKillResult.IsFailed) return Result.Failure(updateKillResult.ErrorCode);
         
         // 인게임 정보 갱신
-        var updateStageInfo = await _memoryDb.CacheStageInfo(stageInfo);
-        if(updateStageInfo.IsFailed) return Result.Failure(updateStageInfo.ErrorCode);
+        if (await _memoryDb.CacheStageInfo(stageInfo) == false)
+        {
+           return Result.Failure(ErrorCode.FailedCacheStageInfo);   
+        }
         
         return Result.Success();
     }
 
-    private async Task<Result> CheckStageClear(InStageInfo stageInfo)
+    private async Task<bool> CheckStageClearAsync(InStageInfo stageInfo)
     {
         var monsterKillTargets = stageInfo.monsterKillTargets;
         var monsterKills = stageInfo.monsterKills;
@@ -140,11 +145,11 @@ public class StageService(ILogger<StageService> logger,IGameDb gameDb, IMemoryDb
             {
                 LogError(_logger, ErrorCode.StageInProgress, EventType.ClearStage, 
                     "Stage is InProgress", new { stageInfo.email, stageInfo.stageCode });
-                return ErrorCode.StageInProgress;
+                return false;
             }
         }
-        
-        return Result.Success();
+
+        return true;
     }
     
     private async Task<Result> UpdateKillMonster(InStageInfo stageInfo, long monsterCode)

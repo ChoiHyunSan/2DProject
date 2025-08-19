@@ -37,6 +37,7 @@ public enum EventType
     CheckItemExists = 2019,
     CheckRuneEquipped = 2020,
     
+    
     // AccountDb 3000 ~ 4999
     CreateAccountUserData = 3000,
     GetAccountUserData = 3001,

@@ -8,7 +8,7 @@ namespace APIServer.Repository;
 public interface IMemoryDb
 {
     /// <summary> 세션 저장 </summary>
-    Task<Result> RegisterSessionAsync(UserSession session);
+    Task<bool> RegisterSessionAsync(UserSession session);
     
     /// <summary> 이메일 기반 세션 조회 </summary>
     Task<Result<UserSession>> GetSessionByEmail(string email);
@@ -20,13 +20,13 @@ public interface IMemoryDb
     Task<Result> TrySessionRequestUnLock(string email);
 
     /// <summary> 게임 데이터 캐싱 </summary>
-    Task<Result> CacheGameData(string email, GameData gameData);
+    Task<bool> CacheGameData(string email, GameData gameData);
 
     /// <summary> 스테이지 인게임 정보 캐싱 </summary>
-    Task<Result> CacheStageInfo(InStageInfo inStageInfo);
+    Task<bool> CacheStageInfo(InStageInfo inStageInfo);
 
     /// <summary> 스테이지 인게임 정보 조회 </summary>
     Task<Result<InStageInfo>> GetGameInfo(string email);
 
-    Task<Result> DeleteStageInfo(InStageInfo stageInfo);
+    Task<bool> DeleteStageInfo(InStageInfo stageInfo);
 }

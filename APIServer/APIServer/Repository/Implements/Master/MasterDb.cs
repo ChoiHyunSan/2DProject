@@ -15,27 +15,42 @@ partial class MasterDb(IOptions<DbConfig> dbConfig, ILogger<MasterDb> logger)
     private readonly ILogger<MasterDb> _logger = logger;
     
     // Attendance
-    public ImmutableDictionary<int, AttendanceRewardMonth> _attendanceRewardsMonth = ImmutableDictionary<int, AttendanceRewardMonth>.Empty;
-    public ImmutableDictionary<int, AttendanceRewardWeek> _attendanceRewardsWeek = ImmutableDictionary<int, AttendanceRewardWeek>.Empty;
+    private ImmutableDictionary<int, AttendanceRewardMonth> _attendanceRewardsMonth = ImmutableDictionary<int, AttendanceRewardMonth>.Empty;
+    private ImmutableDictionary<int, AttendanceRewardWeek> _attendanceRewardsWeek = ImmutableDictionary<int, AttendanceRewardWeek>.Empty;
     
     // Character
-    public ImmutableDictionary<long, CharacterOriginData> _characterOriginDatas = ImmutableDictionary<long, CharacterOriginData>.Empty;
-    public ImmutableDictionary<(long, int), CharacterEnhanceData> _characterEnhancePriceDatas = ImmutableDictionary<(long, int), CharacterEnhanceData>.Empty;
+    private ImmutableDictionary<long, CharacterOriginData> _characterOriginDatas = ImmutableDictionary<long, CharacterOriginData>.Empty;
+    private ImmutableDictionary<(long, int), CharacterEnhanceData> _characterEnhancePriceDatas = ImmutableDictionary<(long, int), CharacterEnhanceData>.Empty;
     
     // Item
-    public ImmutableDictionary<long, ItemOriginData> _itemOriginDatas = ImmutableDictionary<long, ItemOriginData>.Empty;
-    public ImmutableDictionary<(long, int), ItemEnhanceData> _itemEnhanceDatas = ImmutableDictionary<(long, int), ItemEnhanceData>.Empty;
+    private ImmutableDictionary<long, ItemOriginData> _itemOriginDatas = ImmutableDictionary<long, ItemOriginData>.Empty;
+    private ImmutableDictionary<(long, int), ItemEnhanceData> _itemEnhanceDatas = ImmutableDictionary<(long, int), ItemEnhanceData>.Empty;
     
     // Rune
-    public ImmutableDictionary<long, RuneOriginData> _runeOriginDatas = ImmutableDictionary<long, RuneOriginData>.Empty;
-    public ImmutableDictionary<(long, int), RuneEnhanceData> _runeEnhanceDatas = ImmutableDictionary<(long, int), RuneEnhanceData>.Empty;
+    private ImmutableDictionary<long, RuneOriginData> _runeOriginDatas = ImmutableDictionary<long, RuneOriginData>.Empty;
+    private ImmutableDictionary<(long, int), RuneEnhanceData> _runeEnhanceDatas = ImmutableDictionary<(long, int), RuneEnhanceData>.Empty;
     
     // Quest
-    public ImmutableDictionary<long, QuestInfoData> _questInfoDatas = ImmutableDictionary<long, QuestInfoData>.Empty;
+    private ImmutableDictionary<long, QuestInfoData> _questInfoDatas = ImmutableDictionary<long, QuestInfoData>.Empty;
 
     // Stage
-    public ImmutableDictionary<long, StageRewardGold> _stageRewardsGold = ImmutableDictionary<long, StageRewardGold>.Empty;
-    public ImmutableDictionary<long, StageRewardItem> _stageRewardsItem = ImmutableDictionary<long, StageRewardItem>.Empty;
-    public ImmutableDictionary<long, StageRewardRune> _stageRewardsRune = ImmutableDictionary<long, StageRewardRune>.Empty;
-    public ImmutableDictionary<long, List<StageMonsterInfo>> _stageMonsterInfos = ImmutableDictionary<long, List<StageMonsterInfo>>.Empty;
+    private ImmutableDictionary<long, StageRewardGold> _stageRewardsGold = ImmutableDictionary<long, StageRewardGold>.Empty;
+    private ImmutableDictionary<long, StageRewardItem> _stageRewardsItem = ImmutableDictionary<long, StageRewardItem>.Empty;
+    private ImmutableDictionary<long, StageRewardRune> _stageRewardsRune = ImmutableDictionary<long, StageRewardRune>.Empty;
+    private ImmutableDictionary<long, List<StageMonsterInfo>> _stageMonsterInfos = ImmutableDictionary<long, List<StageMonsterInfo>>.Empty;
+    
+    
+    public ImmutableDictionary<int, AttendanceRewardMonth> GetAttendanceRewardMonths() => _attendanceRewardsMonth;
+    public ImmutableDictionary<int, AttendanceRewardWeek> GetAttendanceRewardWeeks() =>  _attendanceRewardsWeek;
+    public ImmutableDictionary<long, CharacterOriginData> GetCharacterOriginDatas() => _characterOriginDatas;
+    public ImmutableDictionary<(long, int), CharacterEnhanceData> GetCharacterEnhancePriceDatas() => _characterEnhancePriceDatas;
+    public ImmutableDictionary<long, ItemOriginData> GetItemOriginDatas() => _itemOriginDatas;
+    public ImmutableDictionary<(long, int), ItemEnhanceData> GetItemEnhanceDatas() => _itemEnhanceDatas;
+    public ImmutableDictionary<long, RuneOriginData> GetRuneOriginDatas() => _runeOriginDatas;
+    public ImmutableDictionary<(long, int), RuneEnhanceData> GetRuneEnhanceDatas() =>  _runeEnhanceDatas;
+    public ImmutableDictionary<long, QuestInfoData> GetQuestInfoDatas() => _questInfoDatas;
+    public ImmutableDictionary<long, StageRewardGold> GetStageRewardsGold() => _stageRewardsGold;
+    public ImmutableDictionary<long, StageRewardItem> GetStageRewardsItem() => _stageRewardsItem;
+    public ImmutableDictionary<long, StageRewardRune> GetStageRewardsRune() => _stageRewardsRune;
+    public ImmutableDictionary<long, List<StageMonsterInfo>> GetStageMonsterList() =>  _stageMonsterInfos;
 }

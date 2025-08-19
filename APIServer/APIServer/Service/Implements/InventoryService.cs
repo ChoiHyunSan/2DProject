@@ -11,45 +11,41 @@ public class InventoryService(ILogger<InventoryService> logger, IGameDb gameDb)
     
     public async Task<Result> EquipItemAsync(long userId, long characterId, long itemId)
     {
-        var result = await _gameDb.TryEquipItemAsync(userId, characterId, itemId);
-        if (result.IsSuccess)
+        if(await _gameDb.TryEquipItemAsync(userId, characterId, itemId) == ErrorCode.None)
         {
             LogInfo(_logger, EventType.EquipItem, "Equip Item", new { userId, itemId });   
         }
 
-        return result.ErrorCode;
+        return ErrorCode.None;
     }
 
     public async Task<Result> EquipRuneAsnyc(long userId, long characterId, long runeId)
     {
-        var result = await _gameDb.TryEquipRuneAsync(userId, characterId, runeId);
-        if (result.IsSuccess)
+        if(await _gameDb.TryEquipRuneAsync(userId, characterId, runeId) == ErrorCode.None)
         {
             LogInfo(_logger, EventType.EquipRune, "Equip Rune", new { userId, runeId });  
         }
 
-        return result.ErrorCode;
+        return ErrorCode.None;
     }
 
     public async Task<Result> EnhanceItemAsync(long userId, long itemId)
     {
-        var result = await _gameDb.TryEnhanceItemAsync(userId, itemId);
-        if (result.IsSuccess)
+        if(await _gameDb.TryEnhanceItemAsync(userId, itemId) == ErrorCode.None)
         {
             LogInfo(_logger, EventType.EnhanceItem,  "Enhance Item", new { userId, itemId });
         }
 
-        return result.ErrorCode;
+        return ErrorCode.None;
     }
 
     public async Task<Result> EnhanceRuneAsync(long userId, long itemId)
     {
-        var result = await _gameDb.TryEnhanceRuneAsync(userId, itemId);
-        if (result.IsSuccess)
+        if(await _gameDb.TryEnhanceRuneAsync(userId, itemId) == ErrorCode.None)
         {
             LogInfo(_logger, EventType.EnhanceRune, "Enhance Rune", new { userId, itemId });
         }
 
-        return result.ErrorCode;
+        return ErrorCode.None;
     }
 }

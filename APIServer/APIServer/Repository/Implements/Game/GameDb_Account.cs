@@ -9,11 +9,9 @@ namespace APIServer.Repository.Implements;
 
 partial class GameDb
 {
-    public async Task<Result<long>> CreateUserGameDataAndReturnUserIdAsync()
+    public async Task<long> CreateUserGameDataAndReturnUserIdAsync()
     {
-        try
-        {
-            var userId = await _queryFactory.Query(TABLE_USER_GAME_DATA).InsertGetIdAsync<long>(new
+        return await _queryFactory.Query(TABLE_USER_GAME_DATA).InsertGetIdAsync<long>(new
             {
                 gold = 10000,
                 gem = 0,
@@ -22,90 +20,47 @@ partial class GameDb
                 total_monster_kill_count = 0,
                 total_clear_count = 0
             });
-
-            LogInfo(_logger, EventType.CreateUserGameData, "Success Create New User Game Data", new { userId });
-            return Result<long>.Success(userId);
-        }
-        catch (Exception e)
-        {
-            LogError(_logger, ErrorCode.FailedInsertData, EventType.CreateUserGameData,
-                "Create User GameData And Return UserId Async Failed", new { e.Message, e.StackTrace });
-            return Result<long>.Failure(ErrorCode.FailedInsertData);
-        }
     }
 
-    public async Task<Result> InsertCharacterAsync(long userId, UserInventoryCharacter character)
+    public async Task<bool> InsertCharacterAsync(long userId, UserInventoryCharacter character)
     {
-        try
-        {
-            _ = await _queryFactory.Query(TABLE_USER_INVENTORY_CHARACTER).InsertAsync(new
+        var result = await _queryFactory.Query(TABLE_USER_INVENTORY_CHARACTER).InsertAsync(new
             {
                 character_code = character.characterCode,
                 level = character.level,
                 user_id = userId
             });
-            
-            LogInfo(_logger, EventType.InsertItem, "Success Create New User Character", 
-                new { userId, character.characterCode });
-            
-        }catch(Exception e)
-        {
-            LogError(_logger, ErrorCode.FailedInsertData, EventType.InsertCharacter, 
-                "InsertCharacterAsync Failed", new { e.Message, e.StackTrace });
-            return ErrorCode.FailedInsertData;
-        }
-        return Result.Success();
+
+        return result == 1;
     }
 
-    public async Task<Result> InsertItemAsync(long userId, UserInventoryItem item)
+    public async Task<bool> InsertItemAsync(long userId, UserInventoryItem item)
     {
-        try
-        {
-            _ = await _queryFactory.Query(TABLE_USER_INVENTORY_ITEM).InsertAsync(new
+        var result = await _queryFactory.Query(TABLE_USER_INVENTORY_ITEM).InsertAsync(new
             {
                 item_code = item.itemCode,
                 level = item.level,
                 user_id = userId
             });
-            
-            LogInfo(_logger, EventType.InsertItem, "Success Create New User Item", new { userId, item.itemCode });
-            
-        }catch(Exception e)
-        {
-            LogError(_logger, ErrorCode.FailedInsertData, EventType.InsertItem, 
-                "InsertItemAsync Failed", new { e.Message, e.StackTrace });
-            return ErrorCode.FailedInsertData;
-        }
-        return Result.Success();
+
+        return result == 1;
     }
     
-    public async Task<Result> InsertRuneAsync(long userId, UserInventoryRune rune)
+    public async Task<bool> InsertRuneAsync(long userId, UserInventoryRune rune)
     {
-        try
-        {
-            _ = await _queryFactory.Query(TABLE_USER_INVENTORY_RUNE).InsertAsync(new
+        var result = await _queryFactory.Query(TABLE_USER_INVENTORY_RUNE).InsertAsync(new
             {
                 rune_code = rune.runeCode,
                 level = rune.level,
                 user_id = userId,
             });
-            
-            LogInfo(_logger, EventType.InsertRune, "Success Create New User Rune", new { userId, rune.runeCode });
-            
-        }catch(Exception e)
-        {
-            LogError(_logger, ErrorCode.FailedInsertData, EventType.InsertRune, 
-                "InsertRuneAsync Failed", new { e.Message, e.StackTrace });
-            return ErrorCode.FailedInsertData;
-        }
-        return Result.Success();
+
+        return result == 1;
     }
     
-    public async Task<Result> InsertAttendanceMonthAsync(long userId)
+    public async Task<bool> InsertAttendanceMonthAsync(long userId)
     {
-        try
-        {
-            _ = await _queryFactory.Query(TABLE_USER_ATTENDANCE_MONTH).InsertAsync(new
+        var result = await _queryFactory.Query(TABLE_USER_ATTENDANCE_MONTH).InsertAsync(new
             {
                 user_id = userId,
                 last_attendance_date = 0,
@@ -113,76 +68,36 @@ partial class GameDb
                 last_update_date = DateTime.MinValue,
             });
 
-            LogInfo(_logger, EventType.InsertAttendanceMonth, "Success Create New User Attendance", new { userId });
-
-        }catch(Exception e)
-        {
-            LogError(_logger, ErrorCode.FailedInsertData, EventType.InsertAttendanceMonth, 
-                "InsertAttendanceMonthAsync Failed", new
-                {
-                    e.Message,
-                    e.StackTrace
-                });
-            return ErrorCode.FailedInsertData;
-        }
-        return Result.Success();
+        return result == 1;
     }
     
-    public async Task<Result> InsertAttendanceWeekAsync(long userId)
+    public async Task<bool> InsertAttendanceWeekAsync(long userId)
     {
-        try
-        {
-            _ = await _queryFactory.Query(TABLE_USER_ATTENDANCE_WEEK).InsertAsync(new
+        var result = await _queryFactory.Query(TABLE_USER_ATTENDANCE_WEEK).InsertAsync(new
             {
                 user_id = userId,
                 last_attendance_date = 0,
                 start_update_date = DateTime.MinValue,
                 last_update_date = DateTime.MinValue,
             });
-            
-            LogInfo(_logger, EventType.InsertAttendanceWeek, "Success Create New User Attendance", new { userId });
-            
-        }catch(Exception e)
-        {
-            LogError(_logger, ErrorCode.FailedInsertData, EventType.InsertAttendanceWeek, 
-                "InsertAttendanceWeekAsync Failed", new
-                {
-                    e.Message,
-                    e.StackTrace
-                });
-            return ErrorCode.FailedInsertData;
-        }
-        return Result.Success();
+
+        return result == 1;
     }
     
-    public async Task<Result> InsertQuestAsync(long userId, long questCode, DateTime expireDate)
+    public async Task<bool> InsertQuestAsync(long userId, long questCode, DateTime expireDate)
     {
-        try
-        {
-            await _queryFactory.Query(TABLE_USER_QUEST_INPROGRESS).InsertAsync(new
+        var result = await _queryFactory.Query(TABLE_USER_QUEST_INPROGRESS).InsertAsync(new
             {
                 user_id = userId,
                 quest_code = questCode,
                 expire_date = expireDate,
                 progress = 0
             });
-            
-            LogInfo(_logger, EventType.InsertQuest, "Success Create New User Quest", new { userId, questCode, expireDate });;
-            
-        }catch(Exception e)
-        {
-            LogError(_logger, ErrorCode.FailedInsertData, EventType.InsertQuest, 
-                "CreateDefaultQuestAsync Failed", new
-                {
-                    e.Message,
-                    e.StackTrace
-                });
-            return ErrorCode.FailedInsertData;
-        }
-        return Result.Success();
+
+        return result == 1;
     }
 
-    public async Task<Result> DeleteGameDataByUserIdAsync(long userId)
+    public async Task<bool> DeleteGameDataByUserIdAsync(long userId)
     {
         try
         {
@@ -204,12 +119,13 @@ partial class GameDb
                     e.Message,
                     e.StackTrace
                 });
-            return ErrorCode.FailedRollbackDefaultData;
+            return false;
         }
-        return Result.Success();
+
+        return true;
     }
 
-    public async Task<Result<GameData>> GetAllGameDataByUserIdAsync(long userId)
+    public async Task<GameData> GetAllGameDataByUserIdAsync(long userId)
     {
          var sql = @"
             SELECT gold, gem, exp, level,
@@ -262,7 +178,7 @@ partial class GameDb
 
             // 1) 기본 스탯
             var baseRow = await multi.ReadFirstOrDefaultAsync<(int gold, int gem, int exp, int level, int totalMonsterKillCount, int totalClearCount)>();
-            if (baseRow.Equals(default)) return Result<GameData>.Failure(ErrorCode.FailedLoadAllGameData);
+            if (baseRow.Equals(default)) return null;
 
             // 2) 캐릭터
             var characterRows = (await multi.ReadAsync<(long character_id, long characterCode, int level)>()).ToList();
@@ -328,7 +244,7 @@ partial class GameDb
                 userId
             });
             
-            return Result<GameData>.Success(gameData);
+            return gameData;
          }
          catch (Exception e)
          {
@@ -339,16 +255,16 @@ partial class GameDb
                  message = e.Message,
              });
              
-             return Result<GameData>.Failure(ErrorCode.FailedLoadAllGameData);
+             return null;
          } 
     }
 
-    public Task<Result<UserGameData>> GetUserDataByEmailAsync(string email)
+    public Task<UserGameData> GetUserDataByEmailAsync(string email)
     {
         throw new NotImplementedException();
     }
 
-    public Task<Result> UpdateUserDataAsync(UserGameData data)
+    public Task<bool> UpdateUserDataAsync(UserGameData data)
     {
         throw new NotImplementedException();
     }
