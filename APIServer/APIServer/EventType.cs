@@ -67,4 +67,5 @@ public enum EventType
     EnterStage = 5010,
     KillMonster = 5011,
     ClearStage = 5012,
+    LoadGameData = 5013,
 }

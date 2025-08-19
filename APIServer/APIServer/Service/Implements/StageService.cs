@@ -17,18 +17,25 @@ public class StageService(ILogger<StageService> logger,IGameDb gameDb, IMemoryDb
     
     public async Task<Result<List<StageInfo>>> GetClearStage(long userId)
     {
-        LogInfo(_logger, EventType.GetClearStage, "Get Clear Stage", new { userId });
-        
-        var stageList = await _gameDb.GetClearStageList(userId);
-        var stageInfos = stageList
-            .Select(stage => new StageInfo
-            {
-                stageCode = stage.stageCode,
-                clearCount = stage.clearCount,
-                lastClearDate = stage.lastClearDate
-            }).ToList();
-        
-        return Result<List<StageInfo>>.Success(stageInfos);
+        try
+        {
+            // 클리어 스테이지 조회
+            var stageList = await _gameDb.GetClearStageListAsync(userId);
+            
+            // 데이터 양식 변경
+            var stageInfos = stageList.Select(StageInfo.Of).ToList();
+
+            LogInfo(_logger, EventType.GetClearStage, "Get Clear Stage", new { userId });
+
+            return Result<List<StageInfo>>.Success(stageInfos);
+        }
+        catch (Exception ex)
+        {
+            LogError(_logger, ErrorCode.FailedGetClearStage, EventType.GetClearStage
+            , "Failed Get Clear Stage", new { userId, ex.Message, ex.StackTrace });
+
+            return Result<List<StageInfo>>.Failure(ErrorCode.FailedGetClearStage);
+        }
     }
 
     public async Task<Result<List<MonsterInfo>>> EnterStage(long userId, string email, long stageCode, List<long> characterIds)
@@ -81,7 +88,7 @@ public class StageService(ILogger<StageService> logger,IGameDb gameDb, IMemoryDb
             }
             
             // 클리어 보상 조회 및 보상 전달
-            if (await _gameDb.RewardClearStage(stageInfo) == false)
+            if (await _gameDb.RewardClearStageAsync(stageInfo) == false)
             {
                 return ErrorCode.FailedRewardClearStage;
             }
@@ -96,11 +103,6 @@ public class StageService(ILogger<StageService> logger,IGameDb gameDb, IMemoryDb
         }
         
         return Result.Success();
-    }
-
-    private (StageRewardGold, StageRewardRune, StageRewardItem) GetStageRewards(long stageCode)
-    {
-        return (masterDb.GetStageRewardsGold()[stageCode], _masterDb.GetStageRewardsRune()[stageCode], _masterDb.GetStageRewardsItem()[stageCode]);
     }
 
     public async Task<Result> KillMonster(string email, long monsterCode)
@@ -131,6 +133,11 @@ public class StageService(ILogger<StageService> logger,IGameDb gameDb, IMemoryDb
         return Result.Success();
     }
 
+    private (StageRewardGold, StageRewardRune, StageRewardItem) GetStageRewards(long stageCode)
+    {
+        return (masterDb.GetStageRewardsGold()[stageCode], _masterDb.GetStageRewardsRune()[stageCode], _masterDb.GetStageRewardsItem()[stageCode]);
+    }
+
     private async Task<bool> CheckStageClearAsync(InStageInfo stageInfo)
     {
         var monsterKillTargets = stageInfo.monsterKillTargets;
@@ -151,7 +158,7 @@ public class StageService(ILogger<StageService> logger,IGameDb gameDb, IMemoryDb
 
         return true;
     }
-    
+
     private async Task<Result> UpdateKillMonster(InStageInfo stageInfo, long monsterCode)
     {
         var killCounts = stageInfo.monsterKills.GetValueOrDefault(monsterCode, -1);

@@ -12,5 +12,5 @@ public interface IInventoryService
     Task<Result> EnhanceItemAsync(long userId, long itemId);
     
     /// <summary> 룬 강화 </summary>
-    Task<Result> EnhanceRuneAsync(long userId, long itemId);
+    Task<Result> EnhanceRuneAsync(long userId, long runeId);
 }

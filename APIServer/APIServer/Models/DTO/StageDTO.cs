@@ -1,4 +1,6 @@
-﻿namespace APIServer.Models.DTO;
+﻿using APIServer.Models.Entity;
+
+namespace APIServer.Models.DTO;
 
 public class GetClearStageRequest : RequestBase
 {
@@ -15,6 +17,16 @@ public record StageInfo
     public long stageCode { get; set; }
     public int clearCount { get; set; }
     public DateTime lastClearDate { get; set; }
+
+    public static StageInfo Of(UserClearStage userClearStage)
+    {
+        return new StageInfo
+        {
+            stageCode = userClearStage.stageCode,
+            clearCount = userClearStage.clearCount,
+            lastClearDate = userClearStage.lastClearDate
+        };
+    }
 }
 
 public class EnterStageRequest : RequestBase

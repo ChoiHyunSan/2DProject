@@ -7,7 +7,7 @@ namespace APIServer.Repository.Implements;
 
 partial class GameDb
 {
-    public async Task<List<UserClearStage>> GetClearStageList(long userId)
+    public async Task<List<UserClearStage>> GetClearStageListAsync(long userId)
     {
         var result =  await _queryFactory.Query(TABLE_USER_CLEAR_STAGE)
             .GetAsync<UserClearStage>();
@@ -37,7 +37,7 @@ partial class GameDb
         }
     }
 
-    public Task<bool> RewardClearStage(InStageInfo stageInfo)
+    public Task<bool> RewardClearStageAsync(InStageInfo stageInfo)
     {
         throw new NotImplementedException();
     }

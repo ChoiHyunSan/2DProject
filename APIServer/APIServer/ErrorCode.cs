@@ -41,6 +41,8 @@ public enum ErrorCode
     FailedEquipRune                = 2018_500,  
     FailedUpdateClearStage         = 2019_500,
     FailedRewardClearStage         = 2020_500,
+    FailedSellItem                  = 2021_500,
+    FailedGetClearStage            = 2022_500,
     
     // AccountDb 3000 ~ 3999
     FailedCreateAccountUserData    = 3000_500,
@@ -63,6 +65,8 @@ public enum ErrorCode
     FailedDeleteStageInfo          = 4012_500,    
     CannotFindSession               = 4013_404,
     CannotFindInStageInfo           = 4014_404,
+    FailedEnhanceItem               = 4015_500,
+    FailedEnhanceRune               = 4016_500,
     
     // Controller (비즈니스/검증/권한/리소스 미존재 등)
     DuplicatedEmail                = 4000_400,

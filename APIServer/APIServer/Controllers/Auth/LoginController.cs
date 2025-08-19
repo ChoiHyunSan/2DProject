@@ -7,11 +7,13 @@ namespace APIServer.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class LoginController(ILogger<LoginController> logger, IAccountService accountService) : ControllerBase
+public class LoginController(ILogger<LoginController> logger, IAccountService accountService, IDataLoadService dataLoadService) 
+    : ControllerBase
 {
     private readonly ILogger<LoginController> _logger = logger;
     private readonly IAccountService _accountService = accountService;
-
+    private readonly IDataLoadService _dataLoadService = dataLoadService;
+    
     /// <summary>
     /// 게임 로그인 요청 API
     /// 세션 인증 : X
@@ -25,12 +27,22 @@ public class LoginController(ILogger<LoginController> logger, IAccountService ac
     {
         LogInfo(_logger, EventType.Login, "Request Login", new { request });
         
-        var result = await _accountService.LoginAsync(request.email, request.password);
+        var login = await _accountService.LoginAsync(request.email, request.password);
+        if (login.IsFailed)
+        {
+            return new LoginResponse { code = login.ErrorCode };
+        }
+
+        var dataLoad = await _dataLoadService.LoadGameData(login.Value.userId);
+        if (dataLoad.IsFailed)
+        {
+            return new LoginResponse { code = dataLoad.ErrorCode };
+        }
+        
         return new LoginResponse
         {
-            authToken = result.Value.authToken,
-            gameData = result.Value.gameData,
-            code = result.ErrorCode
+            authToken = login.Value.authToken,
+            gameData = dataLoad.Value
         };
     }
 }

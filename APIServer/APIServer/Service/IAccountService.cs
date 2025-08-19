@@ -8,5 +8,5 @@ public interface IAccountService
     Task<Result> RegisterAccountAsync(string email, string password);
     
     /// <summary> 로그인 </summary>
-    Task<Result<(GameData gameData, string authToken)>> LoginAsync(string email, string password);
+    Task<Result<(long userId, string authToken)>> LoginAsync(string email, string password);
 }

@@ -15,20 +15,20 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
     
     public async Task<Result> RegisterAccountAsync(string email, string password)
     {
-        // 1) 중복 이메일 가드
+        // 중복 이메일 조회
         if (await _accountDb.CheckExistAccountByEmailAsync(email))
         {
             return ErrorCode.DuplicatedEmail;    
         }
         
-        // 2) 기본 유저 게임데이터 생성
+        // 기본 유저 게임데이터 생성
         if(await CreateDefaultUserGameDataAsync() is var created && created.IsFailed)
         {
             return created.ErrorCode;
         }
         var userId = created.Value;
 
-        // 3) 계정-유저 매핑 생성
+        // 계정 정보 생성
         if(await _accountDb.CreateAccountUserDataAsync(userId, email, password) == false)
         {
             await RollbackCreateDefaultUserGameDataAsync(userId);
@@ -37,34 +37,25 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
         return ErrorCode.None;
     }
     
-    public async Task<Result<(GameData, string)>> LoginAsync(string email, string password)
+    public async Task<Result<(long, string)>> LoginAsync(string email, string password)
     {
-        // 1) 계정 조회
+        // 계정 조회
         var account = await _accountDb.GetUserAccountByEmailAsync(email);
 
-        // 2) 패스워드 검증 (가드)
+        // 패스워드 검증
         if (!SecurityUtils.VerifyPassword(account.password, account.saltValue, password))
         {
-            return Result<(GameData, string)>.Failure(ErrorCode.FailedPasswordVerify);   
+            return Result<(long, string)>.Failure(ErrorCode.FailedPasswordVerify);   
         }
 
-        // 3) 게임데이터 조회
-        var gameData = await _gameDb.GetAllGameDataByUserIdAsync(account.userId);
-
-        // 4) 토큰 발급 + 세션 등록
+        // 토큰 발급 + 세션 등록
         var token = SecurityUtils.GenerateAuthToken();
         if (await _memoryDb.RegisterSessionAsync(CreateNewSession(account, token)) == false)
         {
-            return Result<(GameData, string)>.Failure(ErrorCode.FailedRegisterSession);
+            return Result<(long, string)>.Failure(ErrorCode.FailedRegisterSession);
         }
 
-        // 5) 캐시 저장
-        if (await _memoryDb.CacheGameData(email, gameData) == false)
-        {
-            return Result<(GameData, string)>.Failure(ErrorCode.FailedCacheGameData);
-        }
-
-        return Result<(GameData, string)>.Success((gameData, token));
+        return Result<(long, string)>.Success((account.userId, token));
     }
 
     private static UserSession CreateNewSession(UserAccount account, string authToken)
