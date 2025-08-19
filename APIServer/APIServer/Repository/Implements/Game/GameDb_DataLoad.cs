@@ -29,13 +29,13 @@ partial class GameDb
             WHERE user_id = @userId;
 
             -- 장착 아이템(캐릭터별)
-            SELECT cei.character_id, i.item_code AS itemCode, i.level
+            SELECT cei.character_id, i.item_id AS itemId
             FROM character_equipment_item cei
             JOIN user_inventory_item i ON i.item_id = cei.item_id
             WHERE i.user_id = @userId;
 
             -- 장착 룬(캐릭터별)
-            SELECT cer.character_id, r.rune_code AS runeCode, r.level
+            SELECT cer.character_id, r.rune_id AS runeId
             FROM character_equipment_rune cer
             JOIN user_inventory_rune r ON r.rune_id = cer.rune_id
             WHERE r.user_id = @userId;
@@ -70,8 +70,8 @@ partial class GameDb
             var runeRows = (await multi.ReadAsync<(long rune_id, long runeCode, int level)>()).ToList();
 
             // 4) 장착 목록(캐릭터별)
-            var equipItemRows = (await multi.ReadAsync<(long character_id, long itemCode, int level)>()).ToList();
-            var equipRuneRows = (await multi.ReadAsync<(long character_id, long runeCode, int level)>()).ToList();
+            var equipItemRows = (await multi.ReadAsync<(long character_id, long itemId)>()).ToList();
+            var equipRuneRows = (await multi.ReadAsync<(long character_id, long runeId)>()).ToList();
 
             // 5) 퀘스트 / 스테이지
             var quests = (await multi.ReadAsync<QuestData>()).ToList();
@@ -107,10 +107,10 @@ partial class GameDb
 
             // 캐릭터 + 장착 정보 조립
             var equipItemsByChar = equipItemRows.GroupBy(x => x.character_id)
-                .ToDictionary(g => g.Key, g => g.Select(e => new EquipItemData() { itemCode = e.itemCode, level = e.level }).ToList());
+                .ToDictionary(g => g.Key, g => g.Select(e => new EquipItemData() { itemId = e.itemId }).ToList());
 
             var equipRunesByChar = equipRuneRows.GroupBy(x => x.character_id)
-                .ToDictionary(g => g.Key, g => g.Select(e => new EquipRuneData() { runeCode = e.runeCode, level = e.level }).ToList());
+                .ToDictionary(g => g.Key, g => g.Select(e => new EquipRuneData() { runeId = e.runeId }).ToList());
 
             gameData.characters = characterRows.Select(c => new CharacterData
             {

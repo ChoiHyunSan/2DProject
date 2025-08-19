@@ -60,14 +60,12 @@ public class RuneData
 
 public class EquipItemData
 {
-    public long itemCode { get; set; }
-    public int level { get; set; }
+    public long itemId { get; set; }
 }
 
 public class EquipRuneData
 {
-    public long runeCode { get; set; }
-    public int level { get; set; }
+    public long runeId { get; set; }
 }
 
 public class QuestData

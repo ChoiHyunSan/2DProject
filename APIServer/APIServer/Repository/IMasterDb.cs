@@ -18,7 +18,7 @@ public interface IMasterDb
     ImmutableDictionary<(long, int), RuneEnhanceData> GetRuneEnhanceDatas();
     ImmutableDictionary<long, QuestInfoData> GetQuestInfoDatas();
     ImmutableDictionary<long, StageRewardGold> GetStageRewardsGold();
-    ImmutableDictionary<long, StageRewardItem> GetStageRewardsItem();
-    ImmutableDictionary<long, StageRewardRune> GetStageRewardsRune();
+    ImmutableDictionary<long, List<StageRewardItem>> GetStageRewardsItem();
+    ImmutableDictionary<long, List<StageRewardRune>> GetStageRewardsRune();
     ImmutableDictionary<long, List<StageMonsterInfo>> GetStageMonsterList();
 }

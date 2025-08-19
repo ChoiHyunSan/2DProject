@@ -62,7 +62,7 @@ public class SessionCheckMiddleware(ILogger<SessionCheckMiddleware> _logger, IMe
             return;       
         }
         
-        context.Items["userSession"] = sessionResult;       
+        context.Items["userSession"] = sessionResult.Value;       
         context.Items["NeedToLock"] = true;
         
         await _next(context);

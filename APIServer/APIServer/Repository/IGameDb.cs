@@ -1,6 +1,7 @@
 ﻿using System.Data;
 using APIServer.Models.DTO;
 using APIServer.Models.Entity;
+using APIServer.Models.Entity.Data;
 using APIServer.Models.Redis;
 using SqlKata.Execution;
 
@@ -16,9 +17,6 @@ public interface IGameDb
     
     /// <summary> 유저 초기 데이터 생성 </summary>
     Task<long> CreateUserGameDataAndReturnUserIdAsync();
-    
-    /// <summary> 캐릭터 획득 </summary>
-    Task<bool> InsertCharacterAsync(long userId, UserInventoryCharacter character);
     
     /// <summary> 아이템 획득 </summary>
     Task<bool> InsertItemAsync(long userId, UserInventoryItem item);
@@ -101,5 +99,24 @@ public interface IGameDb
     /// <summary> 캐릭터 보유 여부 조회 </summary>
     Task<bool> CheckAlreadyHaveCharacterAsync(long userId, long characterCode);
 
+    /// <summary> 인벤토리 캐릭터 추가 </summary>
     Task<bool> InsertNewCharacterAsync(long userId, long characterCode);
+
+    /// <summary> 스테이지 클리어 정보 조회 </summary>
+    Task<UserClearStage> FindClearStageAsync(long userId, long stageCode);
+
+    /// <summary> 스테이지 클리어 정보 추가 </summary>
+    Task<bool> InsertClearStageAsync(long userId, long stageCode);
+
+    /// <summary> 스테이지 클리어 정보 갱신 </summary>
+    Task<bool> UpdateStageAsync(UserClearStage current);
+
+    /// <summary> 유저 골드 갱신 </summary>
+    Task<bool> UpdateUserGold(long userId, int newGold);
+
+    /// <summary> 드랍 아이템 동시 추가 </summary>
+    Task<bool> InsertDropItems(long userId, List<StageRewardItem> dropItems);
+    
+    /// <summary> 드랍 룬 동시 추가 </summary>
+    Task<bool> InsertDropRunes(long userId, List<StageRewardRune> dropRunes);
 }

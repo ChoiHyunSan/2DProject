@@ -157,15 +157,15 @@ partial class MasterDb
 
             _stageRewardsItem = stageRewardsItem
                 .GroupBy(i => i.stageCode)
-                .ToImmutableDictionary(g => g.Key, g => g.First());
+                .ToImmutableDictionary(g => g.Key, g =>  g.ToList());
 
             _stageRewardsRune = stageRewardsRune
                 .GroupBy(r => r.stageCode)
-                .ToImmutableDictionary(g => g.Key, g => g.First());
+                .ToImmutableDictionary(g => g.Key, g =>  g.ToList());
 
             _stageMonsterInfos = stageMonsterInfos
                 .GroupBy(m => m.stageCode)
-                .ToImmutableDictionary(g => g.Key, g => g.ToList());
+                .ToImmutableDictionary(g => g.Key, g =>  g.ToList());
         }
         catch (Exception e)
         {

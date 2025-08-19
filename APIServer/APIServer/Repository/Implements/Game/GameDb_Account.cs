@@ -22,18 +22,6 @@ partial class GameDb
             });
     }
 
-    public async Task<bool> InsertCharacterAsync(long userId, UserInventoryCharacter character)
-    {
-        var result = await _queryFactory.Query(TABLE_USER_INVENTORY_CHARACTER).InsertAsync(new
-            {
-                character_code = character.characterCode,
-                level = character.level,
-                user_id = userId
-            });
-
-        return result == 1;
-    }
-
     public async Task<bool> InsertItemAsync(long userId, UserInventoryItem item)
     {
         var result = await _queryFactory.Query(TABLE_USER_INVENTORY_ITEM).InsertAsync(new

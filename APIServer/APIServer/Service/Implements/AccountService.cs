@@ -113,7 +113,7 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
         
         foreach (var character in defaultCharacters)
         {
-            var result = await _gameDb.InsertCharacterAsync(userId, character);
+            var result = await _gameDb.InsertNewCharacterAsync(userId, character.characterCode);
             if (result == false)
             {
                 return false;

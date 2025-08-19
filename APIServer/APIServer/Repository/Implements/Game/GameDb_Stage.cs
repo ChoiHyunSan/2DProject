@@ -1,4 +1,5 @@
 ﻿using APIServer.Models.Entity;
+using APIServer.Models.Entity.Data;
 using APIServer.Models.Redis;
 using SqlKata;
 using SqlKata.Execution;
@@ -42,7 +43,7 @@ partial class GameDb
         throw new NotImplementedException();
     }
 
-    private async Task<UserClearStage> FindClearStageAsync(long userId, long stageCode)
+    public async Task<UserClearStage> FindClearStageAsync(long userId, long stageCode)
     {
         return await _queryFactory.Query(TABLE_USER_CLEAR_STAGE)
             .Where(USER_ID, userId)
@@ -50,7 +51,7 @@ partial class GameDb
             .FirstOrDefaultAsync<UserClearStage>();
     }
     
-    private async Task<bool> InsertClearStageAsync(long userId, long stageCode)
+    public async Task<bool> InsertClearStageAsync(long userId, long stageCode)
     {
         var inserted = await _queryFactory.Query(TABLE_USER_CLEAR_STAGE)
             .InsertAsync(new
@@ -65,7 +66,7 @@ partial class GameDb
         return inserted == 1;
     }
     
-    private async Task<bool> UpdateStageAsync(UserClearStage current)
+    public async Task<bool> UpdateStageAsync(UserClearStage current)
     {
         var updated = await _queryFactory.Query(TABLE_USER_CLEAR_STAGE)
             .Where(USER_ID, current.userId)
@@ -77,5 +78,43 @@ partial class GameDb
             });
 
         return updated == 1;
+    }
+
+    public async Task<bool> UpdateUserGold(long userId, int newGold)
+    {
+        var updated = await _queryFactory.Query(TABLE_USER_GAME_DATA)
+            .Where(USER_ID, userId)
+            .UpdateAsync(new
+            {
+                GOLD = newGold
+            });
+
+        return updated == 1;
+    }
+
+    public async Task<bool> InsertDropItems(long userId, List<StageRewardItem> dropItems)
+    {
+        var updated = await _queryFactory.Query(TABLE_USER_INVENTORY_ITEM)
+            .InsertAsync(dropItems.Select(di => new
+            {
+                ITEM_CODE = di.itemCode,
+                USER_ID = userId,
+                LEVEL = 1
+            }));
+        
+        return updated == dropItems.Count;
+    }
+
+    public async Task<bool> InsertDropRunes(long userId, List<StageRewardRune> dropRunes)
+    {
+        var updated = await _queryFactory.Query(TABLE_USER_INVENTORY_RUNE)
+            .InsertAsync(dropRunes.Select(di => new
+            {
+                RUNE_CODE = di.runeCode,
+                USER_ID = userId,
+                LEVEL = 1
+            }));
+        
+        return updated == dropRunes.Count;
     }
 }

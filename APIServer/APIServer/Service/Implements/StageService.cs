@@ -1,4 +1,5 @@
 ﻿using APIServer.Models.DTO;
+using APIServer.Models.Entity;
 using APIServer.Models.Entity.Data;
 using APIServer.Models.Redis;
 using APIServer.Repository;
@@ -31,168 +32,242 @@ public class StageService(ILogger<StageService> logger,IGameDb gameDb, IMemoryDb
         }
         catch (Exception ex)
         {
-            LogError(_logger, ErrorCode.FailedGetClearStage, EventType.GetClearStage
-            , "Failed Get Clear Stage", new { userId, ex.Message, ex.StackTrace });
-
+            LogError(_logger, ErrorCode.FailedGetClearStage, EventType.GetClearStage, "Failed Get Clear Stage", new { userId, ex.Message, ex.StackTrace });
             return Result<List<StageInfo>>.Failure(ErrorCode.FailedGetClearStage);
         }
     }
 
     public async Task<Result<List<MonsterInfo>>> EnterStage(long userId, string email, long stageCode, List<long> characterIds)
     {
-        LogInfo(_logger, EventType.EnterStage, "Enter Stage", new { email, stageCode, characterIds });
-        
-        // 스테이지 정보 조회
-        var monsterInfos = _masterDb.GetStageMonsterList()[stageCode];
-        
-        // 인게임 정보 캐싱
-        var inStageInfo = InStageInfo.Create(userId, email, stageCode, monsterInfos);
-        if (await _memoryDb.CacheStageInfo(inStageInfo) == false)
+        try
         {
-            return Result<List<MonsterInfo>>.Failure(ErrorCode.FailedCacheStageInfo);   
+            // 스테이지 정보 조회
+            var monsterInfos = _masterDb.GetStageMonsterList()[stageCode];
+        
+            // 인게임 정보 캐싱
+            var inStageInfo = InStageInfo.Create(userId, email, stageCode, monsterInfos);
+            if (await _memoryDb.CacheStageInfo(inStageInfo) == false)
+            {
+                return Result<List<MonsterInfo>>.Failure(ErrorCode.FailedCacheStageInfo);   
+            }
+        
+            LogInfo(_logger, EventType.EnterStage, "Enter Stage", new { email, stageCode, characterIds });
+            
+            // 스테이지 정보 반환
+            return Result<List<MonsterInfo>>.Success(monsterInfos.Select(x => new MonsterInfo
+            {
+                monsterCode = x.monsterCode,
+                monsterCount = x.monsterCount
+            }).ToList());
         }
-        
-        // 스테이지 정보 반환
-        return Result<List<MonsterInfo>>.Success(monsterInfos.Select(x => new MonsterInfo
+        catch (Exception ex)
         {
-            monsterCode = x.monsterCode,
-            monsterCount = x.monsterCount
-        }).ToList());
+            LogError(_logger, ErrorCode.FailedEnterStage, EventType.EnterStage, "Failed Enter Stage" , new { email, stageCode, ex.Message, ex.StackTrace });
+            return Result<List<MonsterInfo>>.Failure(ErrorCode.FailedEnterStage);
+        }
     }
 
     public async Task<Result> ClearStage(string email, long stageCode)
     {
-        LogInfo(_logger, EventType.ClearStage, "Clear Stage", new { email, stageCode });
-        
-        // 인게임 정보 조회
-        var stageResult = await _memoryDb.GetGameInfo(email);
-        if (stageResult.IsFailed) return stageResult.ErrorCode;
-        var stageInfo = stageResult.Value;
-        
-        // 클리어 여부 확인 (모든 몬스터를 처치했는지 확인)
-        if (await CheckStageClearAsync(stageInfo) == false)
+        try
         {
-            return ErrorCode.StageInProgress;
-        }
-        
-        // 보상 정보와 유저 정보 조회
-        var rewards = GetStageRewards(stageInfo.stageCode);
-
-        var userData = await _gameDb.GetUserDataByEmailAsync(email);
-        var txResult = await _gameDb.WithTransactionAsync<Result>(async q =>
-        {
-            // 클리어 확인된 경우, 클리어 정보 추가
-            if (await _gameDb.UpdateClearStageAsync(stageInfo.userId, stageInfo.stageCode) == false)
+            // 인게임 정보 조회
+            if (await _memoryDb.GetGameInfo(email) is var stageResult && stageResult.IsFailed)
             {
-                return ErrorCode.FailedUpdateClearStage;
+                return stageResult.ErrorCode;
+            }
+            var stageInfo = stageResult.Value;
+        
+            // 클리어 여부 확인 (모든 몬스터를 처치했는지 확인)
+            if (CheckStageClear(stageInfo) == false)
+            {
+                return ErrorCode.StageInProgress;
+            }
+        
+            // 트랜잭션 처리
+            var txResult = await _gameDb.WithTransactionAsync(async q =>
+            {
+                // 클리어 확인된 경우, 클리어 정보 추가
+                if (await UpdateClearStageAsync(stageInfo) == false)
+                {
+                    return ErrorCode.FailedUpdateClearStage;
+                }
+            
+                // 클리어 보상 조회 및 보상 전달
+                if (await RewardClearStageAsync(stageInfo) == false)
+                {
+                    return ErrorCode.FailedRewardClearStage;
+                }
+
+                return ErrorCode.None;
+            });
+
+            if (txResult != ErrorCode.None)
+            {
+                return Result.Failure(txResult);
             }
             
-            // 클리어 보상 조회 및 보상 전달
-            if (await _gameDb.RewardClearStageAsync(stageInfo) == false)
+            // 메모리에 올려진 인게임 정보 삭제
+            if(await _memoryDb.DeleteStageInfo(stageInfo) == false)
             {
-                return ErrorCode.FailedRewardClearStage;
+                return Result.Failure(ErrorCode.FailedDeleteStageInfo);
             }
-
+        
+            LogInfo(_logger, EventType.ClearStage, "Clear Stage", new { email, stageCode });
+        
             return Result.Success();
-        });
-        
-        // 메모리에 올려진 인게임 정보 삭제
-        if(await _memoryDb.DeleteStageInfo(stageInfo) == false)
-        {
-            return Result.Failure(ErrorCode.FailedDeleteStageInfo);
         }
-        
-        return Result.Success();
+        catch (Exception ex)
+        {
+            LogError(_logger, ErrorCode.FailedClearStage, EventType.ClearStage, "Failed Clear Stage", new { email, stageCode, ex.Message, ex.StackTrace });
+            return Result.Failure(ErrorCode.FailedClearStage);
+        }
     }
 
     public async Task<Result> KillMonster(string email, long monsterCode)
     {
-        LogInfo(_logger,  EventType.KillMonster, "Kill Monster", new { email, monsterCode });
-        
-        // 인게임 정보 조회
-        var inGameResult = await _memoryDb.GetGameInfo(email);
-        if(inGameResult.IsFailed) return Result.Failure(inGameResult.ErrorCode);
-        
-        // 몬스터 처치 가능 여부 확인 (몬스터가 존재하는지 & 이미 최대 치로 잡았는지)
-        var stageInfo = inGameResult.Value;
-        if (await VerifyKillMonster(stageInfo, monsterCode) is { IsFailed: true } result)
+        try
         {
-            return result.ErrorCode;
-        }
-        
-        // 처치 가능한 경우, 처치 숫자 갱신
-        var updateKillResult = await UpdateKillMonster(stageInfo, monsterCode);
-        if(updateKillResult.IsFailed) return Result.Failure(updateKillResult.ErrorCode);
-        
-        // 인게임 정보 갱신
-        if (await _memoryDb.CacheStageInfo(stageInfo) == false)
-        {
-           return Result.Failure(ErrorCode.FailedCacheStageInfo);   
-        }
-        
-        return Result.Success();
-    }
-
-    private (StageRewardGold, StageRewardRune, StageRewardItem) GetStageRewards(long stageCode)
-    {
-        return (masterDb.GetStageRewardsGold()[stageCode], _masterDb.GetStageRewardsRune()[stageCode], _masterDb.GetStageRewardsItem()[stageCode]);
-    }
-
-    private async Task<bool> CheckStageClearAsync(InStageInfo stageInfo)
-    {
-        var monsterKillTargets = stageInfo.monsterKillTargets;
-        var monsterKills = stageInfo.monsterKills;
-
-        foreach (var monsterKillTarget in monsterKillTargets)
-        {
-            var (code, count) = (monsterKillTarget.Key, monsterKillTarget.Value);
-            
-            var killCount = monsterKills[code];
-            if (count != killCount)
+            // 인게임 정보 조회
+            if (await _memoryDb.GetGameInfo(email) is var stageResult && stageResult.IsFailed)
             {
-                LogError(_logger, ErrorCode.StageInProgress, EventType.ClearStage, 
-                    "Stage is InProgress", new { stageInfo.email, stageInfo.stageCode });
-                return false;
+                return stageResult.ErrorCode;
             }
+            var stageInfo = stageResult.Value;
+        
+            // 몬스터 처치 가능 여부 확인 (몬스터가 존재하는지 & 이미 최대 치로 잡았는지)
+            if (VerifyKillMonster(stageInfo, monsterCode) is var verifyResult && verifyResult.IsFailed)
+            {
+                return verifyResult.ErrorCode;
+            }
+        
+            // 처치 가능한 경우, 처치 숫자 갱신
+            if (UpdateKillMonster(stageInfo, monsterCode)  == false)
+            {
+                return ErrorCode.CannotFindMonsterCode;
+            }
+        
+            // 인게임 정보 갱신
+            if (await _memoryDb.CacheStageInfo(stageInfo) == false)
+            {
+                return Result.Failure(ErrorCode.FailedCacheStageInfo);   
+            }
+            
+            LogInfo(_logger,  EventType.KillMonster, "Kill Monster", new { email, monsterCode });
+            
+            return Result.Success();
         }
+        catch (Exception ex)
+        {
+            LogError(_logger, ErrorCode.FailedKillMonster, EventType.KillMonster, "Failed Kill Monster", new { email, monsterCode, ex.Message, ex.StackTrace });
+            return Result.Failure(ErrorCode.FailedKillMonster);
+        }
+    }
 
+    private async Task<bool> UpdateClearStageAsync(InStageInfo stageInfo)
+    {
+        var clearStage = await _gameDb.FindClearStageAsync(stageInfo.userId, stageInfo.stageCode);
+        return await _gameDb.UpdateStageAsync(clearStage);
+    }
+
+    private async Task<bool> RewardClearStageAsync(InStageInfo stageInfo)
+    {
+        // 보상 정보 & 유저 정보 조회
+        var (rewardGold, rewardRune, rewardItem) = GetStageRewards(stageInfo.stageCode);
+        var userData = await _gameDb.GetUserDataByEmailAsync(stageInfo.email);
+        
+        // 골드 재화 획득
+        if (await GetGoldReward(userData, rewardGold) == false)
+        {
+            return false;
+        }
+        
+        // 룬 획득
+        if (await GetRuneReward(userData.userId, rewardRune) == false)
+        {
+            return false;
+        }
+        
+        // 아이템 획득
+        if (await GetItemReward(userData.userId, rewardItem) == false)
+        {
+            return false;
+        }
+        
         return true;
     }
 
-    private async Task<Result> UpdateKillMonster(InStageInfo stageInfo, long monsterCode)
+    private async Task<bool> GetItemReward(long userId, List<StageRewardItem> rewardItems)
     {
-        var killCounts = stageInfo.monsterKills.GetValueOrDefault(monsterCode, -1);
-        if (killCounts == -1)
+        var dropItems = new List<StageRewardItem>();
+        foreach (var item in rewardItems)
         {
-            LogError(_logger, ErrorCode.CannotFindMonsterCode, EventType.KillMonster
-                , "Cannot Find Monster Code In StageInfo", new { stageInfo.stageCode, monsterCode });
-            return ErrorCode.CannotFindMonsterCode;
+            if (item.dropRate >= Random.Shared.Next(1, 101))
+            {
+                dropItems.Add(item);
+            }
         }
 
-        killCounts += 1;
-        stageInfo.monsterKills[monsterCode] = killCounts;
-        
-        return Result.Success();
+        return await _gameDb.InsertDropItems(userId, dropItems);
     }
 
-    private async Task<Result> VerifyKillMonster(InStageInfo stageInfo, long monsterCode)
+    private async Task<bool> GetRuneReward(long userId, List<StageRewardRune> rewardRunes)
+    {
+        var dropRunes = new List<StageRewardRune>();
+        foreach (var item in rewardRunes)
+        {
+            if (item.dropRate >= Random.Shared.Next(1, 101))
+            {
+                dropRunes.Add(item);
+            }
+        }
+
+        return await _gameDb.InsertDropRunes(userId, dropRunes);
+    }
+
+    private async Task<bool> GetGoldReward(UserGameData userData, StageRewardGold rewardGold)
+    {
+        var newGold = userData.gold + rewardGold.gold;
+        return await _gameDb.UpdateUserGold(userData.userId, newGold);
+    }
+
+
+    private (StageRewardGold, List<StageRewardRune>, List<StageRewardItem>) GetStageRewards(long stageCode)
+    {
+        return (_masterDb.GetStageRewardsGold()[stageCode], _masterDb.GetStageRewardsRune()[stageCode], _masterDb.GetStageRewardsItem()[stageCode]);
+    }
+
+    private bool CheckStageClear(InStageInfo s)
+    {
+        return s.monsterKillTargets.Count == s.monsterKills.Count
+               && !s.monsterKillTargets.Except(s.monsterKills).Any();
+    }
+
+    private bool UpdateKillMonster(InStageInfo stageInfo, long monsterCode)
+    {
+        if (stageInfo.monsterKills.TryGetValue(monsterCode, out var killCount))
+        {
+            stageInfo.monsterKills[monsterCode] = killCount + 1;
+            return true;
+        }
+
+        return false;
+    }
+
+    private Result VerifyKillMonster(InStageInfo stageInfo, long monsterCode)
     {
         var targetCounts = stageInfo.monsterKillTargets.GetValueOrDefault(monsterCode, 0);
         var killCounts = stageInfo.monsterKills.GetValueOrDefault(monsterCode, 0);
         if (targetCounts == 0 )
         {
-            LogError(_logger, ErrorCode.CannotFindMonsterCode, EventType.KillMonster
-                , "Cannot Find Monster Code In StageInfo", new { stageInfo.stageCode, monsterCode });
             return ErrorCode.CannotFindMonsterCode;
         }
 
-        if (targetCounts <=killCounts)
+        if (targetCounts <= killCounts)
         {
-            LogError(_logger, ErrorCode.CannotKillMonster, EventType.KillMonster,
-                "Already Kill All This Type Monsters", new { stageInfo.stageCode, monsterCode , targetCounts });
             return ErrorCode.CannotKillMonster;
         }
 
-        return Result.Success();
+        return ErrorCode.None;
     }
 }
