@@ -42,6 +42,6 @@ public class RuneEnhanceData
     [Column("critical_chance")]
     public int criticalChance { get; set; }                     // 추가 치명타 확률
     
-    [Column("enhance_count")]
-    public int enhanceCount { get; set; }                       // 강화 필요 개수
+    [Column("enhance_price")]
+    public int enhancePrice { get; set; }                       // 강화 필요 개수
 }

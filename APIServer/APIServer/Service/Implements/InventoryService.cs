@@ -157,7 +157,7 @@ public class InventoryService(ILogger<InventoryService> logger, IGameDb gameDb, 
             }
 
             // 갱신용 재화 정보 계산
-            var (newLevel, newGold) = (enhanceData.level + 1, gold - enhanceData.enhanceCount);
+            var (newLevel, newGold) = (enhanceData.level + 1, gold - enhanceData.enhancePrice);
 
             // 트랜잭션 처리 
             var txErrorCode = await _gameDb.WithTransactionAsync(async _ =>
@@ -215,7 +215,7 @@ public class InventoryService(ILogger<InventoryService> logger, IGameDb gameDb, 
             return ErrorCode.AlreadyMaximumLevelRune;
         }
 
-        if (enhanceData.enhanceCount > gold)
+        if (enhanceData.enhancePrice > gold)
         {
             return ErrorCode.GoldShortage;
         }

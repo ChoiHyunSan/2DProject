@@ -16,7 +16,6 @@ partial class MasterDb(IOptions<DbConfig> dbConfig, ILogger<MasterDb> logger)
     
     // Attendance
     private ImmutableDictionary<int, AttendanceRewardMonth> _attendanceRewardsMonth = ImmutableDictionary<int, AttendanceRewardMonth>.Empty;
-    private ImmutableDictionary<int, AttendanceRewardWeek> _attendanceRewardsWeek = ImmutableDictionary<int, AttendanceRewardWeek>.Empty;
     
     // Character
     private ImmutableDictionary<long, CharacterOriginData> _characterOriginDatas = ImmutableDictionary<long, CharacterOriginData>.Empty;
@@ -41,7 +40,6 @@ partial class MasterDb(IOptions<DbConfig> dbConfig, ILogger<MasterDb> logger)
     
     
     public ImmutableDictionary<int, AttendanceRewardMonth> GetAttendanceRewardMonths() => _attendanceRewardsMonth;
-    public ImmutableDictionary<int, AttendanceRewardWeek> GetAttendanceRewardWeeks() =>  _attendanceRewardsWeek;
     public ImmutableDictionary<long, CharacterOriginData> GetCharacterOriginDatas() => _characterOriginDatas;
     public ImmutableDictionary<(long, int), CharacterEnhanceData> GetCharacterEnhancePriceDatas() => _characterEnhancePriceDatas;
     public ImmutableDictionary<long, ItemOriginData> GetItemOriginDatas() => _itemOriginDatas;

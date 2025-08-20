@@ -33,15 +33,10 @@ partial class MasterDb
         try
         {
             var months = await GetAllDataFromTableAsync<AttendanceRewardMonth>("attendance_reward_month");
-            var weeks  = await GetAllDataFromTableAsync<AttendanceRewardWeek>("attendance_reward_week");
 
             _attendanceRewardsMonth = months
                 .GroupBy(m => m.day)
                 .ToImmutableDictionary(g => g.Key, g => g.First()); 
-
-            _attendanceRewardsWeek = weeks
-                .GroupBy(w => w.day)
-                .ToImmutableDictionary(g => g.Key, g => g.First());
         }
         catch (Exception e)
         {

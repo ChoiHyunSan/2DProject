@@ -9,7 +9,6 @@ public interface IMasterDb
     public Task<ErrorCode> Load();
     
     ImmutableDictionary<int, AttendanceRewardMonth> GetAttendanceRewardMonths();
-    ImmutableDictionary<int, AttendanceRewardWeek> GetAttendanceRewardWeeks();
     ImmutableDictionary<long, CharacterOriginData> GetCharacterOriginDatas();
     ImmutableDictionary<(long, int), CharacterEnhanceData> GetCharacterEnhancePriceDatas();
     ImmutableDictionary<long, ItemOriginData> GetItemOriginDatas();
