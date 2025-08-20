@@ -22,6 +22,7 @@ builder.Services.AddScoped<IShopService, ShopService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<IStageService, StageService>();
 builder.Services.AddScoped<IDataLoadService, DataLoadService>();
+builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 
 // Register Repositories
 builder.Services.AddScoped<IAccountDb, AccountDb>();

@@ -112,11 +112,16 @@ public interface IGameDb
     Task<bool> UpdateStageAsync(UserClearStage current);
 
     /// <summary> 유저 골드 갱신 </summary>
-    Task<bool> UpdateUserGold(long userId, int newGold);
+    Task<bool> UpdateUserGoldAsync(long userId, int newGold);
 
     /// <summary> 드랍 아이템 동시 추가 </summary>
     Task<bool> InsertDropItems(long userId, List<StageRewardItem> dropItems);
     
     /// <summary> 드랍 룬 동시 추가 </summary>
     Task<bool> InsertDropRunes(long userId, List<StageRewardRune> dropRunes);
+
+    Task<UserAttendanceMonth> GetUserAttendance(long userId);
+    
+    Task<bool> UpdateAttendanceToday(long userId, int day);
+    Task<bool> UpdateUserGemAsync(long userId, int price);
 }

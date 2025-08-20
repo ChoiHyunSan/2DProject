@@ -80,7 +80,7 @@ partial class GameDb
         return updated == 1;
     }
 
-    public async Task<bool> UpdateUserGold(long userId, int newGold)
+    public async Task<bool> UpdateUserGoldAsync(long userId, int newGold)
     {
         var updated = await _queryFactory.Query(TABLE_USER_GAME_DATA)
             .Where(USER_ID, userId)

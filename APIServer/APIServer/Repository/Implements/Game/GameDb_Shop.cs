@@ -82,4 +82,16 @@ partial class GameDb
 
         return result == 1;
     }
+
+    public async Task<bool> UpdateUserGemAsync(long userId, int price)
+    {
+        var result = await _queryFactory.Query(TABLE_USER_GAME_DATA)
+            .Where(USER_ID, userId)
+            .UpdateAsync(new
+            {
+                GEM = price
+            });
+
+        return result == 1;
+    }
 }

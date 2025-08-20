@@ -3,7 +3,6 @@ using APIServer.Models.Entity;
 using APIServer.Models.Entity.Data;
 using APIServer.Models.Redis;
 using APIServer.Repository;
-using ZLogger;
 using static APIServer.LoggerManager;
 
 namespace APIServer.Service.Implements;
@@ -228,7 +227,7 @@ public class StageService(ILogger<StageService> logger,IGameDb gameDb, IMemoryDb
     private async Task<bool> GetGoldReward(UserGameData userData, StageRewardGold rewardGold)
     {
         var newGold = userData.gold + rewardGold.gold;
-        return await _gameDb.UpdateUserGold(userData.userId, newGold);
+        return await _gameDb.UpdateUserGoldAsync(userData.userId, newGold);
     }
 
 

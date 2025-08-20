@@ -43,6 +43,11 @@ public enum ErrorCode
     FailedRewardClearStage         = 2020_500,
     FailedSellItem                  = 2021_500,
     FailedGetClearStage            = 2022_500,
+    AttendanceAlreadyComplete     = 2023_400,
+    AttendanceAlreadyDoneToday    = 2024_400,
+    FailedAttendance                = 2025_500,
+    FailedAttendanceReward         = 2026_500,
+    CannotFindUserAttendance       = 2027_404,
     
     // AccountDb 3000 ~ 3999
     FailedCreateAccountUserData    = 3000_500,
