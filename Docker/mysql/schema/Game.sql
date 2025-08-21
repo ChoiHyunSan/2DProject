@@ -35,18 +35,6 @@ CREATE TABLE IF NOT EXISTS `user_attendance_month` (
 );
 
 -- ----------------------------------------------------------
---  유저 주간 출석 정보 테이블
--- ----------------------------------------------------------
-DROP TABLE IF EXISTS `user_attendance_week`;
-CREATE TABLE IF NOT EXISTS `user_attendance_week` (
-    `id`                        BIGINT      AUTO_INCREMENT PRIMARY KEY  COMMENT '고유 ID',
-    `user_id`                   BIGINT      NOT NULL                    COMMENT '유저 ID',
-    `last_attendance_date`      INT         NOT NULL                    COMMENT '마지막 출석 일자',
-    `start_update_date`         DATETIME    NOT NULL                    COMMENT '시작 업데이트 날짜',
-    `last_update_date`          DATETIME    NOT NULL                    COMMENT '마지막 업데이트 날짜'
-);
-
--- ----------------------------------------------------------
 --  유저 스테이지 클리어 정보 테이블
 -- ----------------------------------------------------------
 DROP TABLE IF EXISTS `user_clear_stage`;
@@ -126,5 +114,6 @@ CREATE TABLE IF NOT EXISTS `user_quest_complete` (
     `quest_complete_ id`            BIGINT      AUTO_INCREMENT      PRIMARY KEY     COMMENT '고유 ID',
     `user_id`                       BIGINT      NOT NULL                            COMMENT '유저 ID',
     `quest_code`                    BIGINT      NOT NULL                            COMMENT '퀘스트 코드',
-    `complete_date`                 DATETIME    NOT NULL                            COMMENT '퀘스트 완료 시간'
+    `complete_date`                 DATETIME    NOT NULL                            COMMENT '퀘스트 완료 시간',
+    `earn_reward`                   BOOLEAN     NOT NULL            DEFAULT FALSE   COMMENT '보상 획득 여부'
 );

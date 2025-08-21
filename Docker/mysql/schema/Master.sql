@@ -20,23 +20,6 @@ LINES TERMINATED BY "\n"
 IGNORE 1 ROWS;	
 
 -- ----------------------------------------------------------
---  주간 출석 보상 데이터
--- ----------------------------------------------------------
-DROP TABLE IF EXISTS `attendance_reward_week`;
-CREATE TABLE IF NOT EXISTS `attendance_reward_week` (
-    `day`        INT         NOT NULL        PRIMARY KEY        COMMENT '출석 일자',
-    `item_code`  BIGINT      NOT NULL                           COMMENT '아이템 식별 코드',
-    `count`      INT         NOT NULL                           COMMENT '아이템 보상 개수'
-);
-
-# 데이터 Impoort
-LOAD DATA INFILE "/var/lib/mysql-files/master_csv_data/attendance_reward_week.csv"
-INTO TABLE `MasterDb`.`attendance_reward_week`
-FIELDS TERMINATED BY ","
-LINES TERMINATED BY "\n"
-IGNORE 1 ROWS;	
-
--- ----------------------------------------------------------
 --  캐릭터 원본 데이터
 -- ----------------------------------------------------------
 DROP TABLE IF EXISTS `character_origin_data`;
@@ -125,9 +108,11 @@ CREATE TABLE IF NOT EXISTS `quest_info_data` (
     `quest_code`  BIGINT       PRIMARY KEY                  COMMENT '퀘스트 식별 코드',
     `name`        VARCHAR(100) NOT NULL                     COMMENT '퀘스트 이름',
     `description` VARCHAR(200) NOT NULL                     COMMENT '퀘스트 설명',
-    `reward_gold` INT          NOT NULL                     COMMENT '보상 골드 획득량',
+    `quest_type`  INT          NOT NULL                     COMMENT '퀘스트 타입',
+    `quest_progress` INT       NOT NULL                     COMMENT '퀘스트 클리어 진행량',
     `reward_gem`  INT          NOT NULL                     COMMENT '보상 잼 획득량',
-    `reward_exp`  INT          NOT NULL                     COMMENT '보상 경험치 획득량'
+    `reward_exp`  INT          NOT NULL                     COMMENT '보상 경험치 획득량',
+    `reward_gold` INT          NOT NULL                     COMMENT '보상 골드 획득량'
 );
 
 # 데이터 Impoort
@@ -165,7 +150,7 @@ CREATE TABLE IF NOT EXISTS `rune_enhance_data` (
     `defense`          INT          NOT NULL                   COMMENT '추가 방어력',
     `max_hp`           INT          NOT NULL                   COMMENT '추가 체력',
     `critical_chance`  INT          NOT NULL                   COMMENT '추가 치명타 확률',
-    `enhance_count`    INT          NOT NULL                   COMMENT '강화 필요 개수',
+    `enhance_price`    INT          NOT NULL                   COMMENT '강화 필요 골드 재화',
     PRIMARY KEY (`rune_code`, `level`)
 );
 

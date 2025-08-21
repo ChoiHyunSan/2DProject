@@ -22,4 +22,9 @@ partial class MemoryDb
     {
         return $"STAGE_INFO_{email}";
     }
+
+    private static string CreateQuestKey(string email)
+    {
+        return $"QUEST_{email}";       
+    }
 }

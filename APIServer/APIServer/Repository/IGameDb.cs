@@ -27,9 +27,6 @@ public interface IGameDb
     /// <summary> 월간 출석 보상 생성 </summary>
     Task<bool> InsertAttendanceMonthAsync(long userId);
     
-    /// <summary> 주간 출석 보상 생성 </summary>
-    Task<bool> InsertAttendanceWeekAsync(long userId);
-    
     /// <summary> 퀘스트 진행 정보 생성 </summary>
     Task<bool> InsertQuestAsync(long userId, long questCode, DateTime expireDate);
     
@@ -120,8 +117,24 @@ public interface IGameDb
     /// <summary> 드랍 룬 동시 추가 </summary>
     Task<bool> InsertDropRunes(long userId, List<StageRewardRune> dropRunes);
 
+    /// <summary> 출석 정보 조회 </summary>
     Task<UserAttendanceMonth> GetUserAttendance(long userId);
     
+    /// <summary> 금일 출석 체크 갱신</summary>
     Task<bool> UpdateAttendanceToday(long userId, int day);
+    
+    /// <summary> 유저 유료 재화 갱신 </summary>
     Task<bool> UpdateUserGemAsync(long userId, int price);
+    
+    /// <summary> 진행중인 퀘스트 리스트 조회 </summary>
+    Task<List<UserQuestInprogress>> GetProgressQuestList(long userId);
+    
+    /// <summary> 완료한 퀘스트 리스트 페이징 조회 </summary>
+    Task<List<UserQuestComplete>> GetCompleteQuestList(long userId, Pageable page);
+    
+    /// <summary> 완료한 퀘스트 단건 조회 </summary>
+    Task<UserQuestComplete> GetCompleteQuest(long userId, long questCode);
+    
+    /// <summary> 완료한 퀘스트 보상 획득 처리 </summary>
+    Task<bool> RewardCompleteQuest(long userId, long questCode);
 }

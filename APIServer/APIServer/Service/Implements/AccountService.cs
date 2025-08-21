@@ -15,47 +15,66 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
     
     public async Task<Result> RegisterAccountAsync(string email, string password)
     {
-        // 중복 이메일 조회
-        if (await _accountDb.CheckExistAccountByEmailAsync(email))
+        try
         {
-            return ErrorCode.DuplicatedEmail;    
-        }
-        
-        // 기본 유저 게임데이터 생성
-        if(await CreateDefaultUserGameDataAsync() is var created && created.IsFailed)
-        {
-            return created.ErrorCode;
-        }
-        var userId = created.Value;
+            // 중복 이메일 조회
+            if (await _accountDb.CheckExistAccountByEmailAsync(email))
+            {
+                return ErrorCode.DuplicatedEmail;
+            }
 
-        // 계정 정보 생성
-        if(await _accountDb.CreateAccountUserDataAsync(userId, email, password) == false)
-        {
-            await RollbackCreateDefaultUserGameDataAsync(userId);
-        }
+            // 기본 유저 게임데이터 생성
+            if (await CreateDefaultUserGameDataAsync() is var created && created.IsFailed)
+            {
+                return created.ErrorCode;
+            }
 
-        return ErrorCode.None;
+            var userId = created.Value;
+
+            // 계정 정보 생성
+            if (await _accountDb.CreateAccountUserDataAsync(userId, email, password) == false)
+            {
+                await RollbackCreateDefaultUserGameDataAsync(userId);
+            }
+
+            return ErrorCode.None;
+        }
+        catch (Exception ex)
+        {
+            LogError(_logger, ErrorCode.FailedRegister, EventType.Register, 
+                    "Failed Register User Account", new { email, ex.Message, ex.StackTrace });
+            return ErrorCode.FailedRegister;
+        }
     }
     
     public async Task<Result<(long, string)>> LoginAsync(string email, string password)
     {
-        // 계정 조회
-        var account = await _accountDb.GetUserAccountByEmailAsync(email);
-
-        // 패스워드 검증
-        if (!SecurityUtils.VerifyPassword(account.password, account.saltValue, password))
+        try
         {
-            return Result<(long, string)>.Failure(ErrorCode.FailedPasswordVerify);   
-        }
+            // 계정 조회
+            var account = await _accountDb.GetUserAccountByEmailAsync(email);
 
-        // 토큰 발급 + 세션 등록
-        var token = SecurityUtils.GenerateAuthToken();
-        if (await _memoryDb.RegisterSessionAsync(CreateNewSession(account, token)) == false)
+            // 패스워드 검증
+            if (!SecurityUtils.VerifyPassword(account.password, account.saltValue, password))
+            {
+                return Result<(long, string)>.Failure(ErrorCode.FailedPasswordVerify);   
+            }
+
+            // 토큰 발급 + 세션 등록
+            var token = SecurityUtils.GenerateAuthToken();
+            if (await _memoryDb.RegisterSessionAsync(CreateNewSession(account, token)) == false)
+            {
+                return Result<(long, string)>.Failure(ErrorCode.FailedRegisterSession);
+            }
+
+            return Result<(long, string)>.Success((account.userId, token));
+        }
+        catch (Exception ex)
         {
-            return Result<(long, string)>.Failure(ErrorCode.FailedRegisterSession);
+            LogError(_logger, ErrorCode.FailedLogin, EventType.Login, 
+                "Failed User Login", new { email, ex.Message, ex.StackTrace });
+            return Result<(long, string)>.Failure(ErrorCode.FailedLogin);
         }
-
-        return Result<(long, string)>.Success((account.userId, token));
     }
 
     private static UserSession CreateNewSession(UserAccount account, string authToken)
@@ -101,7 +120,7 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
 
     private async Task<bool> CreateDefaultAttendanceAsync(long userId)
     {
-        return await _gameDb.InsertAttendanceMonthAsync(userId) && await _gameDb.InsertAttendanceWeekAsync(userId);
+        return await _gameDb.InsertAttendanceMonthAsync(userId);
     }
 
     private async Task<bool> CreateDefaultCharacterAsync(long userId)

@@ -29,4 +29,7 @@ public interface IMemoryDb
     Task<Result<InStageInfo>> GetGameInfo(string email);
 
     Task<bool> DeleteStageInfo(InStageInfo stageInfo);
+    
+    Task<Result<List<UserQuestInprogress>>> GetCachedQuestList(string email);
+    Task<Result> CacheQuestList(string email, List<UserQuestInprogress> progressList);
 }

@@ -17,12 +17,27 @@ public class QuestInfoData
     [Column("description")]
     public string description { get; set; } = string.Empty;     // 퀘스트 설명
     
+    [Column("quest_type")]
+    public QuestType questType { get; set; }                     // 퀘스트 타입 
+
+    [Column("quest_progress")]
+    public int questProgress { get; set; }                       // 퀘스트 클리어 값
+    
     [Column("reward_gold")]
-    public int rewardGold { get; set; }                         // 보상 골드 획득량
+    public int rewardGold { get; set; }                          // 보상 골드 획득량
     
     [Column("reward_gem")]
-    public int rewardGem { get; set; }                          // 보상 잼 획득량
+    public int rewardGem { get; set; }                           // 보상 잼 획득량
     
     [Column("reward_exp")]
-    public int rewardExp { get; set; }                          // 보상 경험치 획득량
+    public int rewardExp { get; set; }                           // 보상 경험치 획득량
+}
+
+public enum QuestType
+{
+    GetGold = 1,
+    GetExp = 2,
+    ClearStage = 3,
+    KillMonster = 4,
+    GetItem = 5,
 }

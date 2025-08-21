@@ -48,6 +48,7 @@ public enum ErrorCode
     FailedAttendance                = 2025_500,
     FailedAttendanceReward         = 2026_500,
     CannotFindUserAttendance       = 2027_404,
+    FailedRewardQuest              = 2028_500,
     
     // AccountDb 3000 ~ 3999
     FailedCreateAccountUserData    = 3000_500,
@@ -70,6 +71,7 @@ public enum ErrorCode
     FailedDeleteStageInfo          = 4012_500,    
     CannotFindSession               = 4013_404,
     CannotFindInStageInfo           = 4014_404,
+    CannotFindQuestList               = 4015_404,
     
     // Controller (비즈니스/검증/권한/리소스 미존재 등)
     DuplicatedEmail                = 5000_400,
@@ -96,4 +98,8 @@ public enum ErrorCode
     FailedEnterStage                = 5016_500,
     FailedClearStage                = 5017_500,
     FailedKillMonster               = 5018_500,
+    FailedRegister                  = 5019_500,
+    FailedLogin                     = 5020_500,
+    CannotFindCompleteQuest       = 5021_404,
+    AlreadyEarnReward              = 5022_400,
 }

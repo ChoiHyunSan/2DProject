@@ -22,49 +22,57 @@ public class ResponseStatusCodeMiddleware(ILogger<ResponseStatusCodeMiddleware> 
         await using var buffer = new MemoryStream();
         context.Response.Body = buffer;
 
-        await next(context); 
+        await next(context);
 
-        buffer.Position = 0;
-
-        if (context.Response.ContentType?.StartsWith("application/json", StringComparison.OrdinalIgnoreCase) == true)
+        try
         {
-            // code 값 읽기
-            var codeStr = await JsonBodyParser.GetStringValueFromResponseAsync(buffer, "code");
-            if (codeStr != null && int.TryParse(codeStr, out var codeValue))
+            buffer.Position = 0;
+
+            if (context.Response.ContentType?.StartsWith("application/json", StringComparison.OrdinalIgnoreCase) == true)
             {
-                // HTTP 상태코드 변경
-                context.Response.StatusCode = codeValue % 1000;
-
-                // JSON의 code 값 변경 (마지막 3자리 제거)
-                buffer.Position = 0;
-                using var doc = await JsonDocument.ParseAsync(buffer);
-
-                var root = doc.RootElement.Clone();
-                using var ms = new MemoryStream();
-                await using (var writer = new Utf8JsonWriter(ms, new JsonWriterOptions { Indented = false }))
+                // code 값 읽기
+                var codeStr = await JsonBodyParser.GetStringValueFromResponseAsync(buffer, "code");
+                if (codeStr != null && int.TryParse(codeStr, out var codeValue))
                 {
-                    writer.WriteStartObject();
-                    foreach (var prop in root.EnumerateObject())
+                    // HTTP 상태코드 변경
+                    context.Response.StatusCode = codeValue % 1000;
+
+                    // JSON의 code 값 변경 (마지막 3자리 제거)
+                    buffer.Position = 0;
+                    using var doc = await JsonDocument.ParseAsync(buffer);
+
+                    var root = doc.RootElement.Clone();
+                    using var ms = new MemoryStream();
+                    await using (var writer = new Utf8JsonWriter(ms, new JsonWriterOptions { Indented = false }))
                     {
-                        if (prop.NameEquals("code"))
-                            writer.WriteNumber("code", codeValue / 1000);
-                        else
-                            prop.WriteTo(writer);
+                        writer.WriteStartObject();
+                        foreach (var prop in root.EnumerateObject())
+                        {
+                            if (prop.NameEquals("code"))
+                                writer.WriteNumber("code", codeValue / 1000);
+                            else
+                                prop.WriteTo(writer);
+                        }
+                        writer.WriteEndObject();
                     }
-                    writer.WriteEndObject();
+
+                    // 바꾼 JSON 전송
+                    context.Response.ContentLength = ms.Length;
+                    context.Response.Body = originalBody;
+                    ms.Position = 0;
+                    await ms.CopyToAsync(context.Response.Body);
+                    return;
                 }
-
-                // 바꾼 JSON 전송
-                context.Response.ContentLength = ms.Length;
-                context.Response.Body = originalBody;
-                ms.Position = 0;
-                await ms.CopyToAsync(context.Response.Body);
-                return;
             }
-        }
 
-        // JSON이 아니거나 code가 없으면 그대로 전달
-        buffer.Position = 0;
-        await buffer.CopyToAsync(originalBody);
+            // JSON이 아니거나 code가 없으면 그대로 전달
+            buffer.Position = 0;
+            await buffer.CopyToAsync(originalBody);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to change response status code");
+            return;
+        }
     }
 }

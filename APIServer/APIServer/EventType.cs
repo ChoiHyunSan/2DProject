@@ -69,4 +69,9 @@ public enum EventType
     ClearStage = 5012,
     LoadGameData = 5013,
     AttendanceCheck = 5014,
+    Register = 5015,
+    LoginCheck = 5016,
+    GetProgressQuest = 5017,
+    GetCompleteQuest = 5018,
+    RewardQuest = 5019,
 }

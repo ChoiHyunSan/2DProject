@@ -59,19 +59,6 @@ partial class GameDb
         return result == 1;
     }
     
-    public async Task<bool> InsertAttendanceWeekAsync(long userId)
-    {
-        var result = await _queryFactory.Query(TABLE_USER_ATTENDANCE_WEEK).InsertAsync(new
-            {
-                user_id = userId,
-                last_attendance_date = 0,
-                start_update_date = DateTime.MinValue,
-                last_update_date = DateTime.MinValue,
-            });
-
-        return result == 1;
-    }
-    
     public async Task<bool> InsertQuestAsync(long userId, long questCode, DateTime expireDate)
     {
         var result = await _queryFactory.Query(TABLE_USER_QUEST_INPROGRESS).InsertAsync(new

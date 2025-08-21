@@ -20,6 +20,7 @@ partial class GameDb(ILogger<GameDb> logger, IOptions<DbConfig> dbConfig, IMaste
     private const string TABLE_USER_ATTENDANCE_MONTH = "user_attendance_month";
     private const string TABLE_USER_ATTENDANCE_WEEK = "user_attendance_week";
     private const string TABLE_USER_QUEST_INPROGRESS = "user_quest_inprogress";
+    private const string TABLE_USER_QUEST_COMPLETED = "user_quest_completed";
     private const string TABLE_CHARACTER_EQUIPMENT_ITEM = "character_equipment_item";
     private const string TABLE_CHARACTER_EQUIPMENT_RUNE = "character_equipment_rune";
     private const string TABLE_USER_CLEAR_STAGE = "user_clear_stage";
@@ -36,6 +37,7 @@ partial class GameDb(ILogger<GameDb> logger, IOptions<DbConfig> dbConfig, IMaste
     private readonly string RUNE_CODE = "rune_code";
     private readonly string LEVEL = "level";
     private readonly string STAGE_CODE = "stage_code";
+    private readonly string QUEST_CODE = "quest_code";
     
     // 비동기, 반환값 없음
     public async Task<ErrorCode> WithTransactionAsync(
