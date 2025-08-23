@@ -33,7 +33,7 @@ public class LoginController(ILogger<LoginController> logger, IAccountService ac
             return new LoginResponse { code = login.ErrorCode };
         }
 
-        var dataLoad = await _dataLoadService.LoadGameData(login.Value.userId);
+        var dataLoad = await _dataLoadService.LoadGameDataAsync(login.Value.userId);
         if (dataLoad.IsFailed)
         {
             return new LoginResponse { code = dataLoad.ErrorCode };

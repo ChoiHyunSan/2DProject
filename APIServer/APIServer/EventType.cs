@@ -74,4 +74,8 @@ public enum EventType
     GetProgressQuest = 5017,
     GetCompleteQuest = 5018,
     RewardQuest = 5019,
+    RefreshQuest = 5020,
+    GetInventoryCharacter = 5021,
+    GetInventoryRune = 5022,
+    GetInventoryItem = 5023,
 }

@@ -137,4 +137,19 @@ public interface IGameDb
     
     /// <summary> 완료한 퀘스트 보상 획득 처리 </summary>
     Task<bool> RewardCompleteQuest(long userId, long questCode);
+
+    /// <summary> 타입 별 퀘스트 데이터 조회 </summary>
+    Task<List<UserQuestInprogress>> GetProgressQuestByType(long userId, QuestType type);
+    
+    /// <summary> 퀘스트 완료 처리 (Inprogress 삭제 + Complete 추가) </summary>
+    Task<bool> CompleteQuest(long userId, List<long> completeQuest);
+
+    /// <summary> 인벤토리 캐릭터 리스트 조회 </summary>
+    Task<List<CharacterData>> GetCharacterDataListAsync(long userId);
+    
+    /// <summary> 인벤토리 아이템 리스트 조회 </summary>
+    Task<List<ItemData>> GetItemDataListAsync(long userId, Pageable pageable);
+    
+    /// <summary> 인벤토리 룬 리스트 조회 </summary>
+    Task<List<RuneData>> GetRuneDataListAsync(long userId, Pageable pageable);
 }

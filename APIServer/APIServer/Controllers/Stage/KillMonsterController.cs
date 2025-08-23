@@ -13,6 +13,12 @@ public class KillMonsterController(ILogger<KillMonsterController> logger, IStage
     private readonly ILogger<KillMonsterController> _logger = logger;
     private readonly IStageService _stageService = stageService;
 
+    /// <summary>
+    /// 몬스터 처치 요청 API
+    /// 세션 인증 : O
+    /// 반환 값 : 
+    /// - 반환 코드 : 처치 요청 결과 (성공 : ErrorCode.None)
+    /// </summary>
     [HttpPost]
     public async Task<KillMonsterResponse> KillMonsterAsync([FromBody] KillMonsterRequest request)
     {
@@ -21,7 +27,7 @@ public class KillMonsterController(ILogger<KillMonsterController> logger, IStage
         LoggerManager.LogInfo(_logger, EventType.KillMonster, "Request Kill Monster",
             new { request.email, request.monsterCode });
 
-        var result = await _stageService.KillMonster(session.email, request.monsterCode);
+        var result = await _stageService.KillMonster(session.userId, request.monsterCode);
         return new KillMonsterResponse { code = result.ErrorCode };
     }
 }

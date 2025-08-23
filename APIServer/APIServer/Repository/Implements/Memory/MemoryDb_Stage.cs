@@ -8,7 +8,7 @@ partial class MemoryDb
 {
     public async Task<bool> CacheStageInfo(InStageInfo inStageInfo)
     {
-        var key = CreateStageInfoKey(inStageInfo.email);
+        var key = CreateStageInfoKey(inStageInfo.userId);
         try
         {
             var handler = new RedisString<InStageInfo>(_conn, key, null);
@@ -18,15 +18,15 @@ partial class MemoryDb
         catch (Exception e)
         {
             LoggerManager.LogError(_logger, ErrorCode.FailedCacheStageInfo, EventType.CacheStageInfo,
-                "Failed Cache Stage Info", new { userId = inStageInfo.email, e.Message, e.StackTrace });
+                "Failed Cache Stage Info", new { inStageInfo.userId, e.Message, e.StackTrace });
 
             return false;
         }
     }
 
-    public async Task<Result<InStageInfo>> GetGameInfo(string email)
+    public async Task<Result<InStageInfo>> GetGameInfo(long userId)
     {
-        var key = CreateStageInfoKey(email);
+        var key = CreateStageInfoKey(userId);
         try
         {
             var handler = new RedisString<InStageInfo>(_conn, key, null);
@@ -42,7 +42,7 @@ partial class MemoryDb
         catch (Exception e)
         {
             LoggerManager.LogError(_logger, ErrorCode.FailedLoadStageInfo, EventType.LoadStageInfo,
-                "Failed Get Stage Info", new { email });
+                "Failed Get Stage Info", new { userId });
             
             return Result<InStageInfo>.Failure(ErrorCode.FailedLoadStageInfo);
         }
@@ -50,7 +50,7 @@ partial class MemoryDb
 
     public async Task<bool> DeleteStageInfo(InStageInfo stageInfo)
     {
-        var key = CreateStageInfoKey(stageInfo.email);
+        var key = CreateStageInfoKey(stageInfo.userId);
         try
         {
             var handler = new RedisString<InStageInfo>(_conn, key, null);
@@ -60,7 +60,7 @@ partial class MemoryDb
         catch (Exception e)
         {
             LoggerManager.LogError(_logger, ErrorCode.FailedDeleteStageInfo, EventType.DeleteStageInfo,
-                "Failed Delete Stage Info", new { stageInfo.email });
+                "Failed Delete Stage Info", new { stageInfo.userId });
 
             return false;
         }

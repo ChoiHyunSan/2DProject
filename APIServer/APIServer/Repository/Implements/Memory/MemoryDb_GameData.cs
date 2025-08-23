@@ -7,9 +7,9 @@ namespace APIServer.Repository.Implements.Memory;
 
 partial class MemoryDb
 {
-    public async Task<bool> CacheGameData(string email, GameData gameData)
+    public async Task<bool> CacheGameData(long userId, GameData gameData)
     {
-        var key = CreateGameDataKey(email);
+        var key = CreateGameDataKey(userId);
         try
         {
             var handler = new RedisString<GameData>(_conn, key, null);
@@ -19,15 +19,15 @@ partial class MemoryDb
         catch (Exception ex)
         {
             LogError(_logger, ErrorCode.FailedCacheGameData, EventType.CacheGameData, 
-                "Cache Game Data Failed", new { email, ex.Message, ex.StackTrace });
+                "Cache Game Data Failed", new { email = userId, ex.Message, ex.StackTrace });
 
             return false;
         }
     }
 
-    public async Task<Result<List<UserQuestInprogress>>> GetCachedQuestList(string email)
+    public async Task<Result<List<UserQuestInprogress>>> GetCachedQuestList(long userId)
     {
-        var key = CreateQuestKey(email);
+        var key = CreateQuestKey(userId);
         try
         {
             var handler = new RedisString<List<UserQuestInprogress>>(_conn, key, null);
@@ -43,15 +43,15 @@ partial class MemoryDb
         catch (Exception ex)
         {
             LogError(_logger, ErrorCode.FailedCacheGameData, EventType.CacheGameData, 
-                "Cache Game Data Failed", new { email, ex.Message, ex.StackTrace });
+                "Cache Game Data Failed", new { userId, ex.Message, ex.StackTrace });
 
             return Result<List<UserQuestInprogress>>.Failure(ErrorCode.FailedCacheGameData);
         }     
     }
 
-    public async Task<Result> CacheQuestList(string email, List<UserQuestInprogress> progressList)
+    public async Task<Result> CacheQuestList(long userId, List<UserQuestInprogress> progressList)
     {
-        var key = CreateQuestKey(email);
+        var key = CreateQuestKey(userId);
         try
         {
             var handler = new RedisString<List<UserQuestInprogress>>(_conn, key, null);
@@ -67,7 +67,7 @@ partial class MemoryDb
         catch (Exception ex)
         {
             LogError(_logger, ErrorCode.FailedCacheGameData, EventType.CacheGameData, 
-                "Cache Game Data Failed", new { email, ex.Message, ex.StackTrace });
+                "Cache Game Data Failed", new { userId, ex.Message, ex.StackTrace });
 
             return Result.Failure(ErrorCode.FailedCacheGameData);
         }

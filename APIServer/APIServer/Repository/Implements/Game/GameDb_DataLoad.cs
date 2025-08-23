@@ -1,5 +1,6 @@
 ﻿using APIServer.Models.DTO;
 using APIServer.Models.Entity;
+using APIServer.Models.Entity.Data;
 using Dapper;
 using MySqlConnector;
 using SqlKata.Execution;
@@ -9,7 +10,7 @@ namespace APIServer.Repository.Implements;
 
 partial class GameDb
 {
-        public async Task<GameData> GetAllGameDataByUserIdAsync(long userId)
+    public async Task<GameData> GetAllGameDataByUserIdAsync(long userId)
     {
          var sql = @"
             SELECT gold, gem, exp, level,
@@ -132,56 +133,104 @@ partial class GameDb
          }
          catch (Exception e)
          {
-             LogError(_logger, ErrorCode.FailedLoadAllGameData, EventType.LoadGameDb, "GetAllGameDataByUserIdAsync Failed", new
-             {
-                 userId,
-                 trace = e.StackTrace,
-                 message = e.Message,
-             });
-             
+             LogError(_logger, ErrorCode.FailedLoadAllGameData, EventType.LoadGameDb, 
+                 "GetAllGameDataByUserIdAsync Failed", new { userId, trace = e.StackTrace, message = e.Message, });
              return null;
          } 
     }
-
-    public async Task<List<UserQuestInprogress>> GetProgressQuestList(long userId)
+    
+    public async Task<List<CharacterData>> GetCharacterDataListAsync(long userId)
     {
-        var result = await _queryFactory.Query(TABLE_USER_QUEST_INPROGRESS)
-            .Where(USER_ID, userId)
-            .GetAsync<UserQuestInprogress>();
+         var sql = @"
+            SELECT character_id, character_code AS characterCode, level
+            FROM user_inventory_character
+            WHERE user_id = @userId;
 
-        return result.ToList();
+            -- 장착 아이템(캐릭터별)
+            SELECT cei.character_id, i.item_id AS itemId
+            FROM character_equipment_item cei
+            JOIN user_inventory_item i ON i.item_id = cei.item_id
+            WHERE i.user_id = @userId;
+
+            -- 장착 룬(캐릭터별)
+            SELECT cer.character_id, r.rune_id AS runeId
+            FROM character_equipment_rune cer
+            JOIN user_inventory_rune r ON r.rune_id = cer.rune_id
+            WHERE r.user_id = @userId;
+            ";
+         
+         var conn = (MySqlConnection)_queryFactory.Connection;
+         using var multi = await conn.QueryMultipleAsync(sql, new { userId });
+            
+         // 캐릭터
+         var characterRows = (await multi.ReadAsync<(long character_id, long characterCode, int level)>()).ToList();
+         var equipItemRows = (await multi.ReadAsync<(long character_id, long itemId)>()).ToList();
+         var equipRuneRows = (await multi.ReadAsync<(long character_id, long runeId)>()).ToList();
+
+         // 캐릭터 + 장착 정보 조립
+         var equipItemsByChar = equipItemRows.GroupBy(x => x.character_id)
+             .ToDictionary(g => g.Key, g => g.Select(e => new EquipItemData() { itemId = e.itemId }).ToList());
+
+         var equipRunesByChar = equipRuneRows.GroupBy(x => x.character_id)
+             .ToDictionary(g => g.Key, g => g.Select(e => new EquipRuneData() { runeId = e.runeId }).ToList());
+
+         var characters = characterRows.Select(c => new CharacterData
+         {
+             characterId = c.character_id,
+             characterCode = c.characterCode,
+             level = c.level,
+             equipItems = equipItemsByChar.TryGetValue(c.character_id, out var equipItems) ? equipItems : [],
+             equipRunes = equipRunesByChar.TryGetValue(c.character_id, out var equipRunes) ? equipRunes : []
+         }).ToList();
+
+         LogInfo(_logger, EventType.LoadGameDb, "Get Character Data List", new { userId });
+            
+         return characters;
     }
 
-    public async Task<List<UserQuestComplete>> GetCompleteQuestList(long userId, Pageable pageable)
+    public async Task<List<ItemData>> GetItemDataListAsync(long userId, Pageable pageable)
     {
         var offset = (pageable.page - 1) * pageable.size;
-        
-        var result = await _queryFactory.Query(TABLE_USER_QUEST_COMPLETED)
-            .Where(USER_ID, userId)
-            .Limit(pageable.size)
-            .Offset(offset)
-            .GetAsync<UserQuestComplete>();
+        var sql = @"
+            SELECT item_id, item_code AS itemCode, level
+            FROM user_inventory_item
+            WHERE user_id = @userId
+            OFFSET @offset
+            LIMIT @size;
+            ";
 
-        return result.ToList();
+         var conn = (MySqlConnection)_queryFactory.Connection;
+         using var multi = await conn.QueryMultipleAsync(sql, new { userId });
+             
+         var itemRows = (await multi.ReadAsync<(long item_id, long itemCode, int level)>()).ToList();
+         return itemRows.Select(x => new ItemData
+         {
+             itemId = x.item_id,
+             itemCode = x.itemCode,
+             level = x.level
+         }).ToList();
     }
 
-    public async Task<UserQuestComplete> GetCompleteQuest(long userId, long questCode)
+    public async Task<List<RuneData>> GetRuneDataListAsync(long userId, Pageable pageable)
     {
-        return await _queryFactory.Query(TABLE_USER_QUEST_COMPLETED)
-            .Where(USER_ID, userId)
-            .Where(QUEST_CODE, questCode)
-            .FirstOrDefaultAsync<UserQuestComplete>();
-    }
+        var offset = (pageable.page - 1) * pageable.size;
+        var sql = @"
+            SELECT rune_id, rune_code AS runeCode, level
+            FROM user_inventory_rune
+            WHERE user_id = @userId
+            OFFSET @offset
+            LIMIT @size;
+            ";
 
-    public async Task<bool> RewardCompleteQuest(long userId, long questCode)
-    {
-        var result = await _queryFactory.Query(TABLE_USER_QUEST_COMPLETED)
-            .Where(USER_ID, userId)
-            .UpdateAsync(new
-            {
-                EARN_REWARD = true
-            });
-
-        return result == 1;
+        var conn = (MySqlConnection)_queryFactory.Connection;
+        using var multi = await conn.QueryMultipleAsync(sql, new { userId });
+            
+        var runeRows = (await multi.ReadAsync<(long rune_id, long runeCode, int level)>()).ToList();
+        return runeRows.Select(x => new RuneData
+        {
+            runeId = x.rune_id,
+            runeCode = x.runeCode,
+            level = x.level
+        }).ToList();
     }
 }

@@ -14,6 +14,12 @@ public class EnterStageController(ILogger<EnterStageController> logger, IStageSe
     private readonly ILogger<EnterStageController> _logger = logger;
     private readonly IStageService _stageService = stageService;
     
+    /// <summary>
+    /// 스테이지 입장 요청 API
+    /// 세션 인증 : O
+    /// 반환 값 :
+    /// - 반환 코드 : 입장 결과 (성공 : ErrorCode.None)
+    /// </summary>
     [HttpPost]
     public async Task<EnterStageResponse> EnterStageAsync([FromBody] EnterStageRequest request)
     {

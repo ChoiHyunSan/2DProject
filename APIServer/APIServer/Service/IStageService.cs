@@ -11,8 +11,8 @@ public interface IStageService
     Task<Result<List<MonsterInfo>>> EnterStage(long userId, string email, long stageCode, List<long> characterIds);
     
     /// <summary> 스테이지 내 몬스터 처치 </summary>
-    Task<Result> KillMonster(string email, long monsterCode);
+    Task<Result> KillMonster(long userId, long monsterCode);
     
     /// <summary> 스테이지 완료 </summary>
-    Task<Result> ClearStage(string email, long stageCode);
+    Task<Result> ClearStage(long userId, long stageCode);
 }

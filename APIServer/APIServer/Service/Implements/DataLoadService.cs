@@ -15,7 +15,7 @@ public class DataLoadService(ILogger<DataLoadService> logger, IGameDb gameDb, IM
     private readonly IGameDb _gameDb = gameDb;
     private readonly IMemoryDb _memoryDb = memoryDb;
     
-    public async Task<Result<GameData>> LoadGameData(long userId)
+    public async Task<Result<GameData>> LoadGameDataAsync(long userId)
     {
         try
         {
@@ -33,12 +33,12 @@ public class DataLoadService(ILogger<DataLoadService> logger, IGameDb gameDb, IM
         }
     }
 
-    public async Task<Result<List<UserQuestInprogress>>> GetProgressQuestList(long userId, string email, Pageable pageable)
+    public async Task<Result<List<UserQuestInprogress>>> GetProgressQuestListAsync(long userId, Pageable pageable)
     {
         try
         {
             // 캐시된 퀘스트 리스트가 있는지 확인
-            var cache = await _memoryDb.GetCachedQuestList(email);
+            var cache = await _memoryDb.GetCachedQuestList(userId);
             if (cache.IsSuccess)
             {
                 return Result<List<UserQuestInprogress>>.Success(Pagination(cache.Value, pageable));
@@ -48,12 +48,12 @@ public class DataLoadService(ILogger<DataLoadService> logger, IGameDb gameDb, IM
             var progressList = await _gameDb.GetProgressQuestList(userId);
 
             // 퀘스트 리스트를 캐싱
-            if (await _memoryDb.CacheQuestList(email, progressList) is var cacheQuest && cacheQuest.IsFailed)
+            if (await _memoryDb.CacheQuestList(userId, progressList) is var cacheQuest && cacheQuest.IsFailed)
             {
                 return Result<List<UserQuestInprogress>>.Failure(cacheQuest.ErrorCode);
             }
 
-            LogInfo(_logger, EventType.GetProgressQuest, "Get Progress Quest List", new { userId, email });
+            LogInfo(_logger, EventType.GetProgressQuest, "Get Progress Quest List", new { userId });
             
             // 데이터 반환
             return Result<List<UserQuestInprogress>>.Success(Pagination(progressList, pageable));
@@ -66,7 +66,7 @@ public class DataLoadService(ILogger<DataLoadService> logger, IGameDb gameDb, IM
         }
     }
 
-    public async Task<Result<List<UserQuestComplete>>> GetCompleteQuestList(long userId, Pageable pageable)
+    public async Task<Result<List<UserQuestComplete>>> GetCompleteQuestListAsync(long userId, Pageable pageable)
     {
         try
         {
@@ -80,6 +80,63 @@ public class DataLoadService(ILogger<DataLoadService> logger, IGameDb gameDb, IM
             LogError(_logger, ErrorCode.FailedDataLoad, EventType.GetCompleteQuest, 
                 "Failed Get Complete Quest List", new { userId, ex.Message, ex.StackTrace });;
             return Result<List<UserQuestComplete>>.Failure(ErrorCode.FailedDataLoad);       
+        }
+    }
+
+    public async Task<Result<List<CharacterData>>> GetInventoryCharacterListAsync(long userId)
+    {
+        try
+        {
+            var charactetDatas = await _gameDb.GetCharacterDataListAsync(userId);
+            
+            LogInfo(_logger, EventType.GetInventoryCharacter, "Get Inventory Character List", new { userId });
+            
+            return Result<List<CharacterData>>.Success(charactetDatas);
+        }
+        catch (Exception ex)
+        {
+            LogError(_logger, ErrorCode.FailedDataLoad, EventType.GetInventoryCharacter, 
+                "Failed Get Inventory Chracter List", new { userId });
+            
+            return Result<List<CharacterData>>.Failure(ErrorCode.FailedDataLoad);       
+        }
+    }
+
+    public async Task<Result<List<ItemData>>> GetInventoryItemListAsync(long userId, Pageable requestPageable)
+    {
+        try
+        {
+            var itemDatas = await _gameDb.GetItemDataListAsync(userId, requestPageable);
+
+            LogInfo(_logger, EventType.GetInventoryItem, "Get Inventory Item List", new { sessionUserId = userId });
+
+            return Result<List<ItemData>>.Success(itemDatas);
+        }
+        catch (Exception ex)
+        {
+            LogError(_logger, ErrorCode.FailedDataLoad, EventType.GetInventoryItem, 
+                "Failed Get Inventory Item List", new { userId });
+            
+            return Result<List<ItemData>>.Failure(ErrorCode.FailedDataLoad);      
+        }
+    }
+
+    public async Task<Result<List<RuneData>>> GetInventoryRuneListAsync(long userId, Pageable requestPageable)
+    {
+        try
+        {
+            var runeDatas = await _gameDb.GetRuneDataListAsync(userId, requestPageable);
+
+            LogInfo(_logger, EventType.GetInventoryRune, "Get Inventory Rune List", new { sessionUserId = userId });
+
+            return Result<List<RuneData>>.Success(runeDatas);
+        }
+        catch (Exception ex)
+        {
+            LogError(_logger, ErrorCode.FailedDataLoad, EventType.GetInventoryRune, 
+                "Failed Get Inventory Rune List", new { userId });
+            
+            return Result<List<RuneData>>.Failure(ErrorCode.FailedDataLoad);      
         }
     }
 }

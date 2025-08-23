@@ -19,7 +19,7 @@ partial class MemoryDb
         catch (Exception e)
         {
             LogError(_logger, ErrorCode.FailedRegisterSession, EventType.RegisterSession, 
-                "Register Session Failed", new { session.email, e.Message, e.StackTrace });
+                "Register Session Failed", new { session.userId, e.Message, e.StackTrace });
             
             return false;
         }
@@ -48,9 +48,9 @@ partial class MemoryDb
         }
     }
 
-    public async Task<Result> TrySessionRequestLock(string email, TimeSpan? ttl = null)
+    public async Task<Result> TrySessionRequestLock(long userId, TimeSpan? ttl = null)
     {
-        var key    = CreateSessionLockKey(email);
+        var key    = CreateSessionLockKey(userId);
         var expiry = ttl ?? TimeSpan.FromSeconds(5); 
         
         try
@@ -74,15 +74,15 @@ partial class MemoryDb
         catch (Exception e)
         {
             LogError(_logger, ErrorCode.FailedSessionLock, EventType.SessionLock, 
-                "Acquire session lock failed", new { email, key, e.Message, e.StackTrace });
+                "Acquire session lock failed", new { userId, key, e.Message, e.StackTrace });
             
             return ErrorCode.FailedSessionLock;
         }
     }
 
-    public async Task<Result> TrySessionRequestUnLock(string email)
+    public async Task<Result> TrySessionRequestUnLock(long userId)
     {
-        var key = CreateSessionLockKey(email);
+        var key = CreateSessionLockKey(userId);
 
         try
         {
@@ -101,7 +101,7 @@ partial class MemoryDb
         catch (Exception e)
         {
             LogError(_logger, ErrorCode.FailedSessionUnLock, EventType.SessionUnLock, 
-                "Release session lock failed", new { email, key, e.Message, e.StackTrace });
+                "Release session lock failed", new { userId, key, e.Message, e.StackTrace });
             
             return ErrorCode.FailedSessionUnLock;
         }

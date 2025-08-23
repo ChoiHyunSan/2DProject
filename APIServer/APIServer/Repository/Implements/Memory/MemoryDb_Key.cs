@@ -8,23 +8,23 @@ partial class MemoryDb
         return $"SESSION_{email}";
     }
     
-    private static string CreateSessionLockKey(string email)
+    private static string CreateSessionLockKey(long userId)
     {
-        return $"SESSION_LOCK_{email}";
+        return $"SESSION_LOCK_{userId}";
     }
     
-    private static string CreateGameDataKey(string email)
+    private static string CreateGameDataKey(long userId)
     {
-        return $"GAME_DATA_{email}";
+        return $"GAME_DATA_{userId}";
     }
 
-    private static string CreateStageInfoKey(string email)
+    private static string CreateStageInfoKey(long userId)
     {
-        return $"STAGE_INFO_{email}";
+        return $"STAGE_INFO_{userId}";
     }
 
-    private static string CreateQuestKey(string email)
+    private static string CreateQuestKey(long userId)
     {
-        return $"QUEST_{email}";       
+        return $"QUEST_{userId}";       
     }
 }

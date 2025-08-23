@@ -38,6 +38,7 @@ partial class GameDb(ILogger<GameDb> logger, IOptions<DbConfig> dbConfig, IMaste
     private readonly string LEVEL = "level";
     private readonly string STAGE_CODE = "stage_code";
     private readonly string QUEST_CODE = "quest_code";
+    private readonly string QUEST_TYPE = "quest_type";
     
     // 비동기, 반환값 없음
     public async Task<ErrorCode> WithTransactionAsync(

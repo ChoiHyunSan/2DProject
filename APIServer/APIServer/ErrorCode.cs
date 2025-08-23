@@ -49,6 +49,7 @@ public enum ErrorCode
     FailedAttendanceReward         = 2026_500,
     CannotFindUserAttendance       = 2027_404,
     FailedRewardQuest              = 2028_500,
+    FailedCompleteQuest            = 2029_500,
     
     // AccountDb 3000 ~ 3999
     FailedCreateAccountUserData    = 3000_500,
@@ -102,4 +103,5 @@ public enum ErrorCode
     FailedLogin                     = 5020_500,
     CannotFindCompleteQuest       = 5021_404,
     AlreadyEarnReward              = 5022_400,
+    FailedRefreshQuest              = 5023_500,
 }
