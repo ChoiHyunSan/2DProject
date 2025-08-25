@@ -1,5 +1,6 @@
 ﻿using System.Transactions;
 using APIServer.Config;
+using APIServer.Models.Entity;
 using Microsoft.Extensions.Options;
 using SqlKata.Execution;
 using IsolationLevel = System.Data.IsolationLevel;
@@ -24,6 +25,7 @@ partial class GameDb(ILogger<GameDb> logger, IOptions<DbConfig> dbConfig, IMaste
     private const string TABLE_CHARACTER_EQUIPMENT_ITEM = "character_equipment_item";
     private const string TABLE_CHARACTER_EQUIPMENT_RUNE = "character_equipment_rune";
     private const string TABLE_USER_CLEAR_STAGE = "user_clear_stage";
+    private const string TABLE_USER_MAIL = "user_mail";
     
     // GameDb Table Column
     private readonly string USER_ID = "user_id";
@@ -39,6 +41,8 @@ partial class GameDb(ILogger<GameDb> logger, IOptions<DbConfig> dbConfig, IMaste
     private readonly string STAGE_CODE = "stage_code";
     private readonly string QUEST_CODE = "quest_code";
     private readonly string QUEST_TYPE = "quest_type";
+    private readonly string MAIL_ID = "mail_id";
+    private readonly string RECEIVE_DATE = "receive_date";
     
     // 비동기, 반환값 없음
     public async Task<ErrorCode> WithTransactionAsync(

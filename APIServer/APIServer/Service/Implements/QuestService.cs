@@ -27,18 +27,36 @@ public class QuestService(ILogger<QuestService> logger, IGameDb gameDb, IDataLoa
                 return Result.Failure(ErrorCode.AlreadyEarnReward);
             }
 
-            // 보상 제공
-            if (await _gameDb.RewardCompleteQuest(userId, questCode) == false)
+            var txErrorCode = await _gameDb.WithTransactionAsync(async _ =>
             {
-                return Result.Failure(ErrorCode.FailedRewardQuest);
-            }
+                // 보상 제공
+                if (await EarnQuestReward(userId, questCode) == false)
+                {
+                    return ErrorCode.FailedRewardQuest;
+                }
+                
+                // 보상 제공 확인 처리
+                if (await _gameDb.RewardCompleteQuest(userId, questCode) == false)
+                {
+                    return ErrorCode.FailedRewardQuest;
+                }
 
+                return ErrorCode.None;
+            });
+
+            if (txErrorCode != ErrorCode.None)
+            {
+                return Result.Failure(txErrorCode);
+            }
+            
+            LogInfo(_logger, EventType.RewardQuest, "Reward Quest", new { userId, questCode });
+            
             return Result.Success();
         }
         catch (Exception ex)
         {
             LogError(_logger, ErrorCode.FailedRewardQuest, EventType.RewardQuest,
-                "Faile Reward Quest", new { userId, questCode, ex.Message, ex.StackTrace });
+                "Failed Reward Quest", new { userId, questCode, ex.Message, ex.StackTrace });
             return Result.Failure(ErrorCode.FailedRewardQuest);
         }
     }
@@ -91,15 +109,15 @@ public class QuestService(ILogger<QuestService> logger, IGameDb gameDb, IDataLoa
                 return Result.Success();
             }
 
-            var cached = cache.Value; // 예: List<InprogressQuest>
+            var cached = cache.Value; 
 
-            // 4-1) 완료된 퀘스트는 캐시에서 제거 (O(n))
+            // 4-1) 완료된 퀘스트는 캐시에서 제거 
             if (completed.Count > 0)
             {
                 cached.RemoveAll(q => completed.Contains(q.quest_code));
             }
 
-            // 4-2) 미완료 퀘스트의 진행도 반영 (O(n))
+            // 4-2) 미완료 퀘스트의 진행도 반영 
             foreach (var q in cached)
             {
                 if (updatedProgress.TryGetValue(q.quest_code, out var newProg))
@@ -118,5 +136,35 @@ public class QuestService(ILogger<QuestService> logger, IGameDb gameDb, IDataLoa
                 "Faile Refresh Quest Progress ", new { userId, ex.Message, ex.StackTrace });
             return Result.Failure(ErrorCode.FailedRefreshQuest);    
         }
+    }
+
+    private async Task<bool> EarnQuestReward(long userId, long questCode)
+    {
+        // 퀘스트 정보 조회
+        var quest = _masterDb.GetQuestInfoDatas()[questCode];
+        var (gold, gem, exp) = (quest.reward_gold, quest.reward_gem, quest.reward_exp);
+        
+        // 유저 데이터 조회
+        var userData = await _gameDb.GetUserDataByUserIdAsync(userId);
+        var (curGold, curGem, curExp, curLevel) = (userData.gold, userData.gem, userData.exp, userData.level);
+        
+        // 갱신할 데이터 계산
+        var (newGold, newGem) = (curGold + gold, curGem + gem);
+        var (newLevel, newExp) = (curLevel, curExp + exp);
+        
+        // 경험치는 레벨 공통으로 100당 1레벨로 산정해서 계산
+        if (newExp >= 100)
+        {
+            newLevel += newExp / 100;
+            curExp = newExp % 100;
+        }
+        
+        // 정보 갱신
+        if (await _gameDb.UpdateUserCurrencyAsync(userId, newGold, newGem, newLevel, newExp) == false)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

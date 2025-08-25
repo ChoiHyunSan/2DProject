@@ -7,9 +7,9 @@ USE `MasterDb`;
 -- ----------------------------------------------------------
 DROP TABLE IF EXISTS `attendance_reward_month`;
 CREATE TABLE IF NOT EXISTS `attendance_reward_month` (
-    `day`        INT         NOT NULL        PRIMARY KEY        COMMENT '출석 일자',
-    `item_code`  BIGINT      NOT NULL                           COMMENT '아이템 식별 코드',
-    `count`      INT         NOT NULL                           COMMENT '아이템 보상 개수'
+    `day`          INT         NOT NULL        PRIMARY KEY        COMMENT '출석 일자',
+    `reward_code`  BIGINT      NOT NULL                           COMMENT '보상 식별 코드',
+    `count`        INT         NOT NULL                           COMMENT '보상 개수'
 );
 
 # 데이터 Impoort

@@ -38,11 +38,6 @@ partial class GameDb
         }
     }
 
-    public Task<bool> RewardClearStageAsync(InStageInfo stageInfo)
-    {
-        throw new NotImplementedException();
-    }
-
     public async Task<UserClearStage> FindClearStageAsync(long userId, long stageCode)
     {
         return await _queryFactory.Query(TABLE_USER_CLEAR_STAGE)

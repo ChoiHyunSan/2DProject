@@ -117,3 +117,19 @@ CREATE TABLE IF NOT EXISTS `user_quest_complete` (
     `complete_date`                 DATETIME    NOT NULL                            COMMENT '퀘스트 완료 시간',
     `earn_reward`                   BOOLEAN     NOT NULL            DEFAULT FALSE   COMMENT '보상 획득 여부'
 );
+
+-- ----------------------------------------------------------
+--  유저 메일함 테이블
+-- ----------------------------------------------------------
+DROP TABLE IF EXISTS `user_mail`;
+CREATE TABLE IF NOT EXISTS `user_mail` (
+    `mail_id`                       BIGINT        AUTO_INCREMENT      PRIMARY KEY     COMMENT '메일 ID',
+    `user_id`                       BIGINT        NOT NULL                            COMMENT '유저 ID',
+    `mail_title`                    VARCHAR(200)  NOT NULL                            COMMENT '메일 제목',
+    `reward_code`                   BIGINT        NOT NULL                            COMMENT '보상 품목 식별 코드',
+    `count`                         INT           NOT NULL                            COMMENT '보상 개수',
+    `earn_reward`                   BOOLEAN       NOT NULL            DEFAULT FALSE   COMMENT '보상 획득 여부',
+    `send_date`                     DATETIME      NOT NULL                            COMMENT '메일 송신 날짜',
+    `receive_date`                  DATETIME                                          COMMENT '메일 수신 날짜',
+    `expire_date`                   DATETIME      NOT NULL                            COMMENT '메일 만료 날짜' 
+);

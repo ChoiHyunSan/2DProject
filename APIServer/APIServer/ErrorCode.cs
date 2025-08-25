@@ -50,6 +50,10 @@ public enum ErrorCode
     CannotFindUserAttendance       = 2027_404,
     FailedRewardQuest              = 2028_500,
     FailedCompleteQuest            = 2029_500,
+    CannotFindMail                  = 2030_404,
+    FailedReceiveMail             = 2031_500,
+    FailedSendMail                  = 2032_500,
+    FailedGetMail                 = 2033_500,
     
     // AccountDb 3000 ~ 3999
     FailedCreateAccountUserData    = 3000_500,

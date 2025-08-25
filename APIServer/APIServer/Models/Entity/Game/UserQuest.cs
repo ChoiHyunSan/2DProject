@@ -20,10 +20,10 @@ public class UserQuestInprogress
 /// </summary>
 public class UserQuestComplete
 {
-    public long quest_complete_id { get; set; }                // ID
-    public long quest_code { get; set; }         // 퀘스트 식별 코드
-    public DateTime complete_date { get; set; }  // 퀘스트 완료 시간
-    public bool earn_reward { get; set; }        // 보상획득 여부
+    public long quest_complete_id { get; set; }                 // ID
+    public long quest_code { get; set; }                        // 퀘스트 식별 코드
+    public DateTime complete_date { get; set; }                 // 퀘스트 완료 시간
+    public bool earn_reward { get; set; }                       // 보상획득 여부
 }
 
 

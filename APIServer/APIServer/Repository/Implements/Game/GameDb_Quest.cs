@@ -59,8 +59,31 @@ partial class GameDb
         return result.ToList();
     }
 
-    public Task<bool> CompleteQuest(long userId, List<long> completeQuest)
+    public async Task<bool> CompleteQuest(long userId, List<long> completeQuest)
     {
-        throw new NotImplementedException();
+        var result = await _queryFactory.Query(TABLE_USER_QUEST_INPROGRESS)
+            .Where("quest_inprogress_id", completeQuest)
+            .DeleteAsync();
+        
+        if(result != completeQuest.Count)
+        {
+            return false;
+        }
+        
+        result = await _queryFactory.Query(TABLE_USER_QUEST_COMPLETED)
+            .InsertAsync(completeQuest.Select(id => new
+            {
+                user_id = userId,
+                quest_code = id,
+                complete_date = DateTime.UtcNow,
+                earn_reward = false
+            }));
+        
+        if(result != completeQuest.Count)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

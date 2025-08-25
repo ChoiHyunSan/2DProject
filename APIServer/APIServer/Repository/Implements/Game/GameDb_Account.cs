@@ -100,13 +100,45 @@ partial class GameDb
         return true;
     }
 
-    public Task<UserGameData> GetUserDataByEmailAsync(string email)
+    public async Task<UserGameData> GetUserDataByEmailAsync(string email)
     {
-        throw new NotImplementedException();
+        return await _queryFactory.Query(TABLE_USER_GAME_DATA)
+            .Where("email", email)
+            .FirstOrDefaultAsync<UserGameData>();
     }
 
-    public Task<bool> UpdateUserDataAsync(UserGameData data)
+    public async Task<bool> UpdateUserCurrencyAsync(long userId, int gold, int gem, int level, int exp)
     {
-        throw new NotImplementedException();
+        var result = await _queryFactory.Query(TABLE_USER_GAME_DATA)
+            .Where(USER_ID, userId)
+            .UpdateAsync(new
+            {
+                gold,
+                gem,
+                level,
+                exp
+            });
+
+        return result == 1;
+    }
+
+    public async Task<GameData> GetUserDataByUserIdAsync(long userId)
+    {
+        return await _queryFactory.Query(TABLE_USER_GAME_DATA)
+            .Where(USER_ID, userId)
+            .FirstOrDefaultAsync<GameData>();
+    }
+
+    public async Task<bool> UpdateUserExpAsync(long userId, int newExp, int newLevel)
+    {
+        var result = await _queryFactory.Query(TABLE_USER_GAME_DATA)
+            .Where(USER_ID, userId)
+            .UpdateAsync(new
+            {
+                exp = newExp,
+                level = newLevel
+            });
+
+        return result == 1;
     }
 }

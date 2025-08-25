@@ -78,4 +78,6 @@ public enum EventType
     GetInventoryCharacter = 5021,
     GetInventoryRune = 5022,
     GetInventoryItem = 5023,
+    ReceiveMail = 5024,
+    GetMail = 5025,
 }

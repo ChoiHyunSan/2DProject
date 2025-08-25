@@ -5,12 +5,13 @@ using static APIServer.LoggerManager;
 
 namespace APIServer.Service.Implements;
 
-public class AttendanceService(ILogger<AttendanceService> logger, IMasterDb masterDb, IGameDb gameDb) 
+public class AttendanceService(ILogger<AttendanceService> logger, IMasterDb masterDb, IGameDb gameDb, IMailService mailService) 
     : IAttendanceService
 {
     private readonly ILogger<AttendanceService> _logger = logger;
     private readonly IMasterDb _masterDb = masterDb;
     private readonly IGameDb _gameDb = gameDb;
+    private readonly IMailService _mailService = mailService;
     
     public async Task<Result> AttendanceAndReward(long userId)
     {
@@ -51,36 +52,18 @@ public class AttendanceService(ILogger<AttendanceService> logger, IMasterDb mast
 
     private async Task<bool> GetAttendanceRewardToday(long userId, int day)
     {
+        // 보상 조회
         var reward = _masterDb.GetAttendanceRewardMonths()[day];
-
         var code = reward.item_code;
         var price = reward.count;
 
-        var result = true;
-        
-        // 코드 범위 별로 데이터 처리
-        if (code == 0)
+        // 메일로 보상 송신
+        if (await _mailService.SendRewardMail(userId, "출석 보상", code, price) is var sendReward && sendReward.IsFailed)
         {
-            // Gold
-            result = await _gameDb.UpdateUserGoldAsync(userId, price);
-        }
-        else if (code == 1)
-        {
-            // Gem           
-            result = await _gameDb.UpdateUserGemAsync(userId, price);
-        }
-        else if (code < 20000)
-        {
-            // Item
-            result = await _gameDb.InsertItemAsync(userId, new UserInventoryItem { item_code = code, level = 1});
-        }
-        else
-        {
-            // Rune
-            result = await _gameDb.InsertRuneAsync(userId, new UserInventoryRune { rune_code = code, level = 1});
+            return false;
         }
 
-        return result;
+        return true;
     }
     
     private async Task<int> AttendanceToday(long userId, UserAttendanceMonth attendance)

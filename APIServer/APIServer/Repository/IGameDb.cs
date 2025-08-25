@@ -39,17 +39,8 @@ public interface IGameDb
     /// <summary> 클리어한 스테이지 목록 조회 </summary>
     Task<List<UserClearStage>> GetClearStageListAsync(long userId);
 
-    /// <summary> 스테이지 클리어 갱신 </summary>
-    Task<bool> UpdateClearStageAsync(long userId, long stageCode);
-
-    /// <summary> 스테이지 클리어 보상 제공 </summary>
-    Task<bool> RewardClearStageAsync(InStageInfo stageInfo);
-
     /// <summary> 유저 데이터 조회 </summary>
     Task<UserGameData> GetUserDataByEmailAsync(string email);
-    
-    /// <summary> 유저 데이터 갱신 </summary>
-    Task<bool> UpdateUserDataAsync(UserGameData data);
 
     /// <summary> 캐릭터 ID 기반 보유 여부 조회 </summary>
     Task<bool> IsCharacterExistsAsync(long userId, long characterId);
@@ -92,6 +83,9 @@ public interface IGameDb
 
     /// <summary> 유저 재화 갱신 </summary>
     Task<bool> UpdateUserCurrencyAsync(long userId, int gold, int gem);
+    
+    /// <summary> 유저 재화 & 레벨 갱신 </summary>
+    Task<bool> UpdateUserCurrencyAsync(long userId, int gold, int gem, int level, int exp);
 
     /// <summary> 캐릭터 보유 여부 조회 </summary>
     Task<bool> CheckAlreadyHaveCharacterAsync(long userId, long characterCode);
@@ -152,4 +146,22 @@ public interface IGameDb
     
     /// <summary> 인벤토리 룬 리스트 조회 </summary>
     Task<List<RuneData>> GetRuneDataListAsync(long userId, Pageable pageable);
+
+    /// <summary> 유저 게임 데이터 단건 조회 </summary>
+    Task<GameData> GetUserDataByUserIdAsync(long userId);
+
+    /// <summary> 유저 레벨 및 경험치 갱신 </summary>
+    Task<bool> UpdateUserExpAsync(long userId, int newExp, int newLevel);
+    
+    /// <summary> 유저 메일 조회 </summary>
+    Task<UserMail> GetMailAsync(long userId, long mailId);
+
+    /// <summary> 메일 수신 완료 처리 </summary>
+    Task<bool> ReceiveCompleteMailAsync(long mailId);
+
+    /// <summary> 유저 메일 생성 </summary>
+    Task<bool> InsertNewMail(UserMail newMail);
+    
+    /// <summary> 유저 메일 페이징 조회 </summary>
+    Task<List<UserMail>> GetUnReceiveMailByPaging(long userId, Pageable pageable);
 }
