@@ -1,7 +1,10 @@
-﻿namespace APIServer.Models.DTO;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace APIServer.Models.DTO;
 
 public class PurchaseCharacterRequest : RequestBase
 {
+    [Required]
     public long characterCode { get; set; }
 }
 

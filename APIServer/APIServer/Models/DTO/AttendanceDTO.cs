@@ -9,13 +9,3 @@ public class AttendanceResponse : ResponseBase
 {
     
 }
-
-public class AttendanceWeekRequest : RequestBase
-{
-    
-}
-
-public class AttendanceWeekResponse : ResponseBase
-{
-    
-}

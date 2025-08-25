@@ -14,12 +14,15 @@ public class RequestBase
 
 public class PageableBase : RequestBase
 {
+    [Required]
     public Pageable Pageable { get; set; } = new();
 }
 
 public record Pageable
 {
+    [Required]
     public int page { get; set; } = 1;
+    [Required]
     public int size { get; set; } = 10;
     
     public static List<T> Pagination<T>(List<T> list, Pageable pageable)

@@ -1,4 +1,5 @@
-﻿using APIServer.Models.Entity;
+﻿using System.ComponentModel.DataAnnotations;
+using APIServer.Models.Entity;
 
 namespace APIServer.Models.DTO;
 
@@ -31,7 +32,9 @@ public record StageInfo
 
 public class EnterStageRequest : RequestBase
 {
+    [Required]
     public long stageCode { get; set; }
+    [Required]
     public List<long> characterIds { get; set; } = [];
 }
 
@@ -48,6 +51,7 @@ public record MonsterInfo
 
 public class KillMonsterRequest : RequestBase
 {
+    [Required]
     public long monsterCode { get; set; }
 }
 
@@ -58,6 +62,7 @@ public class KillMonsterResponse : ResponseBase
 
 public class StageClearRequest : RequestBase
 {
+    [Required]
     public long stageCode { get; set; }
 }
 
