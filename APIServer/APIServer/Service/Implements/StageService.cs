@@ -56,8 +56,8 @@ public class StageService(ILogger<StageService> logger,IGameDb gameDb, IMemoryDb
             // 스테이지 정보 반환
             return Result<List<MonsterInfo>>.Success(monsterInfos.Select(x => new MonsterInfo
             {
-                monsterCode = x.monsterCode,
-                monsterCount = x.monsterCount
+                monsterCode = x.monster_code,
+                monsterCount = x.monster_count
             }).ToList());
         }
         catch (Exception ex)
@@ -197,20 +197,20 @@ public class StageService(ILogger<StageService> logger,IGameDb gameDb, IMemoryDb
         }
         
         // 룬 획득
-        if (await GetRuneReward(userData.userId, rewardRune) == false)
+        if (await GetRuneReward(userData.user_id, rewardRune) == false)
         {
             return false;
         }
         
         // 아이템 획득
-        if (await GetItemReward(userData.userId, rewardItem) == false)
+        if (await GetItemReward(userData.user_id, rewardItem) == false)
         {
             return false;
         }
         
         // 퀘스트 갱신 (골드 획득 & 아이템 획득)
-        var goldQuest = await _questService.RefreshQuestProgress(userData.userId, QuestType.GetGold, rewardGold.gold);
-        var itemQuest = await _questService.RefreshQuestProgress(userData.userId, QuestType.GetItem, rewardItem.Count);
+        var goldQuest = await _questService.RefreshQuestProgress(userData.user_id, QuestType.GetGold, rewardGold.gold);
+        var itemQuest = await _questService.RefreshQuestProgress(userData.user_id, QuestType.GetItem, rewardItem.Count);
         if (goldQuest.IsFailed || itemQuest.IsFailed)
         {
             return false;
@@ -224,7 +224,7 @@ public class StageService(ILogger<StageService> logger,IGameDb gameDb, IMemoryDb
         var dropItems = new List<StageRewardItem>();
         foreach (var item in rewardItems)
         {
-            if (item.dropRate >= Random.Shared.Next(1, 101))
+            if (item.drop_rate >= Random.Shared.Next(1, 101))
             {
                 dropItems.Add(item);
             }
@@ -238,7 +238,7 @@ public class StageService(ILogger<StageService> logger,IGameDb gameDb, IMemoryDb
         var dropRunes = new List<StageRewardRune>();
         foreach (var item in rewardRunes)
         {
-            if (item.dropRate >= Random.Shared.Next(1, 101))
+            if (item.drop_rate >= Random.Shared.Next(1, 101))
             {
                 dropRunes.Add(item);
             }
@@ -250,7 +250,7 @@ public class StageService(ILogger<StageService> logger,IGameDb gameDb, IMemoryDb
     private async Task<bool> GetGoldReward(UserGameData userData, StageRewardGold rewardGold)
     {
         var newGold = userData.gold + rewardGold.gold;
-        return await _gameDb.UpdateUserGoldAsync(userData.userId, newGold);
+        return await _gameDb.UpdateUserGoldAsync(userData.user_id, newGold);
     }
 
 

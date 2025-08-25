@@ -8,21 +8,10 @@ namespace APIServer.Models.Entity;
 /// </summary>
 public class UserAccount
 {
-    [Column("account_id")]
-    public long accountId { get; set; }                     // 인증 계정 ID
-    
-    [Column("user_id")]
-    public long userId { get; set; }                        // 유저 ID
-    
-    [Column("email")]
+    public long account_id { get; set; }                     // 인증 계정 ID
+    public long user_id { get; set; }                        // 유저 ID
     public string email { get; set; } = string.Empty;       // 이메일
-    
-    [Column("password")]
     public string password { get; set; } = string.Empty;    // 비밀번호 
-    
-    [Column("salt_value")]
-    public string saltValue { get; set; } = string.Empty;   // 비밀번호 솔트 값
-    
-    [Column("create_date")]
-    public DateTime createDate { get; set; }                // 계정 생성 날짜
+    public string salt_value { get; set; } = string.Empty;  // 비밀번호 솔트 값
+    public DateTime create_date { get; set; }                // 계정 생성 날짜
 }

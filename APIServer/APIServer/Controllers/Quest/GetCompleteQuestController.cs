@@ -36,7 +36,7 @@ public class GetCompleteQuestController(ILogger<GetProgressQuestController> logg
     {
         return quest.Select(quest => new CompleteQuest
         {
-            questCode = quest.questCode,
+            questCode = quest.quest_code,
         }).ToList();
     }
 }

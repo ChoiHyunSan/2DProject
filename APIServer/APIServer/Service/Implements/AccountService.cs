@@ -55,7 +55,7 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
             var account = await _accountDb.GetUserAccountByEmailAsync(email);
 
             // 패스워드 검증
-            if (!SecurityUtils.VerifyPassword(account.password, account.saltValue, password))
+            if (!SecurityUtils.VerifyPassword(account.password, account.salt_value, password))
             {
                 return Result<(long, string)>.Failure(ErrorCode.FailedPasswordVerify);   
             }
@@ -67,7 +67,7 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
                 return Result<(long, string)>.Failure(ErrorCode.FailedRegisterSession);
             }
 
-            return Result<(long, string)>.Success((account.userId, token));
+            return Result<(long, string)>.Success((account.user_id, token));
         }
         catch (Exception ex)
         {
@@ -81,11 +81,11 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
     {
         return new UserSession
         {
-            accountId = account.accountId,
+            accountId = account.account_id,
             authToken = authToken,
             createDate = DateTime.Now,
             email = account.email,
-            userId = account.userId
+            userId = account.user_id
         };
     }
 
@@ -127,12 +127,12 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
     {
         var defaultCharacters = new[]
         {
-            new UserInventoryCharacter { characterCode = 30001, level = 1 }
+            new UserInventoryCharacter { character_code = 30001, level = 1 }
         };
         
         foreach (var character in defaultCharacters)
         {
-            var result = await _gameDb.InsertNewCharacterAsync(userId, character.characterCode);
+            var result = await _gameDb.InsertNewCharacterAsync(userId, character.character_code);
             if (result == false)
             {
                 return false;
@@ -146,8 +146,8 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
     {
         var defaultRunes = new[]
         {
-            new UserInventoryRune { runeCode = 20000, level = 1 },
-            new UserInventoryRune { runeCode = 20001, level = 1},
+            new UserInventoryRune { rune_code = 20000, level = 1 },
+            new UserInventoryRune { rune_code = 20001, level = 1},
         };
         
         foreach (var rune in defaultRunes)
@@ -166,8 +166,8 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
     {
         var defaultItems = new[]
         {
-            new UserInventoryItem { itemCode = 10001, level = 1 },
-            new UserInventoryItem { itemCode = 10002, level = 1},
+            new UserInventoryItem { item_code = 10001, level = 1 },
+            new UserInventoryItem { item_code = 10002, level = 1},
         };
         
         foreach (var item in defaultItems)

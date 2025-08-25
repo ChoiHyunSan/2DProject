@@ -8,17 +8,10 @@ namespace APIServer.Models.Entity.Data;
 /// </summary>
 public class StageRewardItem
 {
-    [Column("stage_code")]
-    public long stageCode { get; set; }     // 스테이지 식별 코드
-    
-    [Column("item_code")]
-    public int itemCode { get; set; }       // 아이템 식별 코드
-    
-    [Column("level")]
+    public long stage_code { get; set; }     // 스테이지 식별 코드
+    public int item_code { get; set; }       // 아이템 식별 코드
     public int level { get; set; }          // 아이템 레벨
-    
-    [Column("drop_rate")]
-    public int dropRate { get; set; }       // 드랍 확률
+    public int drop_rate { get; set; }       // 드랍 확률
 }
 
 /// <summary>
@@ -27,14 +20,9 @@ public class StageRewardItem
 /// </summary>
 public class StageRewardRune
 {
-    [Column("stage_code")]
-    public long stageCode { get; set; }     // 스테이지 식별 코드
-    
-    [Column("rune_code")]
-    public int runeCode { get; set; }       // 룬 식별 코드
-    
-    [Column("drop_rate")]
-    public int dropRate { get; set; }       // 드랍 확률
+    public long stage_code { get; set; }     // 스테이지 식별 코드
+    public int rune_code { get; set; }       // 룬 식별 코드
+    public int drop_rate { get; set; }       // 드랍 확률
 }
 
 /// <summary>
@@ -43,10 +31,7 @@ public class StageRewardRune
 /// </summary>
 public class StageRewardGold
 {
-    [Column("stage_code")]
-    public long stageCode { get; set; }     // 스테이지 식별 코드
-    
-    [Column("gold")]
+    public long stage_code { get; set; }     // 스테이지 식별 코드
     public int gold { get; set; }           // 골드 획득량
 }
 
@@ -56,7 +41,7 @@ public class StageRewardGold
 /// </summary>
 public class StageMonsterInfo
 {
-    public long stageCode { get; set; }      // 식별 코드
-    public long monsterCode { get; set; }    // 몬스터 식별 코드
-    public int monsterCount { get; set; }    // 몬스터 등장 마릿수
+    public long stage_code { get; set; }      // 식별 코드
+    public long monster_code { get; set; }    // 몬스터 식별 코드
+    public int monster_count { get; set; }    // 몬스터 등장 마릿수
 }

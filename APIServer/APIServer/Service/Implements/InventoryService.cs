@@ -96,7 +96,7 @@ public class InventoryService(ILogger<InventoryService> logger, IGameDb gameDb, 
             // 강화에 필요한 데이터 조회
             var item = await _gameDb.GetInventoryItemAsync(userId, itemId);
             var (gold, gem) = await _gameDb.GetUserCurrencyAsync(userId);
-            var enhanceData = _masterDb.GetItemEnhanceDatas()[(item.itemCode, item.level)];
+            var enhanceData = _masterDb.GetItemEnhanceDatas()[(item.item_code, item.level)];
 
             // 강화 가능 여부 조회
             if (VerifyEnhanceItem(enhanceData, gold) is var verify && verify != ErrorCode.None)
@@ -105,7 +105,7 @@ public class InventoryService(ILogger<InventoryService> logger, IGameDb gameDb, 
             }
 
             // 갱신용 재화 정보 계산
-            var (newLevel, newGold) = (enhanceData.level + 1, gold - enhanceData.enhancePrice);
+            var (newLevel, newGold) = (enhanceData.level + 1, gold - enhanceData.enhance_price);
 
             // 트랜잭션 처리
             var txErrorCode = await _gameDb.WithTransactionAsync(async _ =>
@@ -148,7 +148,7 @@ public class InventoryService(ILogger<InventoryService> logger, IGameDb gameDb, 
             // 강화에 필요한 데이터 조회
             var rune = await _gameDb.GetInventoryRuneAsync(userId, runeId);
             var (gold, gem) = await _gameDb.GetUserCurrencyAsync(userId);
-            var enhanceData = _masterDb.GetRuneEnhanceDatas()[(rune.runeCode, rune.level)];
+            var enhanceData = _masterDb.GetRuneEnhanceDatas()[(rune.rune_code, rune.level)];
 
             // 강화 가능 여부 확인
             if (VerifyEnhanceRune(enhanceData, gold) is var verify && verify != ErrorCode.None)
@@ -157,7 +157,7 @@ public class InventoryService(ILogger<InventoryService> logger, IGameDb gameDb, 
             }
 
             // 갱신용 재화 정보 계산
-            var (newLevel, newGold) = (enhanceData.level + 1, gold - enhanceData.enhancePrice);
+            var (newLevel, newGold) = (enhanceData.level + 1, gold - enhanceData.enhance_price);
 
             // 트랜잭션 처리 
             var txErrorCode = await _gameDb.WithTransactionAsync(async _ =>
@@ -200,7 +200,7 @@ public class InventoryService(ILogger<InventoryService> logger, IGameDb gameDb, 
             return ErrorCode.AlreadyMaximumLevelItem;
         }
 
-        if (enhanceData.enhancePrice > gold)
+        if (enhanceData.enhance_price > gold)
         {
             return ErrorCode.GoldShortage;
         }
@@ -215,7 +215,7 @@ public class InventoryService(ILogger<InventoryService> logger, IGameDb gameDb, 
             return ErrorCode.AlreadyMaximumLevelRune;
         }
 
-        if (enhanceData.enhancePrice > gold)
+        if (enhanceData.enhance_price > gold)
         {
             return ErrorCode.GoldShortage;
         }

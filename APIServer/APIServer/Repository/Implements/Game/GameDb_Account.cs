@@ -26,7 +26,7 @@ partial class GameDb
     {
         var result = await _queryFactory.Query(TABLE_USER_INVENTORY_ITEM).InsertAsync(new
             {
-                item_code = item.itemCode,
+                item_code = item.item_code,
                 level = item.level,
                 user_id = userId
             });
@@ -38,7 +38,7 @@ partial class GameDb
     {
         var result = await _queryFactory.Query(TABLE_USER_INVENTORY_RUNE).InsertAsync(new
             {
-                rune_code = rune.runeCode,
+                rune_code = rune.rune_code,
                 level = rune.level,
                 user_id = userId,
             });

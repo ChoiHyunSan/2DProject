@@ -8,20 +8,11 @@ namespace APIServer.Models.Entity.Data;
 /// </summary>
 public class CharacterOriginData
 {
-    [Column("character_code")]
-    public long characterCode { get; set; }                     // 캐릭터 식별 코드
-    
-    [Column("name")]
+    public long character_code { get; set; }                     // 캐릭터 식별 코드
     public string name { get; set; } = string.Empty;            // 캐릭터 이름
-    
-    [Column("description")]
     public string description { get; set; } = string.Empty;     // 캐릭터 설명
-    
-    [Column("price_gold")]
-    public int priceGold { get; set; }                          // 구매 필요 골드 재화
-    
-    [Column("price_gem")]
-    public int priceGem { get; set; }                           // 구매 필요 유료 재화
+    public int price_gold { get; set; }                          // 구매 필요 골드 재화
+    public int price_gem { get; set; }                           // 구매 필요 유료 재화
 }
 
 /// <summary>
@@ -30,24 +21,11 @@ public class CharacterOriginData
 /// </summary>
 public class CharacterEnhanceData
 {
-    [Column("character_code")]
-    public long characterCode { get; set; }                     // 캐릭터 식별 코드
-    
-    [Column("level")]
-    public int level { get; set; }                              // 캐릭터 레벨
-    
-    [Column("attack_damage")]
-    public int attackDamage { get; set; }                       // 추가 공격력
-    
-    [Column("defense")]
-    public int defense { get; set; }                            // 추가 방어력
-    
-    [Column("max_hp")]
-    public int maxHp { get; set; }                              // 추가 최대 체력
-    
-    [Column("critical_chance")]
-    public int criticalChance { get; set; }                     // 추가 치명타 확률
-    
-    [Column("enhance_price")]
-    public int enhancePrice { get; set; }                       // 강화 가격
+    public long character_code { get; set; }                     // 캐릭터 식별 코드
+    public int level { get; set; }                               // 캐릭터 레벨
+    public int attack_damage { get; set; }                       // 추가 공격력
+    public int defense { get; set; }                             // 추가 방어력
+    public int maxHp { get; set; }                               // 추가 최대 체력
+    public int critical_chance { get; set; }                     // 추가 치명타 확률
+    public int enhance_price { get; set; }                       // 강화 가격
 }

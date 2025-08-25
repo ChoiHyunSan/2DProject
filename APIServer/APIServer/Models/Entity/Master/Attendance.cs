@@ -8,12 +8,7 @@ namespace APIServer.Models.Entity.Data;
 /// </summary>
 public class AttendanceRewardMonth
 {
-    [Column("day")]
     public int day { get; set; }            // 출석 일자
-    
-    [Column("item_code")]
-    public long itemCode { get; set; }      // 아이템 식별 코드
-    
-    [Column("count")]
+    public long item_code { get; set; }      // 아이템 식별 코드
     public int count { get; set; }          // 아이템 보상 개수
 }

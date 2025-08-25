@@ -8,11 +8,8 @@ namespace APIServer.Models.Entity;
 /// </summary>
 public class CharacterEquipmentItem
 {
-    [Column("character_id")]
-    public long characterId { get; set; }       // 캐릭터 ID
-    
-    [Column("item_id")]
-    public long itemId { get; set; }            // 아이템 ID
+    public long character_id { get; set; }       // 캐릭터 ID
+    public long item_id { get; set; }            // 아이템 ID
 }
 
 /// <summary>
@@ -21,9 +18,6 @@ public class CharacterEquipmentItem
 /// </summary>
 public class CharacterEquipmentRune
 {
-    [Column("character_id")]
-    public long characterId { get; set; }       // 캐릭터 ID
-    
-    [Column("rune_id")]
-    public long runeId { get; set; }            // 룬 ID
+    public long character_id { get; set; }       // 캐릭터 ID
+    public long rune_id { get; set; }            // 룬 ID
 }

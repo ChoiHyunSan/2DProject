@@ -16,7 +16,7 @@ public class ShopService(ILogger<ShopService> logger, IMasterDb masterDb, IGameD
         try
         {
             var originData = _masterDb.GetCharacterOriginDatas()[characterCode];
-            var (gold, gem) = (originData.priceGold, originData.priceGem);
+            var (gold, gem) = (priceGold: originData.price_gold, priceGem: originData.price_gem);
 
             // 보유 여부 확인
             if (await _gameDb.CheckAlreadyHaveCharacterAsync(userId, characterCode) == false)
@@ -86,7 +86,7 @@ public class ShopService(ILogger<ShopService> logger, IMasterDb masterDb, IGameD
             }
 
             // 판매가 및 현재 잔액 조회
-            var sellGold = _masterDb.GetItemEnhanceDatas()[(itemId, item.level)].sellPrice;
+            var sellGold = _masterDb.GetItemEnhanceDatas()[(itemId, item.level)].sell_price;
             var (curGold, curGem) = await _gameDb.GetUserCurrencyAsync(userId);
 
             // 결과 잔액 계산 

@@ -8,13 +8,8 @@ namespace APIServer.Models.Entity.Data;
 /// </summary>
 public class RuneOriginData
 {
-    [Column("rune_code")]
-    public long runeCode { get; set; }                          // 룬 식별 코드
-    
-    [Column("name")]
+    public long rune_code { get; set; }                          // 룬 식별 코드
     public string name { get; set; } = string.Empty;            // 룬 이름
-    
-    [Column("description")]
     public string description { get; set; } = string.Empty;     // 룬 설명
 }
 
@@ -24,24 +19,11 @@ public class RuneOriginData
 /// </summary>
 public class RuneEnhanceData
 {   
-    [Column("rune_code")]
-    public long runeCode { get; set; }                          // 룬 식별 코드
-    
-    [Column("level")]
+    public long rune_code { get; set; }                          // 룬 식별 코드
     public int level { get; set; }                             // 룬 레벨
-    
-    [Column("attack_damage")]
-    public int attackDamage { get; set; }                       // 추가 공격력
-    
-    [Column("defense")]
+    public int attack_damage { get; set; }                       // 추가 공격력
     public int defense { get; set; }                            // 추가 방어력
-    
-    [Column("max_hp")]
-    public int maxHp { get; set; }                              // 추가 체력
-    
-    [Column("critical_chance")]
-    public int criticalChance { get; set; }                     // 추가 치명타 확률
-    
-    [Column("enhance_price")]
-    public int enhancePrice { get; set; }                       // 강화 필요 개수
+    public int max_hp { get; set; }                              // 추가 체력
+    public int critical_chance { get; set; }                     // 추가 치명타 확률
+    public int enhance_price { get; set; }                       // 강화 필요 개수
 }

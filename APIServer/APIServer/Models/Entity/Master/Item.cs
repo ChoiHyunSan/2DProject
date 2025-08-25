@@ -8,13 +8,8 @@ namespace APIServer.Models.Entity.Data;
 /// </summary>
 public class ItemOriginData
 {
-    [Column("item_code")]
-    public long itemCode { get; set; }                          // 아이템 식별 코드
-    
-    [Column("name")]
+    public long item_code { get; set; }                          // 아이템 식별 코드
     public string name { get; set; } = string.Empty;            // 아이템 이름
-    
-    [Column("description")]
     public string description { get; set; } = string.Empty;     // 아이템 설명
 }
 
@@ -24,27 +19,12 @@ public class ItemOriginData
 /// </summary>
 public class ItemEnhanceData
 {
-    [Column("item_code")]
-    public long itemCode { get; set; }                          // 아이템 식별 코드
-    
-    [Column("level")]
+    public long item_code { get; set; }                          // 아이템 식별 코드
     public int level { get; set; }                              // 아이템 레벨
-    
-    [Column("attackDamage")]
-    public int attackDamage { get; set; }                       // 추가 공격력
-    
-    [Column("defense")]
+    public int attack_damage { get; set; }                       // 추가 공격력
     public int defense { get; set; }                            // 추가 방어력
-    
-    [Column("max_hp")]
     public int maxHp { get; set; }                              // 추가 체력
-    
-    [Column("critical_chance")]
-    public int criticalChance { get; set; }                     // 추가 치명타 확률
-    
-    [Column("enhance_price")]
-    public int enhancePrice { get; set; }                       // 강화 가격
-    
-    [Column("sell_price")]
-    public int sellPrice { get; set; }                          // 판매 가격
+    public int critical_chance { get; set; }                     // 추가 치명타 확률
+    public int enhance_price { get; set; }                       // 강화 가격
+    public int sell_price { get; set; }                          // 판매 가격
 }

@@ -53,7 +53,7 @@ public class AttendanceService(ILogger<AttendanceService> logger, IMasterDb mast
     {
         var reward = _masterDb.GetAttendanceRewardMonths()[day];
 
-        var code = reward.itemCode;
+        var code = reward.item_code;
         var price = reward.count;
 
         var result = true;
@@ -72,12 +72,12 @@ public class AttendanceService(ILogger<AttendanceService> logger, IMasterDb mast
         else if (code < 20000)
         {
             // Item
-            result = await _gameDb.InsertItemAsync(userId, new UserInventoryItem { itemCode = code, level = 1});
+            result = await _gameDb.InsertItemAsync(userId, new UserInventoryItem { item_code = code, level = 1});
         }
         else
         {
             // Rune
-            result = await _gameDb.InsertRuneAsync(userId, new UserInventoryRune { runeCode = code, level = 1});
+            result = await _gameDb.InsertRuneAsync(userId, new UserInventoryRune { rune_code = code, level = 1});
         }
 
         return result;
@@ -86,7 +86,7 @@ public class AttendanceService(ILogger<AttendanceService> logger, IMasterDb mast
     private async Task<int> AttendanceToday(long userId, UserAttendanceMonth attendance)
     {
         // 출석 일수를 1 증가시킵니다.
-        int newAttendanceDay = attendance.lastAttendanceDate + 1;
+        int newAttendanceDay = attendance.last_attendance_date + 1;
     
         // 업데이트된 출석 정보를 DB에 반영합니다.
         await _gameDb.UpdateAttendanceToday(userId, newAttendanceDay);
@@ -104,13 +104,13 @@ public class AttendanceService(ILogger<AttendanceService> logger, IMasterDb mast
         }
 
         // 출석체크가 완료되었는지 확인 (수정된 메서드 사용)
-        if (CheckAttendanceAlreadyComplete(attendance.lastAttendanceDate))
+        if (CheckAttendanceAlreadyComplete(attendance.last_attendance_date))
         {
             return Result<UserAttendanceMonth>.Failure(ErrorCode.AttendanceAlreadyComplete);
         }
         
         // 금일 출석체크를 했는지 확인 (수정된 메서드 사용 및 인자 추가)
-        if (CheckAttendanceAlreadyDoneToday(attendance.lastUpdateDate))
+        if (CheckAttendanceAlreadyDoneToday(attendance.last_update_date))
         {
             return Result<UserAttendanceMonth>.Failure(ErrorCode.AttendanceAlreadyDoneToday);
         }

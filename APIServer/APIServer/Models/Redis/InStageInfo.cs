@@ -20,8 +20,8 @@ public class InStageInfo
             email = email,
             stageCode = stageCode,
             startTime = DateTime.UtcNow,
-            monsterKillTargets = monsterInfos.ToDictionary(x => x.monsterCode, x => x.monsterCount),
-            monsterKills = monsterInfos.ToDictionary(x =>  x.monsterCode, x => 0)
+            monsterKillTargets = monsterInfos.ToDictionary(x => x.monster_code, x => x.monster_count),
+            monsterKills = monsterInfos.ToDictionary(x =>  x.monster_code, x => 0)
         };
     }
 }

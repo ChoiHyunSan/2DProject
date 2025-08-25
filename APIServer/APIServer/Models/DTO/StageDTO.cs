@@ -22,9 +22,9 @@ public record StageInfo
     {
         return new StageInfo
         {
-            stageCode = userClearStage.stageCode,
-            clearCount = userClearStage.clearCount,
-            lastClearDate = userClearStage.lastClearDate
+            stageCode = userClearStage.stage_code,
+            clearCount = userClearStage.clear_count,
+            lastClearDate = userClearStage.last_clear_date
         };
     }
 }

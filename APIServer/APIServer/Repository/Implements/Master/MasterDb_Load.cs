@@ -55,11 +55,11 @@ partial class MasterDb
             var enhancePriceDatas = await GetAllDataFromTableAsync<CharacterEnhanceData>("character_enhance_data");
             
             _characterOriginDatas = originDatas
-                .GroupBy(c => c.characterCode)
+                .GroupBy(c => c.character_code)
                 .ToImmutableDictionary(g => g.Key, g => g.First());
             
             _characterEnhancePriceDatas = enhancePriceDatas
-                .GroupBy(c => (c.characterCode, c.level))
+                .GroupBy(c => (characterCode: c.character_code, c.level))
                 .ToImmutableDictionary(g => (g.Key.characterCode, g.Key.level), g => g.First());
         }
         catch (Exception e)
@@ -79,11 +79,11 @@ partial class MasterDb
             var enhanceDatas = await GetAllDataFromTableAsync<ItemEnhanceData>("item_enhance_data");
             
             _itemOriginDatas = originDatas
-                .GroupBy(i => i.itemCode)
+                .GroupBy(i => i.item_code)
                 .ToImmutableDictionary(g => g.Key, g => g.First());
             
             _itemEnhanceDatas = enhanceDatas
-                .GroupBy(i => (i.itemCode, i.level))
+                .GroupBy(i => (itemCode: i.item_code, i.level))
                 .ToImmutableDictionary(g => (g.Key.itemCode, g.Key.level), g => g.First());       
         }
         catch (Exception e)
@@ -103,11 +103,11 @@ partial class MasterDb
             var enhanceDatas = await GetAllDataFromTableAsync<RuneEnhanceData>("rune_enhance_data");
             
             _runeOriginDatas = originDatas
-                .GroupBy(r => r.runeCode)
+                .GroupBy(r => r.rune_code)
                 .ToImmutableDictionary(g => g.Key, g => g.First());
             
             _runeEnhanceDatas = enhanceDatas
-                .GroupBy(r => (r.runeCode, r.level))
+                .GroupBy(r => (runeCode: r.rune_code, r.level))
                 .ToImmutableDictionary(g => (g.Key.runeCode, g.Key.level), g => g.First());      
         }
         catch(Exception e)
@@ -125,7 +125,7 @@ partial class MasterDb
         {
             var questInfoDatas = await GetAllDataFromTableAsync<QuestInfoData>("quest_info_data");
             _questInfoDatas = questInfoDatas
-                .GroupBy(q => q.questCode)
+                .GroupBy(q => q.quest_code)
                 .ToImmutableDictionary(g => g.Key, g => g.First());       
         }
         catch (Exception e)
@@ -147,19 +147,19 @@ partial class MasterDb
             var stageMonsterInfos = await GetAllDataFromTableAsync<StageMonsterInfo>("stage_monster_info");
 
             _stageRewardsGold = stageRewardsGold
-                .GroupBy(g => g.stageCode)
+                .GroupBy(g => g.stage_code)
                 .ToImmutableDictionary(g => g.Key, g => g.First());
 
             _stageRewardsItem = stageRewardsItem
-                .GroupBy(i => i.stageCode)
+                .GroupBy(i => i.stage_code)
                 .ToImmutableDictionary(g => g.Key, g =>  g.ToList());
 
             _stageRewardsRune = stageRewardsRune
-                .GroupBy(r => r.stageCode)
+                .GroupBy(r => r.stage_code)
                 .ToImmutableDictionary(g => g.Key, g =>  g.ToList());
 
             _stageMonsterInfos = stageMonsterInfos
-                .GroupBy(m => m.stageCode)
+                .GroupBy(m => m.stage_code)
                 .ToImmutableDictionary(g => g.Key, g =>  g.ToList());
         }
         catch (Exception e)

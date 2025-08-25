@@ -69,11 +69,11 @@ partial class GameDb
     public async Task<bool> UpdateStageAsync(UserClearStage current)
     {
         var updated = await _queryFactory.Query(TABLE_USER_CLEAR_STAGE)
-            .Where(USER_ID, current.userId)
-            .Where(STAGE_CODE, current.stageCode)
+            .Where(USER_ID, current.user_id)
+            .Where(STAGE_CODE, current.stage_code)
             .UpdateAsync(new
             {
-                clear_count     = current.clearCount + 1,
+                clear_count     = current.clear_count + 1,
                 last_clear_date = DateTime.UtcNow
             });
 
@@ -97,7 +97,7 @@ partial class GameDb
         var updated = await _queryFactory.Query(TABLE_USER_INVENTORY_ITEM)
             .InsertAsync(dropItems.Select(di => new
             {
-                ITEM_CODE = di.itemCode,
+                ITEM_CODE = di.item_code,
                 USER_ID = userId,
                 LEVEL = 1
             }));
@@ -110,7 +110,7 @@ partial class GameDb
         var updated = await _queryFactory.Query(TABLE_USER_INVENTORY_RUNE)
             .InsertAsync(dropRunes.Select(di => new
             {
-                RUNE_CODE = di.runeCode,
+                RUNE_CODE = di.rune_code,
                 USER_ID = userId,
                 LEVEL = 1
             }));

@@ -22,7 +22,7 @@ public class QuestService(ILogger<QuestService> logger, IGameDb gameDb, IDataLoa
             var completeQuest = await _gameDb.GetCompleteQuest(userId, questCode);
 
             // 이미 보상을 제공했는지 확인
-            if (completeQuest.earnReward)
+            if (completeQuest.earn_reward)
             {
                 return Result.Failure(ErrorCode.AlreadyEarnReward);
             }
@@ -58,20 +58,20 @@ public class QuestService(ILogger<QuestService> logger, IGameDb gameDb, IDataLoa
 
             foreach (var q in quests)
             {
-                var target = questInfoMap[q.questCode];
-                if (target.questType == QuestType.ClearStage)
+                var target = questInfoMap[q.quest_code];
+                if (target.quest_type == QuestType.ClearStage)
                 {
-                    if(addValue == target.questProgress)
-                        completed.Add(q.questCode);
+                    if(addValue == target.quest_progress)
+                        completed.Add(q.quest_code);
                 }
                 else
                 {
                     var newProgress = q.progress + addValue;
                 
-                    if (newProgress >= target.questProgress)
-                        completed.Add(q.questCode);
+                    if (newProgress >= target.quest_progress)
+                        completed.Add(q.quest_code);
                     else
-                        updatedProgress[q.questCode] = newProgress;    
+                        updatedProgress[q.quest_code] = newProgress;    
                 }
             }
 
@@ -96,16 +96,16 @@ public class QuestService(ILogger<QuestService> logger, IGameDb gameDb, IDataLoa
             // 4-1) 완료된 퀘스트는 캐시에서 제거 (O(n))
             if (completed.Count > 0)
             {
-                cached.RemoveAll(q => completed.Contains(q.questCode));
+                cached.RemoveAll(q => completed.Contains(q.quest_code));
             }
 
             // 4-2) 미완료 퀘스트의 진행도 반영 (O(n))
             foreach (var q in cached)
             {
-                if (updatedProgress.TryGetValue(q.questCode, out var newProg))
+                if (updatedProgress.TryGetValue(q.quest_code, out var newProg))
                 {
                     // 안전하게 clamp (선택)
-                    var target = questInfoMap[q.questCode].questProgress;
+                    var target = questInfoMap[q.quest_code].quest_progress;
                     q.progress = newProg;
                 }
             }

@@ -8,18 +8,9 @@ namespace APIServer.Models.Entity;
 /// </summary>
 public class UserClearStage
 {
-    [Column("user_id")]
-    public long userId { get; set; }                    // 유저 ID
-    
-    [Column("stage_code")]
-    public int stageCode { get; set; }                  // 스테이지 식별 코드
-    
-    [Column("clear_count")]
-    public int clearCount { get; set; }                 // 스테이지 클리어 횟수
-    
-    [Column("first_clear_date")]
-    public DateTime firstClearDate { get; set; }        // 첫 클리어 날짜
-    
-    [Column("last_clear_date")]
-    public DateTime lastClearDate { get; set; }         // 가장 최근 클리어 날짜
+    public long user_id { get; set; }                    // 유저 ID
+    public int stage_code { get; set; }                  // 스테이지 식별 코드
+    public int clear_count { get; set; }                 // 스테이지 클리어 횟수
+    public DateTime first_clear_date { get; set; }       // 첫 클리어 날짜
+    public DateTime last_clear_date { get; set; }        // 가장 최근 클리어 날짜
 }
