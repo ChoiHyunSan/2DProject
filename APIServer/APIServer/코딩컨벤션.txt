@@ -1,6 +1,0 @@
-﻿// 메서드 정의 
-1. 모든 메서드는 async 메서드로 정의하며, Async 접미사를 붙인다.
-2. 반환형이 없는 경우 Result를 기본으로 하며, return은 ErrorCode 값을 작성한다.
-3. 반환형이 있는 경우, Result<T>.Success or Result<T>.Failure 를 적절히 사용하여 작성한다.
-4. 반환형에 넣는 T 객체는 변수 값이 많아질 경우, Record 를 작성하여 처리한다. (3개 이상부터는 필수)
-5. 메서드의 성공 여부를 확인할 때에는 isSuccess / isFailed를 사용하여 처리하며, !를 이용한 부정형 처리는 지양한다.
