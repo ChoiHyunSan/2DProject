@@ -15,39 +15,47 @@ public class AttendanceService(ILogger<AttendanceService> logger, IMasterDb mast
     
     public async Task<Result> AttendanceAndReward(long userId)
     {
-        if (await CheckAttendanceAlreadyComplete(userId) is var checkResult && checkResult.IsFailed)
+        try
         {
-            return checkResult.ErrorCode;
-        }
-        var attendance = checkResult.Value;
-        
-        // 트랜잭잭션 처리
-        var txResult = await _gameDb.WithTransactionAsync(async _ =>
-        {
-            // 출석 체크를 실행하고, 증가된 일수를 반환받습니다.
-            var newAttendanceDay = await AttendanceToday(userId, attendance);
-            if (newAttendanceDay == 0) 
+            if (await CheckAttendanceAlreadyComplete(userId) is var checkResult && checkResult.IsFailed)
             {
-                return ErrorCode.FailedAttendance;
+                return checkResult.ErrorCode;
+            }
+            var attendance = checkResult.Value;
+        
+            // 트랜잭잭션 처리
+            var txResult = await _gameDb.WithTransactionAsync(async _ =>
+            {
+                // 출석 체크를 실행하고, 증가된 일수를 반환받습니다.
+                var newAttendanceDay = await AttendanceToday(userId, attendance);
+                if (newAttendanceDay == 0) 
+                {
+                    return ErrorCode.FailedAttendance;
+                }
+
+                // 반환받은 출석 일수를 사용하여 보상을 지급합니다.
+                if (await GetAttendanceRewardToday(userId, newAttendanceDay) == false)
+                {
+                    return ErrorCode.FailedAttendanceReward;
+                }
+
+                return ErrorCode.None;
+            });
+        
+            if(txResult != ErrorCode.None)
+            {
+                return txResult;
             }
 
-            // 반환받은 출석 일수를 사용하여 보상을 지급합니다.
-            if (await GetAttendanceRewardToday(userId, newAttendanceDay) == false)
-            {
-                return ErrorCode.FailedAttendanceReward;
-            }
-
-            return ErrorCode.None;
-        });
+            LogInfo(_logger, EventType.AttendanceCheck, "Attendance Check", new { userId });
         
-        if(txResult != ErrorCode.None)
+            return ErrorCode.None;   
+        }catch(Exception ex)
         {
-            return txResult;
+            LogError(_logger, ErrorCode.FailedAttendance, EventType.AttendanceCheck,
+                "Failed Attendance", new { userId, ex.Message, ex.StackTrace });
+            return ErrorCode.FailedAttendance;
         }
-
-        LogInfo(_logger, EventType.AttendanceCheck, "Attendance Check", new { userId });
-        
-        return ErrorCode.None;
     }
 
     private async Task<bool> GetAttendanceRewardToday(long userId, int day)

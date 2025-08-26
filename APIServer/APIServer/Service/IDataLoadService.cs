@@ -23,4 +23,7 @@ public interface IDataLoadService
    
     /// <summary> 인벤토리 룬 목록 페이징 조회 </summary>
     Task<Result<List<RuneData>>> GetInventoryRuneListAsync(long userId, Pageable requestPageable);
+    
+    /// <summary> 유저 게임 데이터 조회 </summary>
+    Task<Result<List<UserGameData>>> GetUserGameDataAsync(long userId);
 }

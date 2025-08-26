@@ -1,5 +1,4 @@
-﻿using APIServer.Models.DTO;
-using APIServer.Models.Entity;
+﻿using APIServer.Models.Entity;
 using APIServer.Repository;
 using static APIServer.LoggerManager;
 

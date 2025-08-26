@@ -87,11 +87,24 @@ public class DataLoadService(ILogger<DataLoadService> logger, IGameDb gameDb, IM
     {
         try
         {
-            var charactetDatas = await _gameDb.GetCharacterDataListAsync(userId);
+            // 캐시 데이터 조회
+            if (await _memoryDb.GetCachedCharacterDataList(userId) is var load && load.IsSuccess)
+            {
+                return Result<List<CharacterData>>.Success(load.Value);
+            }
+            
+            // 없는 경우 DB 조회
+            var characterDataList = await _gameDb.GetCharacterDataListAsync(userId);
             
             LogInfo(_logger, EventType.GetInventoryCharacter, "Get Inventory Character List", new { userId });
             
-            return Result<List<CharacterData>>.Success(charactetDatas);
+            // 데이터 캐싱
+            if (await _memoryDb.CacheCharacterDataList(userId, characterDataList)  == false)
+            {
+                return Result<List<CharacterData>>.Failure(ErrorCode.FailedCacheGameData);
+            }
+            
+            return Result<List<CharacterData>>.Success(characterDataList);
         }
         catch (Exception ex)
         {
@@ -106,11 +119,23 @@ public class DataLoadService(ILogger<DataLoadService> logger, IGameDb gameDb, IM
     {
         try
         {
-            var itemDatas = await _gameDb.GetItemDataListAsync(userId, requestPageable);
+            // 캐시 데이터 조회
+            if (await _memoryDb.GetCachedItemDataList(userId) is var load && load.IsSuccess)
+            {
+                return Result<List<ItemData>>.Success(load.Value);
+            }
+            
+            var itemDataList = await _gameDb.GetItemDataListAsync(userId, requestPageable);
 
             LogInfo(_logger, EventType.GetInventoryItem, "Get Inventory Item List", new { sessionUserId = userId });
 
-            return Result<List<ItemData>>.Success(itemDatas);
+            // 데이터 캐싱
+            if (await _memoryDb.CacheItemDataList(userId, itemDataList) == false)
+            {
+                return Result<List<ItemData>>.Failure(ErrorCode.FailedCacheGameData);
+            }
+            
+            return Result<List<ItemData>>.Success(itemDataList);
         }
         catch (Exception ex)
         {
@@ -125,11 +150,23 @@ public class DataLoadService(ILogger<DataLoadService> logger, IGameDb gameDb, IM
     {
         try
         {
-            var runeDatas = await _gameDb.GetRuneDataListAsync(userId, requestPageable);
+            // 캐시 데이터 조회
+            if (await _memoryDb.GetCachedRuneDataList(userId) is var load && load.IsSuccess)
+            {
+                return Result<List<RuneData>>.Success(load.Value);
+            }
+            
+            var runeDataList = await _gameDb.GetRuneDataListAsync(userId, requestPageable);
 
             LogInfo(_logger, EventType.GetInventoryRune, "Get Inventory Rune List", new { sessionUserId = userId });
 
-            return Result<List<RuneData>>.Success(runeDatas);
+            // 데이터 캐싱
+            if (await _memoryDb.CacheRuneDataList(userId, runeDataList) == false)
+            {
+                return Result<List<RuneData>>.Failure(ErrorCode.FailedCacheGameData);
+            }
+            
+            return Result<List<RuneData>>.Success(runeDataList);
         }
         catch (Exception ex)
         {
@@ -138,5 +175,10 @@ public class DataLoadService(ILogger<DataLoadService> logger, IGameDb gameDb, IM
             
             return Result<List<RuneData>>.Failure(ErrorCode.FailedDataLoad);      
         }
+    }
+
+    public Task<Result<List<UserGameData>>> GetUserGameDataAsync(long userId)
+    {
+        throw new NotImplementedException();
     }
 }

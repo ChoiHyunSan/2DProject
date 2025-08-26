@@ -77,6 +77,11 @@ public enum ErrorCode
     CannotFindSession               = 4013_404,
     CannotFindInStageInfo           = 4014_404,
     CannotFindQuestList               = 4015_404,
+    FailedRedisUpdate               = 4016_500,
+    CannotFindCharacterData        = 4017_404,
+    CannotFindItemData              = 4018_404,
+    CannotFindRuneData              = 4019_404,
+    CannotFindUserGameData        = 4020_404,
     
     // Controller (비즈니스/검증/권한/리소스 미존재 등)
     DuplicatedEmail                = 5000_400,

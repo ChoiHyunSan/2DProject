@@ -13,7 +13,7 @@ partial class MemoryDb
         return $"SESSION_LOCK_{userId}";
     }
     
-    private static string CreateGameDataKey(long userId)
+    private static string CreateUserGameDataKey(long userId)
     {
         return $"GAME_DATA_{userId}";
     }
@@ -26,5 +26,20 @@ partial class MemoryDb
     private static string CreateQuestKey(long userId)
     {
         return $"QUEST_{userId}";       
+    }
+    
+    private static string CreateCharacterDataKey(long userId)
+    {
+        return $"CHARACTER_DATA_{userId}";
+    }
+    
+    private static string CreateItemDataKey(long userId)
+    {
+        return $"ITEM_DATA_{userId}";
+    }
+    
+    private static string CreateRuneDataKey(long userId)
+    {
+        return $"RUNE_DATA_{userId}";
     }
 }

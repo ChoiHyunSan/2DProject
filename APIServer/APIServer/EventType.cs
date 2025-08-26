@@ -52,6 +52,7 @@ public enum EventType
     LoadStageInfo = 4006,
     UpdateKillMonster = 4007,
     DeleteStageInfo = 4008,
+    DeleteCacheData = 4009,
     
     // Controller 5000 ~ 5999
     CreateAccount = 5000,

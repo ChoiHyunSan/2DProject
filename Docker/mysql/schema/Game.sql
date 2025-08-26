@@ -41,7 +41,7 @@ DROP TABLE IF EXISTS `user_clear_stage`;
 CREATE TABLE IF NOT EXISTS `user_clear_stage` (
     `id`                BIGINT         AUTO_INCREMENT PRIMARY KEY      COMMENT '고유 ID',
     `user_id`           BIGINT         NOT NULL                        COMMENT '유저 ID',
-    `stage_Code`        INT            NOT NULL                        COMMENT '스테이지 코드',
+    `stage_code`        INT            NOT NULL                        COMMENT '스테이지 코드',
     `clear_count`       INT            NOT NULL                        COMMENT '클리어 횟수',
     `first_clear_date`  DATETIME       NOT NULL                        COMMENT '첫 클리어 날짜',
     `last_clear_date`   DATETIME       NOT NULL                        COMMENT '가장 최근 클리어 날짜'
@@ -111,7 +111,7 @@ CREATE TABLE IF NOT EXISTS `user_quest_inprogress` (
 -- ----------------------------------------------------------
 DROP TABLE IF EXISTS `user_quest_complete`;
 CREATE TABLE IF NOT EXISTS `user_quest_complete` (
-    `quest_complete_ id`            BIGINT      AUTO_INCREMENT      PRIMARY KEY     COMMENT '고유 ID',
+    `quest_complete_id`             BIGINT      AUTO_INCREMENT      PRIMARY KEY     COMMENT '고유 ID',
     `user_id`                       BIGINT      NOT NULL                            COMMENT '유저 ID',
     `quest_code`                    BIGINT      NOT NULL                            COMMENT '퀘스트 코드',
     `complete_date`                 DATETIME    NOT NULL                            COMMENT '퀘스트 완료 시간',

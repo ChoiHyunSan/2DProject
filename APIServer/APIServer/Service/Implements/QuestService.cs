@@ -65,10 +65,10 @@ public class QuestService(ILogger<QuestService> logger, IGameDb gameDb, IDataLoa
     {
         try
         {
-            // 1) DB에서 진행중 퀘스트 조회
+            // DB에서 진행중 퀘스트 조회
             var quests = await _gameDb.GetProgressQuestByType(userId, type);
 
-            // 2) 한 번의 순회로 완료/미완료 분리 + 갱신 진행도 저장
+            // 한 번의 순회로 완료/미완료 분리 + 갱신 진행도 저장
             var completed = new HashSet<long>();
             var updatedProgress = new Dictionary<long, int>(quests.Count);
 
@@ -93,7 +93,7 @@ public class QuestService(ILogger<QuestService> logger, IGameDb gameDb, IDataLoa
                 }
             }
 
-            // 3) 완료 처리 (DB)
+            // 완료 처리 
             if (completed.Count > 0)
             {
                 var ok = await _gameDb.CompleteQuest(userId, completed.ToList());
@@ -101,31 +101,10 @@ public class QuestService(ILogger<QuestService> logger, IGameDb gameDb, IDataLoa
                     return ErrorCode.FailedCompleteQuest;
             }
 
-            // 4) 캐시가 있으면 메모리 갱신
-            var cache = await _memoryDb.GetCachedQuestList(userId);
-            if (cache.IsFailed)
+            // 기존 캐시 무효화
+            if (await _memoryDb.DeleteCachedQuestList(userId) is var delete && delete.IsFailed)
             {
-                // 캐시 없으면 여기서 끝
-                return Result.Success();
-            }
-
-            var cached = cache.Value; 
-
-            // 4-1) 완료된 퀘스트는 캐시에서 제거 
-            if (completed.Count > 0)
-            {
-                cached.RemoveAll(q => completed.Contains(q.quest_code));
-            }
-
-            // 4-2) 미완료 퀘스트의 진행도 반영 
-            foreach (var q in cached)
-            {
-                if (updatedProgress.TryGetValue(q.quest_code, out var newProg))
-                {
-                    // 안전하게 clamp (선택)
-                    var target = questInfoMap[q.quest_code].quest_progress;
-                    q.progress = newProg;
-                }
+                return ErrorCode.FailedCacheGameData;
             }
 
             return Result.Success();
@@ -133,7 +112,7 @@ public class QuestService(ILogger<QuestService> logger, IGameDb gameDb, IDataLoa
         catch (Exception ex)
         {
             LogError(_logger, ErrorCode.FailedRefreshQuest, EventType.RefreshQuest,
-                "Faile Refresh Quest Progress ", new { userId, ex.Message, ex.StackTrace });
+                "Failed Refresh Quest Progress ", new { userId, ex.Message, ex.StackTrace });
             return Result.Failure(ErrorCode.FailedRefreshQuest);    
         }
     }
