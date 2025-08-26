@@ -1,15 +1,17 @@
 ﻿using APIServer.Models.Entity.Data;
 using APIServer.Repository;
+using APIServer.Repository.Implements.Memory;
 using static APIServer.LoggerManager;
 
 namespace APIServer.Service.Implements;
 
-public class InventoryService(ILogger<InventoryService> logger, IGameDb gameDb, IMasterDb masterDb) 
+public class InventoryService(ILogger<InventoryService> logger, IGameDb gameDb, IMasterDb masterDb, IMemoryDb memoryDb) 
     : IInventoryService
 {
     private readonly ILogger<InventoryService> _logger = logger;
     private readonly IGameDb _gameDb = gameDb;
     private readonly IMasterDb _masterDb = masterDb;
+    private readonly IMemoryDb _memoryDb = memoryDb;
     
     public async Task<Result> EquipItemAsync(long userId, long characterId, long itemId)
     {
@@ -32,13 +34,19 @@ public class InventoryService(ILogger<InventoryService> logger, IGameDb gameDb, 
             {
                 return ErrorCode.AlreadyEquippedItem;
             }
-
+            
             // 아이템 장착
             if (await _gameDb.EquipItemAsync(characterId, itemId) == false)
             {
                 return ErrorCode.FailedEquipItem;
             }
-
+            
+            // 캐시 삭제
+            if (await _memoryDb.DeleteCacheData(userId, [CacheType.Character]) is var deleteCache && deleteCache.IsFailed)
+            {
+                return deleteCache.ErrorCode;
+            }
+            
             LogInfo(_logger, EventType.EquipItem, "Equip Item", new { userId, itemId });
 
             return ErrorCode.None;
@@ -78,6 +86,12 @@ public class InventoryService(ILogger<InventoryService> logger, IGameDb gameDb, 
                 return ErrorCode.FailedEquipRune;
             }
 
+            // 캐시 삭제
+            if (await _memoryDb.DeleteCacheData(userId, [CacheType.Character]) is var deleteCache && deleteCache.IsFailed)
+            {
+                return deleteCache.ErrorCode;
+            }
+            
             LogInfo(_logger, EventType.EquipRune, "Equip Rune", new { userId, runeId });
 
             return ErrorCode.None;
@@ -117,6 +131,12 @@ public class InventoryService(ILogger<InventoryService> logger, IGameDb gameDb, 
                 return ErrorCode.FailedUnEquipItem;
             }
 
+            // 캐시 삭제
+            if (await _memoryDb.DeleteCacheData(userId, [CacheType.Character]) is var deleteCache && deleteCache.IsFailed)
+            {
+                return deleteCache.ErrorCode;
+            }
+            
             LogInfo(_logger, EventType.UnEquipItem, "UnEquip Item", new { userId, itemId });
 
             return ErrorCode.None;
@@ -156,6 +176,12 @@ public class InventoryService(ILogger<InventoryService> logger, IGameDb gameDb, 
                 return ErrorCode.FailedUnEquipRune;
             }
 
+            // 캐시 삭제
+            if (await _memoryDb.DeleteCacheData(userId, [CacheType.Character]) is var deleteCache && deleteCache.IsFailed)
+            {
+                return deleteCache.ErrorCode;
+            }
+            
             LogInfo(_logger, EventType.UnEquipRune, "UnEquip Rune", new { userId, runeId });
 
             return ErrorCode.None;
@@ -200,6 +226,12 @@ public class InventoryService(ILogger<InventoryService> logger, IGameDb gameDb, 
                     return ErrorCode.FailedUpdateGoldAndGem;
                 }
 
+                // 캐시 삭제
+                if (await _memoryDb.DeleteCacheData(userId, [CacheType.Item, CacheType.UserGameData]) is var deleteCache && deleteCache.IsFailed)
+                {
+                    return deleteCache.ErrorCode;
+                }
+                
                 return ErrorCode.None;
             });
 
@@ -250,6 +282,12 @@ public class InventoryService(ILogger<InventoryService> logger, IGameDb gameDb, 
                 if (await _gameDb.UpdateUserCurrencyAsync(userId, newGold, gem) == false)
                 {
                     return ErrorCode.FailedUpdateGoldAndGem;
+                }
+                
+                // 캐시 삭제
+                if (await _memoryDb.DeleteCacheData(userId, [CacheType.Rune, CacheType.UserGameData]) is var deleteCache && deleteCache.IsFailed)
+                {
+                    return deleteCache.ErrorCode;
                 }
 
                 return ErrorCode.None;
@@ -304,6 +342,12 @@ public class InventoryService(ILogger<InventoryService> logger, IGameDb gameDb, 
                     return ErrorCode.FailedUpdateGoldAndGem;
                 }
 
+                // 캐시 삭제
+                if (await _memoryDb.DeleteCacheData(userId, [CacheType.Character, CacheType.UserGameData]) is var deleteCache && deleteCache.IsFailed)
+                {
+                    return deleteCache.ErrorCode;
+                }
+                
                 return ErrorCode.None;
             });
 

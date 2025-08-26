@@ -315,4 +315,44 @@ partial class MemoryDb
             return Result.Failure(ErrorCode.FailedCacheGameData);
         }
     }
+
+    public async Task<Result> DeleteCacheData(long userId, List<CacheType> cacheTypeList)
+    {
+        var result = Result.Success();
+        foreach (var type in cacheTypeList)
+        {
+            switch (type)
+            {
+                case CacheType.Character:
+                    result =  await DeleteCachedCharacterDataList(userId);
+                    break;
+                case CacheType.Item:
+                    result =  await DeleteCachedItemDataList(userId);
+                    break;
+                case CacheType.Rune:
+                    result =  await DeleteCachedRuneDataList(userId);
+                    break;
+                case CacheType.Quest:
+                    result =  await DeleteCachedQuestList(userId);
+                    break;
+                case CacheType.UserGameData:
+                    result =  await DeleteCachedUserGameData(userId);
+                    break;
+            }
+            
+            if(result.IsFailed)
+                return result;
+        }
+
+        return Result.Success();
+    }
+}
+
+public enum CacheType
+{
+    Character,
+    Item,
+    Rune,
+    Quest,
+    UserGameData,
 }

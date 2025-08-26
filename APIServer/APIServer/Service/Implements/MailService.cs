@@ -2,18 +2,19 @@
 using APIServer.Models.DTO.Mail;
 using APIServer.Models.Entity;
 using APIServer.Repository;
+using APIServer.Repository.Implements.Memory;
 using APIServer.Service.Implements;
 using ZLogger;
 using static APIServer.LoggerManager;
 
 namespace APIServer.Service;
 
-public class MailService (ILogger<MailService> logger, IGameDb gameDb)
+public class MailService (ILogger<MailService> logger, IGameDb gameDb, IMemoryDb memoryDb)
     : IMailService
 {
     private readonly ILogger<MailService> _logger = logger;
     private readonly IGameDb _gameDb = gameDb;
-    
+    private readonly IMemoryDb _memoryDb = memoryDb;
     
     // 아이템 식별 구분자, 로직을 간단하게 구현하기 위해서 Reward 종류를 구분하였다
     // Code 0 : Gold
@@ -129,6 +130,12 @@ public class MailService (ILogger<MailService> logger, IGameDb gameDb)
         var type = ConvertRewardType(code);
         if (type == RewardType.NONE) return false;
 
+        // 보상 획득 전 캐시정보 삭제
+        if (await _memoryDb.DeleteCacheData(userId, [CacheType.Item, CacheType.Rune, CacheType.UserGameData]) is var deleteCache && deleteCache.IsFailed)
+        {
+            return false;
+        }
+        
         if (type == RewardType.ITEM)
         {
             return await _gameDb.InsertItemAsync(userId, new UserInventoryItem { item_code = code, level = 1 });
@@ -138,7 +145,7 @@ public class MailService (ILogger<MailService> logger, IGameDb gameDb)
         {
             return await _gameDb.InsertRuneAsync(userId, new UserInventoryRune { rune_code = code, level = 1 });
         }
-
+        
         var userData = await _gameDb.GetUserDataByUserIdAsync(userId);
         if (type == RewardType.GOLD)
         {

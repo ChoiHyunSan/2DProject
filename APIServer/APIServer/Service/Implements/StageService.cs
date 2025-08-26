@@ -3,6 +3,7 @@ using APIServer.Models.Entity;
 using APIServer.Models.Entity.Data;
 using APIServer.Models.Redis;
 using APIServer.Repository;
+using APIServer.Repository.Implements.Memory;
 using static APIServer.LoggerManager;
 
 namespace APIServer.Service.Implements;
@@ -216,6 +217,12 @@ public class StageService(ILogger<StageService> logger,IGameDb gameDb, IMemoryDb
         var goldQuest = await _questService.RefreshQuestProgress(userData.user_id, QuestType.GetGold, rewardGold.gold);
         var itemQuest = await _questService.RefreshQuestProgress(userData.user_id, QuestType.GetItem, rewardItem.Count);
         if (goldQuest.IsFailed || itemQuest.IsFailed)
+        {
+            return false;
+        }
+        
+        // 캐시 삭제
+        if (await _memoryDb.DeleteCacheData(userData.user_id, [CacheType.Item, CacheType.Rune, CacheType.UserGameData]) is var deleteCache && deleteCache.IsFailed)
         {
             return false;
         }

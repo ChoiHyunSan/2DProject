@@ -1,4 +1,5 @@
 ﻿using APIServer.Repository;
+using APIServer.Repository.Implements.Memory;
 using static APIServer.LoggerManager;
 
 namespace APIServer.Service.Implements;
@@ -51,6 +52,12 @@ public class ShopService(ILogger<ShopService> logger, IMasterDb masterDb, IGameD
                     return ErrorCode.FailedInsertNewCharacter;
                 }
 
+                // 캐시 삭제
+                if (await _memoryDb.DeleteCacheData(userId, [CacheType.Character, CacheType.UserGameData]) is var deleteCache && deleteCache.IsFailed)
+                {
+                    return deleteCache.ErrorCode;
+                }
+                
                 return ErrorCode.None;
             });
 
@@ -107,6 +114,12 @@ public class ShopService(ILogger<ShopService> logger, IMasterDb masterDb, IGameD
                     return ErrorCode.FailedUpdateUserGoldAndGem;
                 }
 
+                // 캐시 삭제
+                if (await _memoryDb.DeleteCacheData(userId, [CacheType.Item, CacheType.UserGameData]) is var deleteCache && deleteCache.IsFailed)
+                {
+                    return deleteCache.ErrorCode;
+                }
+                
                 return ErrorCode.None;
             });
 

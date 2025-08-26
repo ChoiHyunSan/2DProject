@@ -2,6 +2,7 @@
 using APIServer.Models.DTO;
 using APIServer.Models.Entity;
 using APIServer.Models.Redis;
+using APIServer.Repository.Implements.Memory;
 
 namespace APIServer.Repository;
 
@@ -72,4 +73,7 @@ public interface IMemoryDb
     
     /// <summary> 룬 리스트 캐시 삭제 </summary>
     Task<Result> DeleteCachedRuneDataList(long userId);
+    
+    /// <summary> 여러 타입 캐시 삭제 </summary>
+    Task<Result> DeleteCacheData(long userId, List<CacheType> cacheTypeList);
 }
