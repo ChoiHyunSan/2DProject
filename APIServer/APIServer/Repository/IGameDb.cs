@@ -173,4 +173,13 @@ public interface IGameDb
 
     /// <summary> 캐릭터 레벨 갱신 </summary>
     Task<bool> UpdateCharacterLevelAsync(long userId, long characterId, int newLevel);
+
+    /// <summary> 유저 데이터 조회 </summary>
+    Task<UserGameData> GetUserGameDataAsync(long userId);
+
+    /// <summary> 아이템 장착 해제 </summary>
+    Task<bool> UnEquipItem(long characterId, long itemId);
+    
+    /// <summary> 룬 장착 해제 </summary>
+    Task<bool> UnEquipRune(long characterId, long runeId);
 }

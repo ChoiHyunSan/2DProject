@@ -177,8 +177,34 @@ public class DataLoadService(ILogger<DataLoadService> logger, IGameDb gameDb, IM
         }
     }
 
-    public Task<Result<List<UserGameData>>> GetUserGameDataAsync(long userId)
+    public async Task<Result<UserGameData>> GetUserGameDataAsync(long userId)
     {
-        throw new NotImplementedException();
+        try
+        {
+            // 캐시 데이터 조회
+            if (await _memoryDb.GetCachedUserGameData(userId) is var load && load.IsSuccess)
+            {
+                return Result<UserGameData>.Success(load.Value);
+            }
+            
+            var gameData = await _gameDb.GetUserGameDataAsync(userId);
+            
+            // 데이터 캐싱
+            if (await _memoryDb.CacheUserGameData(userId, gameData) == false)
+            {
+                return Result<UserGameData>.Failure(ErrorCode.FailedCacheGameData);
+            }
+            
+            LogInfo(_logger, EventType.GetInventoryRune, "Get User Game Data", new { sessionUserId = userId });;
+            
+            return Result<UserGameData>.Success(gameData);
+        }
+        catch (Exception ex)
+        {
+            LogError(_logger, ErrorCode.FailedDataLoad, EventType.GetInventoryRune, 
+                "Failed Get User Game Data", new { userId });
+            
+            return Result<UserGameData>.Failure(ErrorCode.FailedDataLoad);
+        }
     }
 }

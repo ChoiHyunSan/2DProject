@@ -14,5 +14,5 @@ public interface IStageService
     Task<Result> KillMonster(long userId, long monsterCode);
     
     /// <summary> 스테이지 완료 </summary>
-    Task<Result> ClearStage(long userId, long stageCode);
+    Task<Result> ClearStage(long userId, long stageCode, bool clearFlag);
 }

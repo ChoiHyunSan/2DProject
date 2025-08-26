@@ -67,7 +67,7 @@ public class StageService(ILogger<StageService> logger,IGameDb gameDb, IMemoryDb
         }
     }
 
-    public async Task<Result> ClearStage(long userId, long stageCode)
+    public async Task<Result> ClearStage(long userId, long stageCode, bool clearFlag)
     {
         try
         {
@@ -77,34 +77,38 @@ public class StageService(ILogger<StageService> logger,IGameDb gameDb, IMemoryDb
                 return stageResult.ErrorCode;
             }
             var stageInfo = stageResult.Value;
-        
-            // 클리어 여부 확인 (모든 몬스터를 처치했는지 확인)
-            if (CheckStageClear(stageInfo) == false)
-            {
-                return ErrorCode.StageInProgress;
-            }
-        
-            // 트랜잭션 처리
-            var txResult = await _gameDb.WithTransactionAsync(async q =>
-            {
-                // 클리어 확인된 경우, 클리어 정보 추가
-                if (await UpdateClearStageAsync(stageInfo) == false)
-                {
-                    return ErrorCode.FailedUpdateClearStage;
-                }
-            
-                // 클리어 보상 조회 및 보상 전달
-                if (await RewardClearStageAsync(stageInfo) == false)
-                {
-                    return ErrorCode.FailedRewardClearStage;
-                }
-                
-                return ErrorCode.None;
-            });
 
-            if (txResult != ErrorCode.None)
+            // 클리어 요청 시에 처리 진행. 클리어 실패 시 인게임 정보만 삭제
+            if (clearFlag)
             {
-                return Result.Failure(txResult);
+                // 클리어 여부 확인 (모든 몬스터를 처치했는지 확인)
+                if (CheckStageClear(stageInfo) == false)
+                {
+                    return ErrorCode.StageInProgress;
+                }
+        
+                // 트랜잭션 처리
+                var txResult = await _gameDb.WithTransactionAsync(async q =>
+                {
+                    // 클리어 확인된 경우, 클리어 정보 추가
+                    if (await UpdateClearStageAsync(stageInfo) == false)
+                    {
+                        return ErrorCode.FailedUpdateClearStage;
+                    }
+            
+                    // 클리어 보상 조회 및 보상 전달
+                    if (await RewardClearStageAsync(stageInfo) == false)
+                    {
+                        return ErrorCode.FailedRewardClearStage;
+                    }
+                
+                    return ErrorCode.None;
+                });
+
+                if (txResult != ErrorCode.None)
+                {
+                    return Result.Failure(txResult);
+                }    
             }
             
             // 메모리에 올려진 인게임 정보 삭제

@@ -27,7 +27,7 @@ public class StageClearController(ILogger<StageClearController> logger, IStageSe
         
         LogInfo(_logger, EventType.ClearStage, "Request Clear Stage", new { session.email, request.stageCode });
         
-        var result = await _stageService.ClearStage(session.userId, request.stageCode);
+        var result = await _stageService.ClearStage(session.userId, request.stageCode, request.clearFlag);
         return new StageClearResponse { code = result.ErrorCode };
     }
 }

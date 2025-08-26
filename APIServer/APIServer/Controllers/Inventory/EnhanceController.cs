@@ -50,6 +50,12 @@ public class EnhanceController(ILogger<EnhanceController> logger, IInventoryServ
         return new EnhanceRuneResponse { code = result.ErrorCode };      
     }
 
+    /// <summary>
+    /// 캐릭터 강화 요청 API
+    /// 세션 인증 : O
+    /// 반환 값 :
+    /// - 반환 코드 : 강화 요청 결과 (성공 : ErrorCode.None)
+    /// </summary>
     [HttpPost]
     [Route("character")]
     public async Task<EnhanceCharacterResponse> EnhanceCharacterAsync([FromBody] EnhanceCharacterRequest request)

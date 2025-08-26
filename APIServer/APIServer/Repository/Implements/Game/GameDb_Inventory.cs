@@ -53,7 +53,27 @@ partial class GameDb
 
         return result == 1;
     }
-    
+
+    public async Task<bool> UnEquipItem(long characterId, long itemId)
+    {
+        var result = await _queryFactory.Query(TABLE_CHARACTER_EQUIPMENT_ITEM)
+            .Where(CHARACTER_ID, characterId)
+            .Where(ITEM_ID, itemId)
+            .DeleteAsync();
+
+        return result == 1;
+    }
+
+    public async Task<bool> UnEquipRune(long characterId, long runeId)
+    {
+        var result = await _queryFactory.Query(TABLE_CHARACTER_EQUIPMENT_RUNE)
+            .Where(CHARACTER_ID, characterId)
+            .Where(RUNE_ID, runeId)
+            .DeleteAsync();
+
+        return result == 1;
+    }
+
     public async Task<bool> EquipRuneAsync(long characterId, long runeId)
     {
         var result = await _queryFactory.Query(TABLE_CHARACTER_EQUIPMENT_RUNE)

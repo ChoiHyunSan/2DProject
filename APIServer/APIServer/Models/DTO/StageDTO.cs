@@ -64,6 +64,9 @@ public class StageClearRequest : RequestBase
 {
     [Required]
     public long stageCode { get; set; }
+    
+    [Required]
+    public bool clearFlag { get; set; }
 }
 
 public class StageClearResponse : ResponseBase

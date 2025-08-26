@@ -89,6 +89,84 @@ public class InventoryService(ILogger<InventoryService> logger, IGameDb gameDb, 
         }
     }
 
+    public async Task<Result> UnEquipItemAsync(long userId, long characterId, long itemId)
+    {
+        try
+        {
+            // 캐릭터 ID에 대한 소유 여부 확인
+            if (await _gameDb.IsCharacterExistsAsync(userId, characterId) == false)
+            {
+                return ErrorCode.CannotFindCharacter;
+            }
+
+            // 룬 보유 여부 확인
+            if (await _gameDb.IsItemExistsAsync(userId, itemId) == false)
+            {
+                return ErrorCode.CannotFindInventoryItem;
+            }
+
+            // 룬 장착 여부 확인
+            if (await _gameDb.IsItemEquippedAsync(itemId) == false)
+            {
+                return ErrorCode.NotEquiptItem;
+            }
+
+            // 룬 장착
+            if (await _gameDb.UnEquipItem(characterId, itemId) == false)
+            {
+                return ErrorCode.FailedUnEquipItem;
+            }
+
+            LogInfo(_logger, EventType.UnEquipItem, "UnEquip Item", new { userId, itemId });
+
+            return ErrorCode.None;
+        }
+        catch (Exception ex)
+        {
+            LogError(_logger, ErrorCode.FailedUnEquipItem, EventType.UnEquipItem, "Failed UnEquip Item", new { userId, itemId , ex.Message, ex.StackTrace});
+            return ErrorCode.FailedUnEquipItem;
+        }
+    }
+
+    public async Task<Result> UnEquipRuneAsnyc(long userId, long characterId, long runeId)
+    {
+        try
+        {
+            // 캐릭터 ID에 대한 소유 여부 확인
+            if (await _gameDb.IsCharacterExistsAsync(userId, characterId) == false)
+            {
+                return ErrorCode.CannotFindCharacter;
+            }
+
+            // 룬 보유 여부 확인
+            if (await _gameDb.IsRuneExistsAsync(userId, runeId) == false)
+            {
+                return ErrorCode.CannotFindInventoryRune;
+            }
+
+            // 룬 장착 여부 확인
+            if (await _gameDb.IsRuneEquippedAsync(runeId) == false)
+            {
+                return ErrorCode.NotEquiptRune;
+            }
+
+            // 룬 장착
+            if (await _gameDb.UnEquipRune(characterId, runeId) == false)
+            {
+                return ErrorCode.FailedUnEquipRune;
+            }
+
+            LogInfo(_logger, EventType.UnEquipRune, "UnEquip Rune", new { userId, runeId });
+
+            return ErrorCode.None;
+        }
+        catch (Exception ex)
+        {
+            LogError(_logger, ErrorCode.FailedUnEquipRune, EventType.UnEquipRune, "Failed UnEquip Rune", new { userId, runeId , ex.Message, ex.StackTrace});
+            return ErrorCode.FailedUnEquipRune;
+        }
+    }
+    
     public async Task<Result> EnhanceItemAsync(long userId, long itemId)
     {
         try

@@ -81,5 +81,8 @@ public enum EventType
     GetInventoryItem = 5023,
     ReceiveMail = 5024,
     GetMail = 5025,
-    EnhanceCharacter = 5026
+    EnhanceCharacter = 5026,
+    GetUserGameData = 5027,
+    UnEquipItem      = 5028,
+    UnEquipRune      = 5029,
 }

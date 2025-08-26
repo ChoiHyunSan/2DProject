@@ -55,6 +55,8 @@ public enum ErrorCode
     FailedSendMail                  = 2032_500,
     FailedGetMail                 = 2033_500,
     FailedEnhanceCharacter        = 2034_500,
+    FailedUnEquipItem              = 2035_500,
+    FailedUnEquipRune              = 2036_500,
     
     // AccountDb 3000 ~ 3999
     FailedCreateAccountUserData    = 3000_500,
@@ -114,5 +116,7 @@ public enum ErrorCode
     CannotFindCompleteQuest       = 5021_404,
     AlreadyEarnReward              = 5022_400,
     FailedRefreshQuest              = 5023_500,
-    FailedAttendanceReset         = 5024_500
+    FailedAttendanceReset         = 5024_500,
+    NotEquiptItem                    = 5025_400,
+    NotEquiptRune                    = 5025_400,
 }

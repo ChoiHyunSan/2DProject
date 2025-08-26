@@ -141,4 +141,11 @@ partial class GameDb
 
         return result == 1;
     }
+
+    public async Task<UserGameData> GetUserGameDataAsync(long userId)
+    {
+        return await _queryFactory.Query(TABLE_USER_GAME_DATA)
+            .Where(USER_ID, userId)
+            .FirstOrDefaultAsync<UserGameData>();
+    }
 }
