@@ -192,7 +192,74 @@ public class InventoryService(ILogger<InventoryService> logger, IGameDb gameDb, 
             return ErrorCode.FailedEnhanceRune;       
         }
     }
-    
+
+    public async Task<Result> EnhanceCharacterAsync(long userId, long characterId)
+    {
+        try
+        {
+            // 강화에 필요한 데이터 조회
+            var character = await _gameDb.GetInventoryCharacterAsync(userId, characterId);
+            var (gold, gem) = await _gameDb.GetUserCurrencyAsync(userId);
+            var enhanceData = _masterDb.GetCharacterEnhanceDatas()[(character.character_code, character.level)];
+            
+            // 강화 가능 여부 확인
+            if (VerifyEnhanceCharacter(enhanceData, gold) is var verify && verify != ErrorCode.None)
+            {
+                return verify;
+            }
+
+            // 갱신용 재화 정보 계산
+            var (newLevel, newGold) = (enhanceData.level + 1, gold - enhanceData.enhance_price);
+
+            // 트랜잭션 처리 
+            var txErrorCode = await _gameDb.WithTransactionAsync(async _ =>
+            {
+                // 캐릭터 레벨 갱신
+                if (await _gameDb.UpdateCharacterLevelAsync(userId, characterId, newLevel) == false)
+                {
+                    return ErrorCode.FailedUpdateData;
+                }
+
+                // 유저 재화 갱신
+                if (await _gameDb.UpdateUserCurrencyAsync(userId, newGold, gem) == false)
+                {
+                    return ErrorCode.FailedUpdateGoldAndGem;
+                }
+
+                return ErrorCode.None;
+            });
+
+            if (txErrorCode != ErrorCode.None)
+            {
+                return txErrorCode;
+            }
+
+            LogInfo(_logger, EventType.EnhanceCharacter, "Enhance Character", new { userId, characterId });
+
+            return ErrorCode.None;
+        }
+        catch (Exception ex)
+        {
+            LogError(_logger, ErrorCode.FailedEnhanceCharacter, EventType.EnhanceCharacter, "Failed Enhance Character", new {userId, characterId, ex.Message, ex.StackTrace});
+            return ErrorCode.FailedEnhanceCharacter;       
+        }
+    }
+
+    private ErrorCode VerifyEnhanceCharacter(CharacterEnhanceData enhanceData, int gold)
+    {
+        if (enhanceData.level >= 3)
+        {
+            return ErrorCode.AlreadyMaximumLevelItem;
+        }
+
+        if (enhanceData.enhance_price > gold)
+        {
+            return ErrorCode.GoldShortage;
+        }
+
+        return ErrorCode.None;
+    }
+
     private ErrorCode VerifyEnhanceItem(ItemEnhanceData enhanceData, int gold)
     {
         if (enhanceData.level >= 3)

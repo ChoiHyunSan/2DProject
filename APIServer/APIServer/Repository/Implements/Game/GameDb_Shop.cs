@@ -13,7 +13,7 @@ partial class GameDb
                 .Where(ITEM_ID, itemId)
                 .FirstOrDefaultAsync<UserInventoryItem>();
     }
-
+    
     public async Task<UserInventoryRune> GetInventoryRuneAsync(long userId, long runeId)
     {
         return await _queryFactory.Query(TABLE_USER_INVENTORY_RUNE)

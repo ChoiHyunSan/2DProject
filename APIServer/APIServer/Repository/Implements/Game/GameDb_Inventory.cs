@@ -1,4 +1,5 @@
-﻿using APIServer.Models.Entity.Data;
+﻿using APIServer.Models.Entity;
+using APIServer.Models.Entity.Data;
 using SqlKata.Execution;
 using static APIServer.LoggerManager;
 
@@ -18,7 +19,28 @@ partial class GameDb
 
         return result == 1;
     }
-    
+
+    public async Task<UserInventoryCharacter> GetInventoryCharacterAsync(long userId, long characterId)
+    {
+        return await _queryFactory.Query(TABLE_USER_INVENTORY_CHARACTER)
+            .Where(USER_ID, userId)
+            .Where(CHARACTER_ID, characterId)
+            .FirstOrDefaultAsync<UserInventoryCharacter>();
+    }
+
+    public async Task<bool> UpdateCharacterLevelAsync(long userId, long characterId, int newLevel)
+    {
+        var result =  await _queryFactory.Query(TABLE_USER_INVENTORY_CHARACTER)
+            .Where(USER_ID, userId)
+            .Where(CHARACTER_ID, characterId)
+            .UpdateAsync(new
+            {
+                LEVEL = newLevel,
+            });
+
+        return result == 1;
+    }
+
     public async Task<bool> UpdateRuneLevelAsync(long userId, long runeId, int newLevel)
     {
         var result = await _queryFactory.Query(TABLE_USER_INVENTORY_RUNE)

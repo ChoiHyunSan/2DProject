@@ -49,4 +49,16 @@ public class EnhanceController(ILogger<EnhanceController> logger, IInventoryServ
         var result = await _inventoryService.EnhanceRuneAsync(session.userId, request.runeId);
         return new EnhanceRuneResponse { code = result.ErrorCode };      
     }
+
+    [HttpPost]
+    [Route("character")]
+    public async Task<EnhanceCharacterResponse> EnhanceCharacterAsync([FromBody] EnhanceCharacterRequest request)
+    {
+        var session = HttpContext.Items["userSession"] as UserSession;
+        
+        LogInfo(_logger, EventType.EnhanceCharacter, "Request Enhance Character", new { session.userId, request.characterId });
+
+        var result = await _inventoryService.EnhanceCharacterAsync(session.userId, request.characterId);
+        return new EnhanceCharacterResponse { code = result.ErrorCode };
+    }
 }

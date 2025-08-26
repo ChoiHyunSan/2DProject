@@ -23,3 +23,13 @@ public class EnhanceRuneResponse : ResponseBase
 {
     
 }
+
+public class EnhanceCharacterRequest : RequestBase
+{
+    public long characterId { get; set; }   
+}
+
+public class EnhanceCharacterResponse : ResponseBase
+{
+    
+}

@@ -13,4 +13,7 @@ public interface IInventoryService
     
     /// <summary> 룬 강화 </summary>
     Task<Result> EnhanceRuneAsync(long userId, long runeId);
+
+    /// <summary> 캐릭터 강화 </summary>
+    Task<Result> EnhanceCharacterAsync(long userId, long characterId);
 }

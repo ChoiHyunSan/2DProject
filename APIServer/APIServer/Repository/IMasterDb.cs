@@ -10,7 +10,7 @@ public interface IMasterDb
     
     ImmutableDictionary<int, AttendanceRewardMonth> GetAttendanceRewardMonths();
     ImmutableDictionary<long, CharacterOriginData> GetCharacterOriginDatas();
-    ImmutableDictionary<(long, int), CharacterEnhanceData> GetCharacterEnhancePriceDatas();
+    ImmutableDictionary<(long, int), CharacterEnhanceData> GetCharacterEnhanceDatas();
     ImmutableDictionary<long, ItemOriginData> GetItemOriginDatas();
     ImmutableDictionary<(long, int), ItemEnhanceData> GetItemEnhanceDatas();
     ImmutableDictionary<long, RuneOriginData> GetRuneOriginDatas();

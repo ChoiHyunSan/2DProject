@@ -72,6 +72,9 @@ public interface IGameDb
     /// <summary> 인벤토리 룬 조회 </summary>
     Task<UserInventoryRune> GetInventoryRuneAsync(long userId, long runeId);
 
+    /// <summary> 인벤토리 캐릭터 조회 </summary>
+    Task<UserInventoryCharacter> GetInventoryCharacterAsync(long userId, long characterId);
+    
     /// <summary> 아이템 장착 여부 조회 </summary>
     Task<bool> IsItemEquippedAsync(long itemId);
 
@@ -167,4 +170,7 @@ public interface IGameDb
 
     /// <summary> 출석 날짜 초기화 </summary>
     Task<bool> ResetAttendanceDay(long userId);
+
+    /// <summary> 캐릭터 레벨 갱신 </summary>
+    Task<bool> UpdateCharacterLevelAsync(long userId, long characterId, int newLevel);
 }

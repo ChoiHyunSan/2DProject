@@ -41,7 +41,7 @@ partial class MasterDb(IOptions<DbConfig> dbConfig, ILogger<MasterDb> logger)
     
     public ImmutableDictionary<int, AttendanceRewardMonth> GetAttendanceRewardMonths() => _attendanceRewardsMonth;
     public ImmutableDictionary<long, CharacterOriginData> GetCharacterOriginDatas() => _characterOriginDatas;
-    public ImmutableDictionary<(long, int), CharacterEnhanceData> GetCharacterEnhancePriceDatas() => _characterEnhancePriceDatas;
+    public ImmutableDictionary<(long, int), CharacterEnhanceData> GetCharacterEnhanceDatas() => _characterEnhancePriceDatas;
     public ImmutableDictionary<long, ItemOriginData> GetItemOriginDatas() => _itemOriginDatas;
     public ImmutableDictionary<(long, int), ItemEnhanceData> GetItemEnhanceDatas() => _itemEnhanceDatas;
     public ImmutableDictionary<long, RuneOriginData> GetRuneOriginDatas() => _runeOriginDatas;

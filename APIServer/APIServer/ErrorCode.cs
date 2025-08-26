@@ -54,6 +54,7 @@ public enum ErrorCode
     FailedReceiveMail             = 2031_500,
     FailedSendMail                  = 2032_500,
     FailedGetMail                 = 2033_500,
+    FailedEnhanceCharacter        = 2034_500,
     
     // AccountDb 3000 ~ 3999
     FailedCreateAccountUserData    = 3000_500,
