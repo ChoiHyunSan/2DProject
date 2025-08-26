@@ -39,6 +39,12 @@ public class AttendanceService(ILogger<AttendanceService> logger, IMasterDb mast
                     return ErrorCode.FailedAttendanceReward;
                 }
 
+                // 마지막 보상을 모두 획득한 경우, Reset을 진행한다.
+                if (await ResetAttendanceDayIfAllAttendanceClear(userId, newAttendanceDay) == false)
+                {
+                    return ErrorCode.FailedAttendanceReset;
+                }
+   
                 return ErrorCode.None;
             });
         
@@ -58,6 +64,22 @@ public class AttendanceService(ILogger<AttendanceService> logger, IMasterDb mast
         }
     }
 
+    private async Task<bool> ResetAttendanceDayIfAllAttendanceClear(long userId, int newAttendanceDay)
+    {
+        // 마지막 출석 날이 아니라면 리턴
+        if (CheckAttendanceAllComplete(newAttendanceDay) == false)
+        {
+            return true;
+        }
+
+        if (await _gameDb.ResetAttendanceDay(userId) == false)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     private async Task<bool> GetAttendanceRewardToday(long userId, int day)
     {
         // 보상 조회
@@ -70,7 +92,6 @@ public class AttendanceService(ILogger<AttendanceService> logger, IMasterDb mast
         {
             return false;
         }
-
         return true;
     }
     
@@ -95,7 +116,7 @@ public class AttendanceService(ILogger<AttendanceService> logger, IMasterDb mast
         }
 
         // 출석체크가 완료되었는지 확인 (수정된 메서드 사용)
-        if (CheckAttendanceAlreadyComplete(attendance.last_attendance_date))
+        if (CheckAttendanceAllComplete(attendance.last_attendance_date))
         {
             return Result<UserAttendanceMonth>.Failure(ErrorCode.AttendanceAlreadyComplete);
         }
@@ -109,7 +130,7 @@ public class AttendanceService(ILogger<AttendanceService> logger, IMasterDb mast
         return Result<UserAttendanceMonth>.Success(attendance);
     }
 
-    private bool CheckAttendanceAlreadyComplete(int lastAttendanceDate)
+    private bool CheckAttendanceAllComplete(int lastAttendanceDate)
     {
         // 현재 월의 총 일수
         int daysInMonth = DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month);

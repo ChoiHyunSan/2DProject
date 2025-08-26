@@ -25,4 +25,17 @@ partial class GameDb
 
         return result == 1;
     }
+
+    public async Task<bool> ResetAttendanceDay(long userId)
+    {
+        var result = await _queryFactory.Query(TABLE_USER_ATTENDANCE_MONTH)
+            .Where(USER_ID, userId)
+            .UpdateAsync(new
+            {
+                last_attendance_date = 0,
+                last_update_date = DateTime.UtcNow,
+            });
+
+        return result == 1;
+    }
 }

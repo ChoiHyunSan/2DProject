@@ -14,12 +14,7 @@ partial class MemoryDb
         {
             var handler = new RedisString<UserGameData>(_conn, key, null);
 
-            var result = await handler.DeleteAsync();
-            if (result == false)
-            {
-                return Result.Failure(ErrorCode.FailedCacheGameData);
-            }
-
+            _ = await handler.DeleteAsync();
             return Result.Success();
         }
         catch (Exception ex)
@@ -108,12 +103,7 @@ partial class MemoryDb
         {
             var handler = new RedisString<List<UserQuestInprogress>>(_conn, key, null);
             
-            var result = await handler.DeleteAsync();
-            if (result == false)
-            {
-                return Result.Failure(ErrorCode.FailedCacheGameData);
-            }
-            
+            _ =  await handler.DeleteAsync();
             return Result.Success();
             
         }catch (Exception ex)
@@ -276,12 +266,7 @@ partial class MemoryDb
         {
             var handler = new RedisString<List<UserQuestInprogress>>(_conn, key, null);
             
-            var result = await handler.DeleteAsync();
-            if (result == false)
-            {
-                return Result.Failure(ErrorCode.FailedCacheGameData);
-            }
-            
+            _ = await handler.DeleteAsync();
             return Result.Success();
             
         }catch (Exception ex)
@@ -300,12 +285,7 @@ partial class MemoryDb
         {
             var handler = new RedisString<List<UserQuestInprogress>>(_conn, key, null);
             
-            var result = await handler.DeleteAsync();
-            if (result == false)
-            {
-                return Result.Failure(ErrorCode.FailedCacheGameData);
-            }
-            
+            _ = await handler.DeleteAsync();
             return Result.Success();
             
         }catch (Exception ex)
@@ -324,12 +304,7 @@ partial class MemoryDb
         {
             var handler = new RedisString<List<UserQuestInprogress>>(_conn, key, null);
             
-            var result = await handler.DeleteAsync();
-            if (result == false)
-            {
-                return Result.Failure(ErrorCode.FailedCacheGameData);
-            }
-            
+            _ = await handler.DeleteAsync();
             return Result.Success();
             
         }catch (Exception ex)

@@ -113,4 +113,5 @@ public enum ErrorCode
     CannotFindCompleteQuest       = 5021_404,
     AlreadyEarnReward              = 5022_400,
     FailedRefreshQuest              = 5023_500,
+    FailedAttendanceReset         = 5024_500
 }

@@ -164,4 +164,7 @@ public interface IGameDb
     
     /// <summary> 유저 메일 페이징 조회 </summary>
     Task<List<UserMail>> GetUnReceiveMailByPaging(long userId, Pageable pageable);
+
+    /// <summary> 출석 날짜 초기화 </summary>
+    Task<bool> ResetAttendanceDay(long userId);
 }
