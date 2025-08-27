@@ -122,11 +122,11 @@ partial class GameDb
         return result == 1;
     }
 
-    public async Task<GameData> GetUserDataByUserIdAsync(long userId)
+    public async Task<FullGameData> GetUserDataByUserIdAsync(long userId)
     {
         return await _queryFactory.Query(TABLE_USER_GAME_DATA)
             .Where(USER_ID, userId)
-            .FirstOrDefaultAsync<GameData>();
+            .FirstOrDefaultAsync<FullGameData>();
     }
 
     public async Task<bool> UpdateUserExpAsync(long userId, int newExp, int newLevel)

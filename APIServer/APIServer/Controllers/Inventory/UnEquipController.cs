@@ -7,6 +7,8 @@ using static APIServer.LoggerManager;
 
 namespace APIServer.Controllers.Inventory;
 
+[ApiController]
+[Route("api/[controller]")] 
 public class UnEquipController(ILogger<UnEquipController> logger, IInventoryService inventoryService)
 : ControllerBase
 {

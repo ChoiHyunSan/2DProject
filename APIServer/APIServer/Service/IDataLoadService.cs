@@ -7,7 +7,7 @@ namespace APIServer.Service;
 public interface IDataLoadService
 {
     /// <summary> 전체 게임 데이터 조회 </summary>
-    Task<Result<GameData>> LoadGameDataAsync(long userId);
+    Task<Result<FullGameData>> LoadGameDataAsync(long userId);
     
     /// <summary> 진행중인 퀘스트 목록 페이징조회 </summary>
     Task<Result<List<UserQuestInprogress>>> GetProgressQuestListAsync(long userId, Pageable pageable);

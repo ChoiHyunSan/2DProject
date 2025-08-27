@@ -10,7 +10,7 @@ namespace APIServer.Repository.Implements;
 
 partial class GameDb
 {
-    public async Task<GameData> GetAllGameDataByUserIdAsync(long userId)
+    public async Task<FullGameData> GetAllGameDataByUserIdAsync(long userId)
     {
          var sql = @"
             SELECT gold, gem, exp, level,
@@ -81,7 +81,7 @@ partial class GameDb
             var clearStages = (await multi.ReadAsync<ClearStageData>()).ToList();
 
             // GameData 조립
-            var gameData = new GameData
+            var gameData = new FullGameData
             {
                 gold = baseRow.gold,
                 gem = baseRow.gem,

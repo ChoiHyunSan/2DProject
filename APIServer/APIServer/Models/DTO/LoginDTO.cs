@@ -16,10 +16,10 @@ public record LoginRequest
 public class LoginResponse : ResponseBase
 {
     public string authToken { get; set; } = string.Empty;
-    public GameData? gameData { get; set; } = new();
+    public FullGameData? gameData { get; set; } = new();
 }
 
-public class GameData
+public class FullGameData
 {
     public int gold { get; set; }
     public int gem { get; set; }

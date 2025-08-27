@@ -6,6 +6,8 @@ using static APIServer.LoggerManager;
 
 namespace APIServer.Controllers.Mail;
 
+[ApiController]
+[Route("[controller]")]  
 public class ReceiveMailController(ILogger<ReceiveMailController> logger, IMailService mailService)
     : ControllerBase
 {

@@ -7,10 +7,10 @@ namespace APIServer.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class SellController(ILogger<SellController> logger, IShopService shopService)
+public class SellItemController(ILogger<SellItemController> logger, IShopService shopService)
     : ControllerBase
 {
-    private readonly ILogger<SellController> _logger = logger;
+    private readonly ILogger<SellItemController> _logger = logger;
     private readonly IShopService _shopService = shopService;
 
     /// <summary>
@@ -20,7 +20,6 @@ public class SellController(ILogger<SellController> logger, IShopService shopSer
     /// - 반환 코드 : 강화 요청 결과 (성공 : ErrorCode.None)
     /// </summary>
     [HttpPost]
-    [Route("item")]
     public async Task<ItemSellResponse> SellItemAsync([FromBody] ItemSellRequest request)
     {
         var session = HttpContext.Items["userSession"] as UserSession;

@@ -15,7 +15,7 @@ public class DataLoadService(ILogger<DataLoadService> logger, IGameDb gameDb, IM
     private readonly IGameDb _gameDb = gameDb;
     private readonly IMemoryDb _memoryDb = memoryDb;
     
-    public async Task<Result<GameData>> LoadGameDataAsync(long userId)
+    public async Task<Result<FullGameData>> LoadGameDataAsync(long userId)
     {
         try
         {
@@ -23,13 +23,13 @@ public class DataLoadService(ILogger<DataLoadService> logger, IGameDb gameDb, IM
             var gameData = await _gameDb.GetAllGameDataByUserIdAsync(userId);
 
             LogInfo(_logger, EventType.LoadGameData, "Load Game Data", new { userId });
-            return Result<GameData>.Success(gameData);
+            return Result<FullGameData>.Success(gameData);
         }
         catch (Exception ex)
         {
             LogError(_logger, ErrorCode.FailedDataLoad, EventType.LoadGameData, 
                 "Failed Load Game Data", new { userId, ex.Message, ex.StackTrace });;
-            return Result<GameData>.Failure(ErrorCode.FailedDataLoad);
+            return Result<FullGameData>.Failure(ErrorCode.FailedDataLoad);
         }
     }
 

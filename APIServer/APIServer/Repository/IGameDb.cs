@@ -34,7 +34,7 @@ public interface IGameDb
     Task<bool> DeleteGameDataByUserIdAsync(long userId);
 
     /// <summary> 유저 전체 게임 데이터 조회 </summary>
-    Task<GameData> GetAllGameDataByUserIdAsync(long accountUserId);
+    Task<FullGameData> GetAllGameDataByUserIdAsync(long accountUserId);
 
     /// <summary> 클리어한 스테이지 목록 조회 </summary>
     Task<List<UserClearStage>> GetClearStageListAsync(long userId);
@@ -151,7 +151,7 @@ public interface IGameDb
     Task<List<RuneData>> GetRuneDataListAsync(long userId, Pageable pageable);
 
     /// <summary> 유저 게임 데이터 단건 조회 </summary>
-    Task<GameData> GetUserDataByUserIdAsync(long userId);
+    Task<FullGameData> GetUserDataByUserIdAsync(long userId);
 
     /// <summary> 유저 레벨 및 경험치 갱신 </summary>
     Task<bool> UpdateUserExpAsync(long userId, int newExp, int newLevel);
