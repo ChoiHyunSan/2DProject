@@ -56,7 +56,6 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<ResponseStatusCodeMiddleware>();
 app.UseMiddleware<SessionCheckMiddleware>();
 app.UseMiddleware<RequestLockMiddleware>();
-app.UseMiddleware<RequestTimingMiddleware>();
 
 app.UseRouting();
 
