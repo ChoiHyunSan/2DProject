@@ -1,41 +1,74 @@
-version: "3.9"
 services:
-    api-mysql:
-        image: mysql:8.4
-        container_name: api-mysql
-        command:
-            - --character-set-server=utf8mb4
-            - --collation-server=utf8mb4_0900_ai_ci    
-            - --secure-file-priv=/var/lib/mysql-files                   # 파일 허용 경로 설정                 
-        environment:
-            MYSQL_ROOT_PASSWORD: "123qwe"                               # DB 비밀번호 설정
-        ports:
-            - "3307:3306"                                               # 호스트 3307 -> 도커 3306로 연결
-        volumes:
-            - mysql-data:/var/lib/mysql                                 # 볼륨 데이터 설정
-            - ./mysql/schema:/docker-entrypoint-initdb.d                # 초기 스크립트 설정
-            - ./mysql/files:/var/lib/mysql-files                        # Master DB CSV 폴더 경로
-        networks:
-            - api-network                                               # 도커 네트워크 설정
-    
-    api-redis:
-        image: redis:7.2-alpine
-        container_name: api-redis
-        command: 
-            ["redis-server", "--appendonly", "yes"]                     # AOF 영속화
-        ports:
-            - "6379:6379"
-        volumes:
-            - redis-data:/data
-        networks:
-            - api-network
+  api-mysql:
+    image: mysql:8.4
+    container_name: api-mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --secure-file-priv=/var/lib/mysql-files
+    environment:
+      MYSQL_ROOT_PASSWORD: "123qwe"
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./mysql/schema:/docker-entrypoint-initdb.d
+      - ./mysql/files:/var/lib/mysql-files
+    networks:
+      - api-network
 
+  api-redis:
+    image: redis:7.2-alpine
+    container_name: api-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - api-network
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=7d
+      - --web.enable-lifecycle
+    environment:
+      TZ: Asia/Seoul
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/rules:/etc/prometheus/rules:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - api-network
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    depends_on:
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      TZ: Asia/Seoul
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - api-network
 
 volumes:
-    mysql-data:        
-    redis-data:
+  mysql-data:
+  redis-data:
+  prometheus-data:
+  grafana-data:
 
 networks:
-    api-network:
-        driver: bridge
+  api-network:
+    driver: bridge

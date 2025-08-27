@@ -17,6 +17,7 @@ public class SessionCheckMiddleware(ILogger<SessionCheckMiddleware> _logger, IMe
         "/api/login",
         "/api/Register",
         "/metrics",
+        "/swagger-ui"
     ];
     
     /// <summary>

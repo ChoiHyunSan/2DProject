@@ -52,7 +52,11 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
         {
             // 계정 조회
             var account = await _accountDb.GetUserAccountByEmailAsync(email);
-
+            if (account is null)
+            {
+                return Result<(long, string)>.Failure(ErrorCode.CannotFindAccountUser);
+            }
+            
             // 패스워드 검증
             if (!SecurityUtils.VerifyPassword(account.password, account.salt_value, password))
             {

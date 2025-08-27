@@ -38,6 +38,6 @@ public class AccountDb(ILogger<AccountDb> logger, IOptions<DbConfig> dbConfig)
     {
         return await _queryFactory.Query("user_account")
             .Where("email", email)
-            .FirstAsync<UserAccount>();
+            .FirstOrDefaultAsync<UserAccount>();
     }
 }

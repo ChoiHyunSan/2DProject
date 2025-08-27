@@ -41,8 +41,10 @@ builder.Services.AddSwaggerGen();
 // Set Logger
 SettingLogger();
 
-// DotNetRuntime 계측 활성화: GC/JIT/스레드풀 등
-DotNetRuntimeStatsBuilder.Default().StartCollecting();
+// DotNetRuntime 계측 활성화 (GC/JIT/스레드풀/예외 등)
+var runtimeCollector = DotNetRuntimeStatsBuilder
+    .Default()
+    .StartCollecting();
 
 var app = builder.Build();
 
@@ -53,18 +55,24 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseRouting();
+
+app.UseHttpMetrics(options =>
+{
+    options.ReduceStatusCodeCardinality();
+    options.RequestDuration.Enabled = true; 
+});
+
 app.UseMiddleware<ResponseStatusCodeMiddleware>();
 app.UseMiddleware<SessionCheckMiddleware>();
 app.UseMiddleware<RequestLockMiddleware>();
 
-app.UseRouting();
-
 app.UseHttpsRedirection();
 app.UseAuthorization();
+
 app.MapControllers();
 
-// HTTP 요청 지표 수집 & 기본 경로로 노출
-app.UseHttpMetrics();
+// Prometheus 스크랩 엔드포인트 (/metrics)
 app.MapMetrics(); 
 
 // Set Dapper
@@ -73,13 +81,14 @@ Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
 // Load Master Data
 var masterDb = app.Services.GetRequiredService<IMasterDb>();
 if (await masterDb.Load() != ErrorCode.None)
-{   
+{
     return;
 }
 
 app.MapGet("/", () => "OK");
-app.Run();
 
+app.Lifetime.ApplicationStopping.Register(() => runtimeCollector.Dispose());
+app.Run();
 
 void SettingLogger()
 {
