@@ -6,6 +6,8 @@ using APIServer.Repository.Implements;
 using APIServer.Repository.Implements.Memory;
 using APIServer.Service;
 using APIServer.Service.Implements;
+using Prometheus;
+using Prometheus.DotNetRuntime;
 using ZLogger;
 using ZLogger.Providers;
 using ZLogger.Formatters;
@@ -24,6 +26,7 @@ builder.Services.AddScoped<IStageService, StageService>();
 builder.Services.AddScoped<IDataLoadService, DataLoadService>();
 builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 builder.Services.AddScoped<IMailService, MailService>();
+builder.Services.AddScoped<IQuestService, QuestService>();
 
 // Register Repositories
 builder.Services.AddScoped<IAccountDb, AccountDb>();
@@ -38,6 +41,9 @@ builder.Services.AddSwaggerGen();
 // Set Logger
 SettingLogger();
 
+// DotNetRuntime 계측 활성화: GC/JIT/스레드풀 등
+DotNetRuntimeStatsBuilder.Default().StartCollecting();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -50,12 +56,17 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<ResponseStatusCodeMiddleware>();
 app.UseMiddleware<SessionCheckMiddleware>();
 app.UseMiddleware<RequestLockMiddleware>();
+app.UseMiddleware<RequestTimingMiddleware>();
 
 app.UseRouting();
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+
+// HTTP 요청 지표 수집 & 기본 경로로 노출
+app.UseHttpMetrics();
+app.MapMetrics(); 
 
 // Set Dapper
 Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
@@ -67,6 +78,7 @@ if (await masterDb.Load() != ErrorCode.None)
     return;
 }
 
+app.MapGet("/", () => "OK");
 app.Run();
 
 

@@ -119,4 +119,5 @@ public enum ErrorCode
     FailedAttendanceReset         = 5024_500,
     NotEquiptItem                    = 5025_400,
     NotEquiptRune                    = 5025_400,
+    CannotFindAccountUser          = 5026_403,
 }

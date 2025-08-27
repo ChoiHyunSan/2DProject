@@ -15,7 +15,8 @@ public class SessionCheckMiddleware(ILogger<SessionCheckMiddleware> _logger, IMe
     private readonly List<string> skipAuthorizeApiPaths =
     [
         "/api/login",
-        "/api/Register"    
+        "/api/Register",
+        "/metrics",
     ];
     
     /// <summary>
