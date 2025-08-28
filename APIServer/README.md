@@ -12,7 +12,7 @@
 - **데이터베이스** : MySQL, Redis
 - **DB 연결** : SQLKata, Cloud Structures
 - **로거** : ZLogger
-- **기타** : Docker
+- **기타** : Docker, nGrinder, Prometheus-Grafana
 
 ---
 
