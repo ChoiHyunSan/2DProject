@@ -1,0 +1,10 @@
+apiVersion: 1
+datasources:
+  - name: Prometheus
+    uid: prometheus-ds
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090 # 같은 docker 네트워크의 prometheus 서비스
+    isDefault: true
+    jsonData:
+      httpMethod: POST

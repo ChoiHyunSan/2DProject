@@ -8,6 +8,7 @@ using APIServer.Service;
 using APIServer.Service.Implements;
 using Prometheus;
 using Prometheus.DotNetRuntime;
+using Prometheus.SystemMetrics;
 using ZLogger;
 using ZLogger.Providers;
 using ZLogger.Formatters;
@@ -37,6 +38,8 @@ builder.Services.AddSingleton<IMemoryDb, MemoryDb>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddSystemMetrics();
 
 // Set Logger
 SettingLogger();
@@ -73,6 +76,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 // Prometheus 스크랩 엔드포인트 (/metrics)
+app.UseHttpMetrics();
 app.MapMetrics(); 
 
 // Set Dapper

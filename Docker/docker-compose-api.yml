@@ -63,6 +63,21 @@ services:
     networks:
       - api-network
 
+  mysqld-exporter:
+    image: prom/mysqld-exporter:v0.17.2
+    container_name: mysqld-exporter
+    depends_on:
+      - api-mysql
+    environment:
+      MYSQLD_EXPORTER_PASSWORD: exporter_pw        # 비번만 환경변수로
+    command:
+      - --mysqld.address=api-mysql:3306           # 접속 대상
+      - --mysqld.username=exporter                # 사용자
+    networks:
+      - api-network
+    ports:
+      - "9104:9104"
+
 volumes:
   mysql-data:
   redis-data:

@@ -1,0 +1,38 @@
+groups:
+  - name: apiserver.rules
+    interval: 15s
+    rules:
+      # 엔드포인트/메서드별 RPS(2분 레이트)
+      - record: apiserver:http_rps:2m
+        expr: |
+          sum by (endpoint, method) (rate(http_requests_received_total[2m]))
+          or on (endpoint, method)
+          (0 * sum by (endpoint, method) (http_requests_received_total))
+
+      # 엔드포인트/메서드별 오류율 퍼센트(5분 레이트)
+      - record: apiserver:http_error_rate_percent:5m
+        expr: |
+          100 *
+          sum by (endpoint, method) (rate(http_requests_received_total{code!~"2.."}[5m]))
+          /
+          sum by (endpoint, method) (rate(http_requests_received_total[5m]))
+
+      # 엔드포인트/메서드별 p90 (5분 창)
+      - record: apiserver:http_p90_seconds:5m
+        expr: |
+          histogram_quantile(
+            0.90,
+            sum by (le, endpoint, method) (rate(http_request_duration_seconds_bucket[5m]))
+          )
+
+      # 엔드포인트/메서드별 p99 (5분 창)
+      - record: apiserver:http_p99_seconds:5m
+        expr: |
+          histogram_quantile(
+            0.99,
+            sum by (le, endpoint, method) (rate(http_request_duration_seconds_bucket[5m]))
+          )
+
+      # 분당 예외 발생 수 (DotNetRuntime)
+      - record: apiserver:exceptions_per_minute:1m
+        expr: rate(dotnet_exceptions_total[1m]) * 60
