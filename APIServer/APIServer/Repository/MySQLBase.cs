@@ -7,7 +7,7 @@ using IsolationLevel = System.Data.IsolationLevel;
 
 namespace APIServer.Repository;
 
-public abstract class MySQLBase
+public abstract class MySQLBase : IDisposable, IAsyncDisposable
 {
     private string _dbConfig;
     protected MySqlConnection _conn;
@@ -26,6 +26,15 @@ public abstract class MySQLBase
     public void Dispose()
     {
         Close();
+    }
+    
+    public async ValueTask DisposeAsync()
+    {
+        if (_conn != null)
+        {
+            await _conn.DisposeAsync();
+            _conn = null;
+        }
     }
     
     private void Open()

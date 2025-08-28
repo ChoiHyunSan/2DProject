@@ -1,0 +1,31 @@
+version: "3.9"
+services:
+  ngrinder-controller:
+    image: ngrinder/controller:3.5.9-p1
+    container_name: ngrinder-controller
+    ports:
+      - "127.0.0.1:9000:80"
+      - "127.0.0.1:16001:16001"
+      - "127.0.0.1:12000-12019:12000-12019"
+    environment:
+      - TZ=Asia/Seoul
+    volumes:
+      - ./ngrinder/controller:/opt/ngrinder-controller
+    networks:
+      - ngrinder-net
+
+  ngrinder-agent-1:
+    image: ngrinder/agent:3.5.9-p1
+    container_name: ngrinder-agent-1
+    depends_on:
+      - ngrinder-controller
+    command: ["ngrinder-controller:80"]  
+    environment:
+      - TZ=Asia/Seoul
+    networks:
+      - ngrinder-net
+
+networks:
+  ngrinder-net:
+    name: ngrinder-net
+    driver: bridge

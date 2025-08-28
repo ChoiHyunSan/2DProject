@@ -1,0 +1,50 @@
+PLAIN
+K 11
+targetHosts
+V 0
+
+K 9
+validated
+V 1
+0
+END
+ENDREP
+id: 0-14.0.r14/59
+type: file
+count: 0
+text: 2 0 822 2104 0e380ef5ba8d75b6f29a9463a634e499 3a08bc925e4254b357f84e3ee65ab338d1d1496a 13-d/_2
+props: 14 0 46 46 536bcf2a8ad0af566c24c817dde35b51
+cpath: /RegisterAndLoginTest.groovy
+copyroot: 0 /
+
+PLAIN
+K 14
+.gitconfig.yml
+V 17
+file 0-1.0.r1/346
+K 27
+RegisterAndLoginTest.groovy
+V 18
+file 0-14.0.r14/59
+K 11
+Test.groovy
+V 17
+file 0-2.0.r13/63
+K 20
+host.docker.internal
+V 19
+dir 0-10.0.r10/1426
+END
+ENDREP
+id: 0.0.r14/508
+type: dir
+pred: 0.0.r13/460
+count: 14
+text: 14 300 195 195 d8c6cdc472c9c28c8fb686d8494ba908
+cpath: /
+copyroot: 0 /
+
+_0.0.t13-d add-file true true /RegisterAndLoginTest.groovy
+
+
+508 640

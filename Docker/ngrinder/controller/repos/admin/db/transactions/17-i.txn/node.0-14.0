@@ -1,0 +1,9 @@
+id: 0-14.0.t17-i
+type: file
+pred: 0-14.0.r17/63
+count: 4
+text: 15 0 774 1907 b25203b55d60e199f0cc9cf6622ff1ab 2ffbae8a2c1517d11c074d3dea61ca4660be67f9 17-i/_1
+props: -1
+cpath: /RegisterAndLoginTest.groovy
+copyroot: 0 /
+

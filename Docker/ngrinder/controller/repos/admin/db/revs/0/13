@@ -1,0 +1,47 @@
+PLAIN
+K 11
+targetHosts
+V 0
+
+K 9
+validated
+V 5
+false
+END
+ENDREP
+id: 0-2.0.r13/63
+type: file
+pred: 0-2.0.r12/905
+count: 10
+text: 12 0 821 2068 c819461a23fbb6c3020c67c08c295650 bb6251e35da5bd4e2dc3e281a5350f6f61fb36d0 12-c/_1
+props: 13 0 50 50 9451ec6176239ace09c05a5d0190e9e9
+cpath: /Test.groovy
+copyroot: 0 /
+
+PLAIN
+K 14
+.gitconfig.yml
+V 17
+file 0-1.0.r1/346
+K 11
+Test.groovy
+V 17
+file 0-2.0.r13/63
+K 20
+host.docker.internal
+V 19
+dir 0-10.0.r10/1426
+END
+ENDREP
+id: 0.0.r13/460
+type: dir
+pred: 0.0.r12/1304
+count: 13
+text: 13 309 138 138 7c30f9c8b6ab33fdfe391b11967c3e4e
+cpath: /
+copyroot: 0 /
+
+0-2.0.t12-c modify-file true true /Test.groovy
+
+
+460 593
