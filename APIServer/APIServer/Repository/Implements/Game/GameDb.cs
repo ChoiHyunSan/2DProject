@@ -54,20 +54,35 @@ partial class GameDb(ILogger<GameDb> logger, IOptions<DbConfig> dbConfig, IMaste
             Timeout = TransactionManager.DefaultTimeout
         };
 
-        using var scope = new TransactionScope(
-            TransactionScopeOption.Required,
-            txOptions,
-            TransactionScopeAsyncFlowOption.Enabled);
-        
-        EnsureOpen();
-        _conn.EnlistTransaction(Transaction.Current!); 
+        try
+        {
+            using var scope = new TransactionScope(
+                TransactionScopeOption.Required,
+                txOptions,
+                TransactionScopeAsyncFlowOption.Enabled);
 
-        var ec = await action(_queryFactory);
+            EnsureOpen(); // scope 내부에서 open → 자동 enlist
 
-        if (ec == ErrorCode.None)
-            scope.Complete(); 
+            var ec = await action(_queryFactory);
 
-        return ec;
+            if (ec == ErrorCode.None)
+            {
+                scope.Complete();
+                return ErrorCode.None;
+            }
+
+            // 실패 시 Complete() 안 하므로 롤백됨
+            return ec;
+        }
+        catch (MySqlConnector.MySqlException ex) when (ex.Number == 1213 || ex.Number == 1205)
+        {
+            // Deadlock / Lock wait timeout → 재시도 1회
+            return await WithTransactionAsync(action);
+        }
+        catch (Exception ex)
+        {
+            return ErrorCode.FailedTransaction; // 공용 에러코드 하나로 수렴
+        }
     }
 
     // 비동기, 반환값 있음

@@ -190,47 +190,47 @@ partial class GameDb
 
     public async Task<List<ItemData>> GetItemDataListAsync(long userId, Pageable pageable)
     {
-        var offset = (pageable.page - 1) * pageable.size;
-        var sql = @"
-            SELECT item_id, item_code AS itemCode, level
-            FROM user_inventory_item
-            WHERE user_id = @userId
-            OFFSET @offset
-            LIMIT @size;
-            ";
+        var page = Math.Max(1, pageable?.page ?? 1);         // 1-based
+        var size = Math.Max(1, Math.Min(pageable?.size ?? 20, 1000));
+        var offset = (long)(page - 1) * size;
 
-         var conn = (MySqlConnection)_queryFactory.Connection;
-         using var multi = await conn.QueryMultipleAsync(sql, new { userId });
-             
-         var itemRows = (await multi.ReadAsync<(long item_id, long itemCode, int level)>()).ToList();
-         return itemRows.Select(x => new ItemData
-         {
-             itemId = x.item_id,
-             itemCode = x.itemCode,
-             level = x.level
-         }).ToList();
+        const string sql = @"
+        SELECT
+            item_id   AS itemId,
+            item_code AS itemCode,
+            level
+        FROM user_inventory_item
+        WHERE user_id = @userId
+        ORDER BY item_id
+        LIMIT @size OFFSET @offset;
+    ";
+
+        var conn = (MySqlConnection)_queryFactory.Connection;
+        var rows = await conn.QueryAsync<ItemData>(sql, new { userId, size, offset });
+        return rows.AsList();
     }
 
     public async Task<List<RuneData>> GetRuneDataListAsync(long userId, Pageable pageable)
     {
-        var offset = (pageable.page - 1) * pageable.size;
-        var sql = @"
-            SELECT rune_id, rune_code AS runeCode, level
-            FROM user_inventory_rune
-            WHERE user_id = @userId
-            OFFSET @offset
-            LIMIT @size;
-            ";
+        var page = Math.Max(1, pageable?.page ?? 1);         // 1-based
+        var size = Math.Max(1, Math.Min(pageable?.size ?? 20, 1000));
+        var offset = (long)(page - 1) * size;
+
+        const string sql = @"
+        SELECT
+            rune_id   AS runeId,
+            rune_code AS runeCode,
+            level
+        FROM user_inventory_rune
+        WHERE user_id = @userId
+        ORDER BY rune_id
+        LIMIT @size OFFSET @offset;
+    ";
 
         var conn = (MySqlConnection)_queryFactory.Connection;
-        using var multi = await conn.QueryMultipleAsync(sql, new { userId });
-            
-        var runeRows = (await multi.ReadAsync<(long rune_id, long runeCode, int level)>()).ToList();
-        return runeRows.Select(x => new RuneData
-        {
-            runeId = x.rune_id,
-            runeCode = x.runeCode,
-            level = x.level
-        }).ToList();
+        var rows = await conn.QueryAsync<RuneData>(sql, new { userId, size, offset });
+        return rows.AsList();
     }
+
+
 }
