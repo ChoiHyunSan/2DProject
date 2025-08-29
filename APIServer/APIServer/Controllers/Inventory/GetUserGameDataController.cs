@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace APIServer.Controllers.Inventory;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class GetUserGameDataController(ILogger<GetUserGameDataController> logger, IDataLoadService dataLoadService)
 : ControllerBase
 {

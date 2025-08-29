@@ -8,7 +8,7 @@ using static APIServer.LoggerManager;
 namespace APIServer.Controllers.Quest;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class RewardQuestController(ILogger<RewardQuestController> logger, IQuestService questService)
     : ControllerBase
 {

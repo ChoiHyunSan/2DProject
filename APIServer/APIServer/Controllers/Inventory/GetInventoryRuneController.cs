@@ -8,7 +8,7 @@ using static APIServer.LoggerManager;
 namespace APIServer.Controllers.Inventory;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class GetInventoryRuneController(ILogger<GetInventoryRuneController> logger, IDataLoadService dataLoadService)
     : ControllerBase
 {

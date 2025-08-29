@@ -140,7 +140,7 @@ public class DataLoadService(ILogger<DataLoadService> logger, IGameDb gameDb, IM
         catch (Exception ex)
         {
             LogError(_logger, ErrorCode.FailedDataLoad, EventType.GetInventoryItem, 
-                "Failed Get Inventory Item List", new { userId });
+                "Failed Get Inventory Item List", new { userId , ex.Message, ex.StackTrace });
             
             return Result<List<ItemData>>.Failure(ErrorCode.FailedDataLoad);      
         }
@@ -171,7 +171,7 @@ public class DataLoadService(ILogger<DataLoadService> logger, IGameDb gameDb, IM
         catch (Exception ex)
         {
             LogError(_logger, ErrorCode.FailedDataLoad, EventType.GetInventoryRune, 
-                "Failed Get Inventory Rune List", new { userId });
+                "Failed Get Inventory Rune List", new { userId, ex.Message, ex.StackTrace });
             
             return Result<List<RuneData>>.Failure(ErrorCode.FailedDataLoad);      
         }
@@ -202,7 +202,7 @@ public class DataLoadService(ILogger<DataLoadService> logger, IGameDb gameDb, IM
         catch (Exception ex)
         {
             LogError(_logger, ErrorCode.FailedDataLoad, EventType.GetInventoryRune, 
-                "Failed Get User Game Data", new { userId });
+                "Failed Get User Game Data", new { userId, ex.Message, ex.StackTrace });
             
             return Result<UserGameData>.Failure(ErrorCode.FailedDataLoad);
         }

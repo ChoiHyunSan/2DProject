@@ -8,7 +8,7 @@ using static APIServer.LoggerManager;
 namespace APIServer.Controllers.Quest;
 
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class GetProgressQuestController(ILogger<GetProgressQuestController> logger, IDataLoadService dataLoadService)
     : ControllerBase
 {

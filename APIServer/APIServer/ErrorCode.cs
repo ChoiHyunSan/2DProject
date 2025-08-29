@@ -57,6 +57,7 @@ public enum ErrorCode
     FailedEnhanceCharacter        = 2034_500,
     FailedUnEquipItem              = 2035_500,
     FailedUnEquipRune              = 2036_500,
+    FailedTransaction              = 2037_500,
     
     // AccountDb 3000 ~ 3999
     FailedCreateAccountUserData    = 3000_500,
