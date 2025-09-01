@@ -26,7 +26,7 @@ public class AttendanceCheckController(ILogger<AttendanceCheckController> logger
         
         LogInfo(_logger, EventType.AttendanceCheck, "Attendance Check", new { request });
 
-        var result = await _attendanceService.AttendanceAndReward(session.userId);
+        var result = await _attendanceService.AttendanceAndRewardAsync(session.userId);
         return new AttendanceResponse { code = result.ErrorCode };       
     }
 }

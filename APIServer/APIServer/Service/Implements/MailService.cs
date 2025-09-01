@@ -27,8 +27,8 @@ public class MailService (ILogger<MailService> logger, IGameDb gameDb, IMemoryDb
         if(code == 0) return RewardType.GOLD;
         if(code == 1) return RewardType.GEM;
         if(code == 2) return RewardType.EXP;
-        if(code >= 20000) return RewardType.ITEM;
-        if(code >= 10000) return RewardType.RUNE;
+        if(code >= 20000) return RewardType.RUNE;
+        if(code >= 10000) return RewardType.ITEM;
         return RewardType.NONE;
     }
     
@@ -94,7 +94,7 @@ public class MailService (ILogger<MailService> logger, IGameDb gameDb, IMemoryDb
             var txErrorCode = await _gameDb.WithTransactionAsync(async _ =>
             {
                 // 메일 보상 획득
-                if (await ReceiveReward(userId, mail.reward_code, mail.count))
+                if (await ReceiveReward(userId, mail.reward_code, mail.count) == false)
                 {
                     return ErrorCode.FailedReceiveMail;
                 }

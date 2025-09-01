@@ -6,7 +6,7 @@ using static APIServer.LoggerManager;
 
 namespace APIServer.Service.Implements;
 
-public class QuestService(ILogger<QuestService> logger, IGameDb gameDb, IDataLoadService dataLoadService, IMasterDb masterDb, IMemoryDb memoryDb)
+public class QuestService(ILogger<QuestService> logger, IGameDb gameDb, IMasterDb masterDb, IMemoryDb memoryDb)
     : IQuestService
 {
     private readonly ILogger<QuestService> _logger = logger;

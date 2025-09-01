@@ -13,7 +13,7 @@ public class AttendanceService(ILogger<AttendanceService> logger, IMasterDb mast
     private readonly IGameDb _gameDb = gameDb;
     private readonly IMailService _mailService = mailService;
     
-    public async Task<Result> AttendanceAndReward(long userId)
+    public async Task<Result> AttendanceAndRewardAsync(long userId)
     {
         try
         {
