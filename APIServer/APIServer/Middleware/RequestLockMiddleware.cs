@@ -14,6 +14,7 @@ public class RequestLockMiddleware(ILogger<RequestLockMiddleware> logger, Reques
     /// 한 세션에 대한 요청을 동시에 최대 1번까지만 받도록 제한하는 미들웨어
     /// SessionCheckMiddleware 미들웨어를 진행한 이후에 진행 
     /// 
+
     /// 1) Session에 대한 Lock이 걸려있는지 확인
     /// 2-1) 걸려있지 않다면 Lock을 걸고서 그대로 진행
     /// 2-2) Lock이 이미 걸려있다면 요청을 실패로 처리

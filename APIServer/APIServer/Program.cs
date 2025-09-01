@@ -28,6 +28,7 @@ builder.Services.AddScoped<IDataLoadService, DataLoadService>();
 builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 builder.Services.AddScoped<IMailService, MailService>();
 builder.Services.AddScoped<IQuestService, QuestService>();
+builder.Services.AddScoped<ISecurityService, SecurityService>();
 
 // Register Repositories
 builder.Services.AddScoped<IAccountDb, AccountDb>();
