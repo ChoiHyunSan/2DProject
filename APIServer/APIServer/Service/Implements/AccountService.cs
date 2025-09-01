@@ -4,13 +4,14 @@ using static APIServer.LoggerManager;
 
 namespace APIServer.Service.Implements;
 
-public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb, IGameDb gameDb, IMemoryDb memoryDb) 
+public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb, IGameDb gameDb, IMemoryDb memoryDb, ISecurityService securityService) 
     : IAccountService
 {
     private readonly ILogger<AccountService> _logger = logger;
     private readonly IAccountDb _accountDb = accountDb;
     private readonly IGameDb _gameDb = gameDb;
     private readonly IMemoryDb _memoryDb = memoryDb;
+    private readonly ISecurityService _securityService = securityService;
     
     public async Task<Result> RegisterAccountAsync(string email, string password)
     {
@@ -29,9 +30,11 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
             }
 
             var userId = created.Value;
-
+            var saltValue = SecurityUtils.GenerateSalt();
+            var (_, hashPassword) = _securityService.HashPassword(password, saltValue);
+            
             // 계정 정보 생성
-            if (await _accountDb.CreateAccountUserDataAsync(userId, email, password) == false)
+            if (await _accountDb.CreateAccountUserDataAsync(userId, email, saltValue, hashPassword) == false)
             {
                 await RollbackCreateDefaultUserGameDataAsync(userId);
             }
@@ -58,13 +61,13 @@ public class AccountService(ILogger<AccountService> logger, IAccountDb accountDb
             }
             
             // 패스워드 검증
-            if (!SecurityUtils.VerifyPassword(account.password, account.salt_value, password))
+            if (!_securityService.VerifyPassword(account.password, account.salt_value, password))
             {
                 return Result<(long, string)>.Failure(ErrorCode.FailedPasswordVerify);   
             }
 
             // 토큰 발급 + 세션 등록
-            var token = SecurityUtils.GenerateAuthToken();
+            var token = _securityService.GenerateAuthToken();
             if (await _memoryDb.RegisterSessionAsync(CreateNewSession(account, token)) == false)
             {
                 return Result<(long, string)>.Failure(ErrorCode.FailedRegisterSession);

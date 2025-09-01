@@ -8,7 +8,7 @@ public interface IAccountDb
     Task<bool> CheckExistAccountByEmailAsync(string email);
     
     /// <summary> 계정 정보 생성 </summary>
-    Task<bool> CreateAccountUserDataAsync(long userId, string email, string password);
+    Task<bool> CreateAccountUserDataAsync(long userId, string email, string saltValue, string password);
     
     
     /// <summary> 이메일 기반 계정 정보 조회 </summary>

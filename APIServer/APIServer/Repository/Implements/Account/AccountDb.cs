@@ -18,16 +18,13 @@ public class AccountDb(ILogger<AccountDb> logger, IOptions<DbConfig> dbConfig)
                 .FirstOrDefaultAsync<bool>();
     }
 
-    public async Task<bool> CreateAccountUserDataAsync(long userId, string email, string password)
+    public async Task<bool> CreateAccountUserDataAsync(long userId, string email, string saltValue, string password)
     {
-        var saltValue = SecurityUtils.GenerateSalt();
-        var (_, hashPassword) = SecurityUtils.HashPassword(password, saltValue);
-        
         var result = await _queryFactory.Query("user_account").InsertAsync( new 
         {
             user_id = userId,
             email = email,
-            password = hashPassword,
+            password = password,
             salt_value = saltValue,
         });
 
