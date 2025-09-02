@@ -11,9 +11,6 @@ public interface IGameDb
 {
     /// <summary> 트랜잭션 코드 (반환형 X) </summary>
     Task<ErrorCode> WithTransactionAsync(Func<QueryFactory, Task<ErrorCode>> action);
-
-    /// <summary> 트랜잭션 코드 (반환형 O) </summary>
-    Task<TResult> WithTransactionAsync<TResult>(Func<QueryFactory, Task<TResult>> func);
     
     /// <summary> 유저 초기 데이터 생성 </summary>
     Task<long> CreateUserGameDataAndReturnUserIdAsync();

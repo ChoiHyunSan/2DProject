@@ -84,25 +84,4 @@ partial class GameDb(ILogger<GameDb> logger, IOptions<DbConfig> dbConfig, IMaste
             return ErrorCode.FailedTransaction; // 공용 에러코드 하나로 수렴
         }
     }
-
-    // 비동기, 반환값 있음
-    public async Task<TResult> WithTransactionAsync<TResult>(
-        Func<QueryFactory, Task<TResult>> func)
-    {
-        EnsureOpen();
-
-        var txOptions = new TransactionOptions
-        {
-            IsolationLevel = MapIsolation(IsolationLevel.ReadCommitted),
-            Timeout = TransactionManager.DefaultTimeout
-        };
-
-        using var scope = new TransactionScope(
-            TransactionScopeOption.Required,
-            txOptions,
-            TransactionScopeAsyncFlowOption.Enabled);
-        var result = await func(_queryFactory);
-        scope.Complete();
-        return result;
-    }
 }
