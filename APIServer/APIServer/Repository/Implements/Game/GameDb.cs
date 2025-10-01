@@ -44,7 +44,6 @@ partial class GameDb(ILogger<GameDb> logger, IOptions<DbConfig> dbConfig, IMaste
     private readonly string MAIL_ID = "mail_id";
     private readonly string RECEIVE_DATE = "receive_date";
     
-    // 비동기, 반환값 없음
     public async Task<ErrorCode> WithTransactionAsync(
         Func<QueryFactory, Task<ErrorCode>> action)
     {
@@ -61,7 +60,7 @@ partial class GameDb(ILogger<GameDb> logger, IOptions<DbConfig> dbConfig, IMaste
                 txOptions,
                 TransactionScopeAsyncFlowOption.Enabled);
 
-            EnsureOpen(); // scope 내부에서 open → 자동 enlist
+            EnsureOpen(); 
 
             var ec = await action(_queryFactory);
 
@@ -76,12 +75,11 @@ partial class GameDb(ILogger<GameDb> logger, IOptions<DbConfig> dbConfig, IMaste
         }
         catch (MySqlConnector.MySqlException ex) when (ex.Number == 1213 || ex.Number == 1205)
         {
-            // Deadlock / Lock wait timeout → 재시도 1회
             return await WithTransactionAsync(action);
         }
         catch (Exception ex)
         {
-            return ErrorCode.FailedTransaction; // 공용 에러코드 하나로 수렴
+            return ErrorCode.FailedTransaction; 
         }
     }
 }

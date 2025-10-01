@@ -23,7 +23,7 @@ public class AttendanceService(ILogger<AttendanceService> logger, IMasterDb mast
             }
             var attendance = checkResult.Value;
         
-            // 트랜잭잭션 처리
+            // 트랜잭션 처리
             var txResult = await _gameDb.WithTransactionAsync(async _ =>
             {
                 // 출석 체크를 실행하고, 증가된 일수를 반환받습니다.
