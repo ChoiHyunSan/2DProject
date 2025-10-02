@@ -85,4 +85,6 @@ public enum EventType
     GetUserGameData = 5027,
     UnEquipItem      = 5028,
     UnEquipRune      = 5029,
+    SendChat = 5030,
+    FetchChat = 5031
 }

@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using APIServer.Models.DTO;
+using APIServer.Models.DTO.Chat;
 using APIServer.Models.Entity;
 using APIServer.Models.Redis;
 using APIServer.Repository.Implements.Memory;
@@ -76,4 +77,10 @@ public interface IMemoryDb
     
     /// <summary> 여러 타입 캐시 삭제 </summary>
     Task<Result> DeleteCacheData(long userId, List<CacheType> cacheTypeList);
+    
+    /// <summary> 채팅 송신 </summary>
+    Task<ChatMessage?> SendChatAsync(string email, string message);
+    
+    /// <summary> 채팅 불러오기 </summary>
+    Task<List<ChatMessage>>  FetchChatsAsync(int count, string? afterMessageId);
 }

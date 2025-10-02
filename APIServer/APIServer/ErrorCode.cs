@@ -86,6 +86,8 @@ public enum ErrorCode
     CannotFindItemData              = 4018_404,
     CannotFindRuneData              = 4019_404,
     CannotFindUserGameData        = 4020_404,
+    FailedSendChat                = 4021_500,
+    FailedFetchChat                = 4022_500,
     
     // Controller (비즈니스/검증/권한/리소스 미존재 등)
     DuplicatedEmail                = 5000_400,
