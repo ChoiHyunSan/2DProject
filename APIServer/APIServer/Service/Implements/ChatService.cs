@@ -35,6 +35,10 @@ public class ChatService(ILogger<ChatService> logger, IMemoryDb memoryDb)
         try
         {
             var result = await _memoryDb.FetchChatsAsync(limit, afterMessageId);
+            if (result == null)
+            {
+                return Result<List<ChatMessage>>.Failure(ErrorCode.FailedFetchChat); 
+            }
             
             return Result<List<ChatMessage>>.Success(result); 
         }
