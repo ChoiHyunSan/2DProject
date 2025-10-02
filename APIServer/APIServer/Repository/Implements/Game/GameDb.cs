@@ -26,6 +26,7 @@ partial class GameDb(ILogger<GameDb> logger, IOptions<DbConfig> dbConfig, IMaste
     private const string TABLE_CHARACTER_EQUIPMENT_RUNE = "character_equipment_rune";
     private const string TABLE_USER_CLEAR_STAGE = "user_clear_stage";
     private const string TABLE_USER_MAIL = "user_mail";
+    private const string TABLE_CHAT_LOG = "chat_log";
     
     // GameDb Table Column
     private readonly string USER_ID = "user_id";

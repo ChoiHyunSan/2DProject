@@ -179,4 +179,7 @@ public interface IGameDb
     
     /// <summary> 룬 장착 해제 </summary>
     Task<bool> UnEquipRune(long characterId, long runeId);
+
+    /// <summary> 채팅 로그 저장 </summary>
+    Task<bool> InsertChatLogAsync(ChatLog chatLog);
 }
