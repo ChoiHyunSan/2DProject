@@ -133,3 +133,14 @@ CREATE TABLE IF NOT EXISTS `user_mail` (
     `receive_date`                  DATETIME                                          COMMENT '메일 수신 날짜',
     `expire_date`                   DATETIME      NOT NULL                            COMMENT '메일 만료 날짜' 
 );
+
+-- ----------------------------------------------------------
+--  채팅 로그 테이블
+-- ----------------------------------------------------------
+DROP TABLE IF EXISTS `chat_log`;
+CREATE TABLE IF NOT EXISTS `chat_log` (
+    `redis_stream_id` VARCHAR(32)   NOT NULL PRIMARY KEY    COMMENT 'Redis Stream ID(ms-seq, 멱등 키)',
+    `email`           VARCHAR(255)  NOT NULL                COMMENT '송신자 이메일',
+    `message`         VARCHAR(1000) NOT NULL                COMMENT '메시지 본문',
+    `send_at_utc`     DATETIME(6)   NOT NULL                COMMENT 'UTC 전송 시각(Redis ID ms 기준)'
+);
