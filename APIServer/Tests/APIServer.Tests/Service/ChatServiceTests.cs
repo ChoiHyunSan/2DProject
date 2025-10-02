@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using APIServer.Models.DTO.Chat;          // ChatMessage
-using APIServer.Repository;               // IMemoryDb
+using APIServer.Models.Entity;            // ChatLog
+using APIServer.Repository;               // IMemoryDb, IGameDb
 using APIServer.Service;                  // IChatService
 using APIServer.Service.Implements;       // ChatService
 using FluentAssertions;
@@ -15,37 +16,42 @@ namespace APIServer.Tests.Service;
 public class ChatServiceTests
 {
     private readonly Mock<IMemoryDb> _memoryDb = new();
+    private readonly Mock<IGameDb> _gameDb = new();
     private readonly Mock<ILogger<ChatService>> _logger = new();
 
-    private ChatService Sut() => new(_logger.Object, _memoryDb.Object);
+    private ChatService Sut() => new(_logger.Object, _memoryDb.Object, _gameDb.Object);
 
     // =====================================================================
-    // SendChatAsync
+    // SendAsync
     // =====================================================================
 
     /*
-     * Target   : SendChatAsync
-     * Scenario : 정상 전송
-     * Given    : IMemoryDb.SendChatAsync 가 ChatMessage 반환
-     * When     : SendChatAsync(email, message)
-     * Then     : result.IsSuccess = true, 반환 값 검증 및 MemoryDb 호출 1회
+     * Target   : SendAsync
+     * Scenario : Redis 성공, DB 적재 성공
+     * Given    : IMemoryDb.SendChatAsync -> ChatMessage, IGameDb.InsertChatLogAsync -> true
+     * When     : SendAsync(email, message)
+     * Then     : IsSuccess=true, ErrorCode=None, GameDb 1회 호출
      */
-    [Fact(DisplayName = "[Chat][Send] 정상 전송 시 MessageId/필드 반환")]
-    [Trait("Target", "SendChatAsync")]
-    public async Task SendChatAsync_Case01_Success()
+    [Fact(DisplayName = "[Chat][Send] Redis 성공 + DB 성공 → Success(None)")]
+    [Trait("Target", "SendAsync")]
+    public async Task SendAsync_Success_When_RedisOk_And_DbOk()
     {
         // Given
         const string email = "user@test.com";
-        const string text = "hello";
-        var now = DateTime.UtcNow;
-        var expected = new ChatMessage
+        const string text  = "hello";
+        const string msgId = "1727920200001-0";
+
+        var sent = new ChatMessage
         {
-            messageId = "1727920200001-0",
-            email = email,
-            sendAt = now,
-            message = text
+            messageId = msgId,
+            email     = email,
+            sendAt    = DateTime.UtcNow,
+            message   = text
         };
-        _memoryDb.Setup(m => m.SendChatAsync(email, text)).ReturnsAsync(expected);
+
+        _memoryDb.Setup(m => m.SendChatAsync(email, text)).ReturnsAsync(sent);
+        _gameDb.Setup(g => g.InsertChatLogAsync(It.IsAny<ChatLog>())).ReturnsAsync(true);
+
         var sut = Sut();
 
         // When
@@ -54,26 +60,28 @@ public class ChatServiceTests
         // Then
         result.IsSuccess.Should().BeTrue();
         result.ErrorCode.Should().Be(ErrorCode.None);
-        result.Value.Should().BeEquivalentTo(expected);
-        _memoryDb.Verify(m => m.SendChatAsync(email, text), Times.Once);
-        _memoryDb.VerifyNoOtherCalls();
+        result.Value!.messageId.Should().Be(msgId);
+
+        // 저장 자체를 검증하진 않되, 호출 여부만 확인
+        _gameDb.Verify(g => g.InsertChatLogAsync(It.IsAny<ChatLog>()), Times.Once);
     }
 
     /*
-     * Target   : SendChatAsync
-     * Scenario : MemoryDb 가 null 반환(쓰기 실패)
-     * Given    : IMemoryDb.SendChatAsync => null
-     * When     : SendChatAsync
-     * Then     : result = RedisException
+     * Target   : SendAsync
+     * Scenario : Redis 실패(null)
+     * Given    : IMemoryDb.SendChatAsync -> null
+     * When     : SendAsync(email, message)
+     * Then     : FailedSendChat, GameDb 호출 없음
      */
-    [Fact(DisplayName = "[Chat][Send] MemoryDb 실패 시 RedisException 반환")]
-    [Trait("Target", "SendChatAsync")]
-    public async Task SendChatAsync_Case03_MemoryDbNull()
+    [Fact(DisplayName = "[Chat][Send] Redis 실패(null) → FailedSendChat")]
+    [Trait("Target", "SendAsync")]
+    public async Task SendAsync_Fail_When_RedisNull()
     {
         // Given
         const string email = "user@test.com";
-        const string text = "hi";
+        const string text  = "hello";
         _memoryDb.Setup(m => m.SendChatAsync(email, text)).ReturnsAsync((ChatMessage?)null);
+
         var sut = Sut();
 
         // When
@@ -82,33 +90,107 @@ public class ChatServiceTests
         // Then
         result.IsSuccess.Should().BeFalse();
         result.ErrorCode.Should().Be(ErrorCode.FailedSendChat);
-        _memoryDb.Verify(m => m.SendChatAsync(email, text), Times.Once);
+        _gameDb.Verify(g => g.InsertChatLogAsync(It.IsAny<ChatLog>()), Times.Never);
+    }
+
+    /*
+     * Target   : SendAsync
+     * Scenario : DB 적재 false 반환
+     * Given    : InsertChatLogAsync -> false
+     * When     : SendAsync
+     * Then     : FailedSendChat
+     */
+    [Fact(DisplayName = "[Chat][Send] DB false → FailedSendChat")]
+    [Trait("Target", "SendAsync")]
+    public async Task SendAsync_Fail_When_DbReturnsFalse()
+    {
+        // Given
+        const string email = "user@test.com";
+        const string text  = "hello";
+        var sent = new ChatMessage
+        {
+            messageId = "1727920200001-0",
+            email = email,
+            sendAt = DateTime.UtcNow,
+            message = text
+        };
+
+        _memoryDb.Setup(m => m.SendChatAsync(email, text)).ReturnsAsync(sent);
+        _gameDb.Setup(g => g.InsertChatLogAsync(It.IsAny<ChatLog>())).ReturnsAsync(false);
+
+        var sut = Sut();
+
+        // When
+        var result = await sut.SendAsync(email, text);
+
+        // Then
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be(ErrorCode.FailedSendChat);
+        _gameDb.Verify(g => g.InsertChatLogAsync(It.IsAny<ChatLog>()), Times.Once);
+    }
+
+    /*
+     * Target   : SendAsync
+     * Scenario : DB 일반 예외 → FailedSendChat
+     * Given    : InsertChatLogAsync -> throw new Exception("DB down")
+     * When     : SendAsync
+     * Then     : FailedSendChat
+     */
+    [Fact(DisplayName = "[Chat][Send] DB 예외 → FailedSendChat")]
+    [Trait("Target", "SendAsync")]
+    public async Task SendAsync_Fail_When_DbThrows()
+    {
+        // Given
+        const string email = "user@test.com";
+        const string text  = "hello";
+        var sent = new ChatMessage
+        {
+            messageId = "1727920200001-0",
+            email = email,
+            sendAt = DateTime.UtcNow,
+            message = text
+        };
+
+        _memoryDb.Setup(m => m.SendChatAsync(email, text)).ReturnsAsync(sent);
+        _gameDb.Setup(g => g.InsertChatLogAsync(It.IsAny<ChatLog>()))
+               .ThrowsAsync(new Exception("DB down"));
+
+        var sut = Sut();
+
+        // When
+        var result = await sut.SendAsync(email, text);
+
+        // Then
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be(ErrorCode.FailedSendChat);
+        _gameDb.Verify(g => g.InsertChatLogAsync(It.IsAny<ChatLog>()), Times.Once);
     }
 
     // =====================================================================
-    // FetchChatsAsync
+    // FetchAsync  (Redis 전용)
     // =====================================================================
 
     /*
-     * Target   : FetchChatsAsync
-     * Scenario : 초기 진입 (after = null) → 최신 N개 오름차순으로 반환
-     * Given    : IMemoryDb.FetchChatsAsync 가 리스트 반환
-     * When     : FetchChatsAsync(count, null)
-     * Then     : result.IsSuccess = true, 리스트 개수/정렬/필드 검증
+     * Target   : FetchAsync
+     * Scenario : 초기 진입( after = null ) → 메시지 N개 오름차순
+     * Given    : IMemoryDb.FetchChatsAsync -> 리스트
+     * When     : FetchAsync(count, null)
+     * Then     : Success(None), 리스트 그대로 반환
      */
-    [Fact(DisplayName = "[Chat][Fetch] 초기 진입 시 최신 N개(오름차순) 반환")]
-    [Trait("Target", "FetchChatsAsync")]
-    public async Task FetchChatsAsync_Case01_Initial()
+    [Fact(DisplayName = "[Chat][Fetch] 초기 진입 → 최신 N개(오름차순)")]
+    [Trait("Target", "FetchAsync")]
+    public async Task FetchAsync_Initial_ReturnsAscendingList()
     {
         // Given
         const int count = 3;
         var msgs = new List<ChatMessage>
         {
-            new() { messageId = "1-0", email="a@a.com", sendAt=DateTime.UtcNow.AddSeconds(-2), message="a" },
-            new() { messageId = "2-0", email="b@b.com", sendAt=DateTime.UtcNow.AddSeconds(-1), message="b" },
-            new() { messageId = "3-0", email="c@c.com", sendAt=DateTime.UtcNow,             message="c" },
+            new() { messageId = "1-0", email="a@a.com", sendAt=DateTime.UtcNow.AddSeconds(-3), message="a" },
+            new() { messageId = "2-0", email="b@b.com", sendAt=DateTime.UtcNow.AddSeconds(-2), message="b" },
+            new() { messageId = "3-0", email="c@c.com", sendAt=DateTime.UtcNow.AddSeconds(-1), message="c" },
         };
         _memoryDb.Setup(m => m.FetchChatsAsync(count, null)).ReturnsAsync(msgs);
+
         var sut = Sut();
 
         // When
@@ -117,23 +199,21 @@ public class ChatServiceTests
         // Then
         result.IsSuccess.Should().BeTrue();
         result.ErrorCode.Should().Be(ErrorCode.None);
-        result.Value.Should().HaveCount(3);
-        result.Value![0].messageId.Should().Be("1-0");
-        result.Value![2].messageId.Should().Be("3-0");
+        result.Value.Should().BeEquivalentTo(msgs);
         _memoryDb.Verify(m => m.FetchChatsAsync(count, null), Times.Once);
-        _memoryDb.VerifyNoOtherCalls();
+        _gameDb.VerifyNoOtherCalls(); // Fetch는 DB에 접근하지 않음
     }
 
     /*
-     * Target   : FetchChatsAsync
-     * Scenario : after 커서 지정 → 신규 메시지만 반환
-     * Given    : IMemoryDb.FetchChatsAsync 가 리스트 반환
-     * When     : FetchChatsAsync(count, after)
-     * Then     : result.IsSuccess = true, 메세지들의 messageId가 after보다 큰지 확인
+     * Target   : FetchAsync
+     * Scenario : after 지정 → 신규 메시지만 반환
+     * Given    : IMemoryDb.FetchChatsAsync -> 리스트
+     * When     : FetchAsync(count, after)
+     * Then     : Success(None)
      */
-    [Fact(DisplayName = "[Chat][Fetch] 커서 이후 신규 메시지 반환")]
-    [Trait("Target", "FetchChatsAsync")]
-    public async Task FetchChatsAsync_Case02_AfterCursor()
+    [Fact(DisplayName = "[Chat][Fetch] after 커서 이후 메시지 반환")]
+    [Trait("Target", "FetchAsync")]
+    public async Task FetchAsync_After_ReturnsOnlyNewer()
     {
         // Given
         const int count = 50;
@@ -144,6 +224,7 @@ public class ChatServiceTests
             new() { messageId = "12-0", email="b@b.com", sendAt=DateTime.UtcNow, message="b" }
         };
         _memoryDb.Setup(m => m.FetchChatsAsync(count, after)).ReturnsAsync(msgs);
+
         var sut = Sut();
 
         // When
@@ -157,42 +238,20 @@ public class ChatServiceTests
     }
 
     /*
-     * Target   : FetchChatsAsync
-     * Scenario : MemoryDb 예외 발생
-     * Given    : FetchChatsAsync 가 예외 throw
-     * When     : FetchChatsAsync
-     * Then     : result = RedisException
+     * Target   : FetchAsync
+     * Scenario : 빈 결과
+     * Given    : IMemoryDb.FetchChatsAsync -> []
+     * When     : FetchAsync
+     * Then     : Success(None), 빈 리스트
      */
-    [Fact(DisplayName = "[Chat][Fetch] MemoryDb 예외 시 RedisException 반환")]
-    [Trait("Target", "FetchChatsAsync")]
-    public async Task FetchChatsAsync_Case03_Exception()
+    [Fact(DisplayName = "[Chat][Fetch] 신규 메시지 없음 → 빈 리스트")]
+    [Trait("Target", "FetchAsync")]
+    public async Task FetchAsync_EmptyList_IsSuccess()
     {
         // Given
-        _memoryDb.Setup(m => m.FetchChatsAsync(It.IsAny<int>(), It.IsAny<string?>()))
-                 .ThrowsAsync(new Exception("Redis down"));
-        var sut = Sut();
+        _memoryDb.Setup(m => m.FetchChatsAsync(100, "100-0"))
+                 .ReturnsAsync(new List<ChatMessage>());
 
-        // When
-        var result = await sut.FetchAsync(20, "5-0");
-
-        // Then
-        result.IsSuccess.Should().BeFalse();
-        result.ErrorCode.Should().Be(ErrorCode.FailedFetchChat);
-    }
-
-    /*
-     * Target   : FetchChatsAsync
-     * Scenario : 빈 결과 (신규 메시지 없음)
-     * Given    : FetchChatsAsync 가 빈 리스트 반환
-     * When     : FetchChatsAsync
-     * Then     : result.IsSuccess = true, 빈 리스트 반환
-     */
-    [Fact(DisplayName = "[Chat][Fetch] 신규 메시지 없을 때 빈 리스트 성공 반환")]
-    [Trait("Target", "FetchChatsAsync")]
-    public async Task FetchChatsAsync_Case04_EmptyList()
-    {
-        // Given
-        _memoryDb.Setup(m => m.FetchChatsAsync(100, "100-0")).ReturnsAsync(new List<ChatMessage>());
         var sut = Sut();
 
         // When
@@ -201,7 +260,32 @@ public class ChatServiceTests
         // Then
         result.IsSuccess.Should().BeTrue();
         result.ErrorCode.Should().Be(ErrorCode.None);
-        result.Value.Should().NotBeNull();
+        result.Value.Should()!.NotBeNull();
         result.Value!.Count.Should().Be(0);
+    }
+
+    /*
+     * Target   : FetchAsync
+     * Scenario : MemoryDb 예외
+     * Given    : IMemoryDb.FetchChatsAsync -> throw
+     * When     : FetchAsync
+     * Then     : RedisException
+     */
+    [Fact(DisplayName = "[Chat][Fetch] Redis 예외 → RedisException")]
+    [Trait("Target", "FetchAsync")]
+    public async Task FetchAsync_Exception_ReturnsRedisException()
+    {
+        // Given
+        _memoryDb.Setup(m => m.FetchChatsAsync(It.IsAny<int>(), It.IsAny<string?>()))
+                 .ThrowsAsync(new Exception("Redis down"));
+
+        var sut = Sut();
+
+        // When
+        var result = await sut.FetchAsync(20, "5-0");
+
+        // Then
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be(ErrorCode.FailedFetchChat);
     }
 }
